@@ -1,0 +1,12 @@
+RewriteEngine On
+
+RewriteBase /
+
+RewriteCond %{REQUEST_URI} !(/$|\.)
+RewriteRule (.*) %{REQUEST_URI}/ [R=301,L]
+
+RewriteRule ^$ index.php?page=accueil
+#https://b2-gp97.kevinpecro.info/produit/
+RewriteRule ^([a-zA-Z]+)/$ index.php?page=$1
+#https://b2-gp97.kevinpecro.info/produit/framboise/
+RewriteRule ^([a-zA-Z]+)/([a-z-]+)/$ index.php?page=$1&identifiant=$2
