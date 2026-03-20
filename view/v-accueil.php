@@ -13,48 +13,25 @@
     <div class="container">
         <h2 class="text-center mb-5">Nos Best-Sellers</h2>
         <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card product-card h-100">
-                    <img src="https://s1.qwant.com/thumbr/474x316/9/7/1b5c4de23fdeb46b3dc74969834806c531a0daabdf6333b3d44263c767ebcd/OIP.C5_ZFBzUHuGiUnzNVbezRAHaE8.jpg?u=https%3A%2F%2Ftse.mm.bing.net%2Fth%2Fid%2FOIP.C5_ZFBzUHuGiUnzNVbezRAHaE8%3Fpid%3DApi&q=0&b=1&p=0&a=0" class="card-img-top" alt="Pâte de fruit framboise">
-                    <div class="card-body">
-                        <h5 class="card-title text-center">Framboise</h5>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span>12,90€ / 100g</span>
-                            <button class="btn btn-primary">
-                                <i class="fas fa-shopping-cart me-1"></i> Ajouter
-                            </button>
+            <?php
+            $bestSellers = getBestSellers();
+            foreach ($bestSellers as $produit) :
+                ?>
+                <div class="col-md-4">
+                    <div class="card product-card h-100">
+                        <img src="/images/<?= htmlspecialchars($produit['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($produit['nom']) ?>">
+                        <div class="card-body d-flex flex-column align-items-center text-center">
+                            <h5 class="card-title"><?= htmlspecialchars($produit['nom']) ?></h5>
+                            <p class="fw-bold mt-2"><?= number_format($produit['prix_ttc'] / 100, 2, ',', ' ') ?>€ / 100g</p>
+                            <form method="GET" action="/produit/<?= $produit['identifiant'] ?>" class="mt-3 w-100">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-eye me-2"></i> Voir le produit
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card product-card h-100">
-                    <img src="https://s2.qwant.com/thumbr/474x316/4/4/f250b5ad20df3dae204abf63aa2fd7ab7f4efad3cd00067f4020dd2e60b1bb/OIP.Gf0D-fBQN77Q-opT71lduQHaE8.jpg?u=https%3A%2F%2Ftse.mm.bing.net%2Fth%2Fid%2FOIP.Gf0D-fBQN77Q-opT71lduQHaE8%3Fpid%3DApi&q=0&b=1&p=0&a=0" class="card-img-top" alt="Pâte de fruit citron">
-                    <div class="card-body">
-                        <h5 class="card-title text-center">Citron</h5>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span>12,90€ / 100g</span>
-                            <button class="btn btn-primary">
-                                <i class="fas fa-shopping-cart me-1"></i> Ajouter
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card product-card h-100">
-                    <img src="https://s2.qwant.com/thumbr/474x355/f/2/d0cd6233f47ebcd6c5ecb958c7b77803626e6baa52814367826873dd334265/OIP.nlUqh-dhUpTQqVmWu3oqkAHaFj.jpg?u=https%3A%2F%2Ftse.mm.bing.net%2Fth%2Fid%2FOIP.nlUqh-dhUpTQqVmWu3oqkAHaFj%3Fpid%3DApi&q=0&b=1&p=0&a=0" class="card-img-top" alt="Pâte de fruit abricot">
-                    <div class="card-body">
-                        <h5 class="card-title text-center">Abricot</h5>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span>12,90€ / 100g</span>
-                            <button class="btn btn-primary">
-                                <i class="fas fa-shopping-cart me-1"></i> Ajouter
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>

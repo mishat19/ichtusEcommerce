@@ -16,17 +16,8 @@ function panier() {
      *  🔥 TRAITEMENT DES ACTIONS (POST)
      * ══════════════════════════════════════════════ */
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-        // ➕ Ajouter produit
-        if (isset($_POST['id_produit'], $_POST['quantite'])) {
-            ajouterProduitDansPanier(
-                (int)$_POST['id_produit'],
-                (int)$_POST['quantite']
-            );
-        }
-
         // 🔄 Modifier quantité
-        elseif (isset($_POST['id_ligne'], $_POST['quantite'])) {
+        if (isset($_POST['id_ligne'], $_POST['quantite']) && $_POST['id_ligne'] && $_POST['quantite'] >= 0) {
             modifierQuantite(
                 (int)$_POST['id_ligne'],
                 (int)$_POST['quantite']
@@ -34,16 +25,10 @@ function panier() {
         }
 
         // ❌ Supprimer ligne
-        elseif (isset($_POST['id_ligne'])) {
+        elseif (isset($_POST['id_ligne']) && $_POST['id_ligne']) {
             supprimerLigne((int)$_POST['id_ligne']);
         }
 
-        // 🧹 Vider panier
-        elseif (isset($_POST['vider_panier'])) {
-            viderPanier();
-        }
-
-        // 🔥 REDIRECTION OBLIGATOIRE
         header('Location: /panier');
         exit;
     }
@@ -98,38 +83,25 @@ function panier() {
 /* ══════════════════════════════════════════════
  *  🧠 VÉRIFIER / CRÉER PANIER
  * ══════════════════════════════════════════════ */
-function verifPanier(): int {
+function verifPanier() {
     global $pdo;
+    $id_client = $_SESSION['idClient'] ?? null;
+    if (!$id_client) return false;
 
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
+    $sql = "SELECT id FROM panier WHERE id_client = :id_client";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(['id_client' => $id_client]);
+    $panier = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($panier) {
+        return $panier['id'];
+    } else {
+        $query = "INSERT INTO panier (id_client, date_creation) VALUES(:id_client, NOW())";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute(['id_client' => $id_client]);
+        return $pdo->lastInsertId();
     }
-
-    // Panier existant
-    if (isset($_SESSION['id_panier'])) {
-        $stmt = $pdo->prepare("SELECT id FROM panier WHERE id = ?");
-        $stmt->execute([$_SESSION['id_panier']]);
-
-        if ($stmt->fetch()) {
-            return (int) $_SESSION['id_panier'];
-        }
-
-        unset($_SESSION['id_panier']);
-    }
-
-    // Création panier
-    $stmt = $pdo->prepare(
-        "INSERT INTO panier (id_client, date_creation)
-         VALUES (1, NOW())"
-    );
-    $stmt->execute();
-
-    $idPanier = (int) $pdo->lastInsertId();
-    $_SESSION['id_panier'] = $idPanier;
-
-    return $idPanier;
 }
-
 
 /* ══════════════════════════════════════════════
  *  ➕ AJOUT PRODUIT
@@ -199,23 +171,65 @@ function supprimerLigne(int $idLigne) {
 
     $idPanier = verifPanier();
 
+    // Suppression de la ligne
     $pdo->prepare(
         "DELETE FROM panier_produit
          WHERE id = ? AND id_panier = ?"
     )->execute([$idLigne, $idPanier]);
+
+    // Vérification si le panier est vide
+    $stmt = $pdo->prepare(
+        "SELECT COUNT(*) as count FROM panier_produit
+         WHERE id_panier = ?"
+    );
+    $stmt->execute([$idPanier]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Si le panier est vide, on le supprime
+    if ($result['count'] == 0) {
+        $pdo->prepare(
+            "DELETE FROM panier
+             WHERE id = ?"
+        )->execute([$idPanier]);
+    }
 }
 
+function getNombreArticlesDansPanier(): int
+{
+    // Vérifie si l'utilisateur est connecté (idClient en session)
+    if (!isset($_SESSION['idClient'])) {
+        return 0;
+    }
 
-/* ══════════════════════════════════════════════
- *  🧹 VIDER PANIER
- * ══════════════════════════════════════════════ */
-function viderPanier() {
     global $pdo;
+    $idClient = $_SESSION['idClient'];
 
-    $idPanier = verifPanier();
+    // 1. Récupère l'id du panier actif pour ce client
+    $stmtPanier = $pdo->prepare("
+        SELECT id
+        FROM panier
+        WHERE id_client = ?
+        ORDER BY date_creation DESC
+        LIMIT 1
+    ");
+    $stmtPanier->execute([$idClient]);
+    $panier = $stmtPanier->fetch(PDO::FETCH_ASSOC);
 
-    $pdo->prepare(
-        "DELETE FROM panier_produit
-         WHERE id_panier = ?"
-    )->execute([$idPanier]);
+    // Si aucun panier actif, retourne 0
+    if (!$panier) {
+        return 0;
+    }
+
+    $idPanier = $panier['id'];
+
+    // 2. Compte le nombre d'articles dans ce panier
+    $stmtArticles = $pdo->prepare("
+        SELECT SUM(quantite) as nb_articles
+        FROM panier_produit
+        WHERE id_panier = ?
+    ");
+    $stmtArticles->execute([$idPanier]);
+    $result = $stmtArticles->fetch(PDO::FETCH_ASSOC);
+
+    return (int)($result['nb_articles'] ?? 0);
 }

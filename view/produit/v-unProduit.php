@@ -28,7 +28,7 @@
             </div>
 
             <div class="d-flex gap-2 align-items-center">
-                <form method="POST" action="/panier" class="d-flex gap-2 align-items-center">
+                <form method="POST" class="d-flex gap-2 align-items-center">
                     <div class="input-group" style="width: 120px;">
                         <input type="number" name="quantite" class="form-control" value="1" min="1" max="99" required>
                     </div>

@@ -4,12 +4,12 @@ function produit() {
     global $pdo;
 
     /* ── Traitement POST ajout panier AVANT le rendu ── */
-//    if (isset($_POST['quantite'], $_POST['id_produit'])) {
-//        ajouterProduitDansPanier((int)$_POST['id_produit'], (int)$_POST['quantite']);
-//
-//        //header('Location: /panier'); // Redirection vers la page panier
-//        exit;
-//    }
+    if (isset($_POST['quantite'], $_POST['id_produit'])) {
+        ajouterProduitDansPanier((int)$_POST['id_produit'], (int)$_POST['quantite']);
+
+        header('Location: /panier'); // Redirection vers la page panier
+        exit;
+    }
 
     if (isset($_GET['identifiant']) && $_GET['identifiant']) {
         $identifiant = $_GET['identifiant'];
@@ -34,6 +34,22 @@ function produit() {
         lstProduit();
     }
 }
+
+function getBestSellers() {
+    global $pdo;
+
+    // Exemple : Récupérer 3 produits actifs avec le meilleur score ou les plus vendus
+    $stmt = $pdo->query("
+        SELECT p.*, t.taux, (p.prix_ht * (1 + (t.taux / 100))) AS prix_ttc
+        FROM produit p
+        INNER JOIN tva t ON p.id_tva = t.id
+        WHERE p.statut = 'actif'
+        LIMIT 3
+    ");
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
 function unProduit() {
     global $unProduit;

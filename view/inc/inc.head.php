@@ -1,3 +1,7 @@
+<?php
+    $currentPage = strtok(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '?');
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -17,6 +21,11 @@
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: #f8f9fa;
+        }
+        .nav-link.active {
+            font-weight: bold;
+            color: var(--accent-color) !important;
+            border-bottom: 2px solid var(--accent-color);
         }
         .hero-section {
             background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://source.unsplash.com/random/1600x900/?fruit') no-repeat center center;
@@ -90,4 +99,3 @@
         }
     </style>
 </head>
-</html>

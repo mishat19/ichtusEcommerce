@@ -2,6 +2,8 @@
 
 function accueil(){
 
+    $produits = getBestSellers();
+
     //Traitement
 
     require_once 'view/inc/inc.head.php';

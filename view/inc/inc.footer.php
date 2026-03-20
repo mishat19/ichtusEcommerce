@@ -18,10 +18,10 @@
             <div class="col-md-2 footer-column">
                 <h5 class="text-center text-md-start">Liens utiles</h5>
                 <ul class="list-unstyled text-center text-md-start">
-                    <li><a href="#" class="text-white">Boutique</a></li>
-                    <li><a href="#" class="text-white">À Propos</a></li>
-                    <li><a href="#" class="text-white">Contact</a></li>
-                    <li><a href="#" class="text-white">FAQ</a></li>
+                    <li><a href="/produit" class="text-white">Boutique</a></li>
+                    <li><a href="/about" class="text-white">À Propos</a></li>
+                    <li><a href="/contact" class="text-white">Contact</a></li>
+                    <li><a href="/faq" class="text-white">FAQ</a></li>
                 </ul>
             </div>
             <div class="col-md-3 footer-column">
