@@ -17,6 +17,8 @@
     <?php else: ?>
         <!-- Layout en deux colonnes pour PC -->
         <div class="row g-4">
+            <!-- Conteneur pour les messages d'erreur -->
+            <div id="error-container" class="mt-10"></div>
             <!-- Colonne de gauche : Liste des produits -->
             <div class="col-lg-8">
                 <div class="table-responsive bg-white rounded-3 shadow-sm p-4">
@@ -49,7 +51,15 @@
                                     <form method="POST" class="d-flex align-items-center">
                                         <input type="hidden" name="id_ligne" value="<?= $ligne['id_ligne'] ?>">
                                         <div class="input-group" style="width: 100px;">
-                                            <input type="number" name="quantite" class="form-control text-center" value="<?= $ligne['quantite'] ?>" min="0" max="99" required onsubmit="return validateQuantity(this)">
+                                            <input
+                                                    type="number"
+                                                    name="quantite"
+                                                    class="form-control text-center"
+                                                    value="<?= $ligne['quantite'] ?>"
+                                                    min="0"
+                                                    max="99"
+                                                    required
+                                            >
                                         </div>
                                     </form>
                                 </td>
@@ -118,11 +128,12 @@
                         <?php endif; ?>
 
                         <!-- Bouton Valider la commande -->
-                        <a href="/commande/valider" class="btn btn-primary w-100 py-2 mb-3">
-                            Valider la commande
-                        </a>
+                        <form method="POST" class="mb-3">
+                            <button type="submit" class="btn btn-primary w-100 py-2" name="valider_commande">
+                                Valider la commande
+                            </button>
+                        </form>
 
-                        <!-- Icônes de paiement -->
                         <div class="mt-4 text-center">
                             <p class="small text-muted mb-1"><i class="fa-solid fa-lock me-1"></i> Paiement 100% sécurisé</p>
                             <div class="d-flex justify-content-center gap-2">
@@ -139,13 +150,79 @@
 </div>
 
 <script>
-    function validateQuantity(form) {
-        const quantityInput = form.querySelector('input[name="quantite"]');
-        if (parseInt(quantityInput.value) > 99) {
-            alert("La quantité maximale autorisée est 99.");
-            quantityInput.value = 99;
-            return false; // Empêche la soumission du formulaire
+    document.addEventListener('DOMContentLoaded', function() {
+        const errorContainer = document.getElementById('error-container');
+        const quantityForms = document.querySelectorAll('form.d-flex.align-items-center');
+
+        // Fonction pour afficher une erreur
+        function showError(message) {
+            errorContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            // Fait défiler la page vers le haut pour afficher l'erreur
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        return true;
-    }
+
+        quantityForms.forEach(form => {
+            const quantityInput = form.querySelector('input[name="quantite"]');
+
+            // Écouteur pour l'événement 'submit'
+            form.addEventListener('submit', function(e) {
+                const quantity = parseInt(quantityInput.value);
+
+                if (isNaN(quantity) || quantity < 0) {
+                    e.preventDefault();
+                    showError("La quantité doit être un nombre positif.");
+                    quantityInput.value = 1;
+                    quantityInput.focus();
+                    return false;
+                }
+
+                if (quantity > 99) {
+                    e.preventDefault();
+                    showError("La quantité maximale autorisée est 99.");
+                    quantityInput.value = 99;
+                    quantityInput.focus();
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Écouteur pour la touche Entrée
+            quantityInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const quantity = parseInt(this.value);
+
+                    if (isNaN(quantity) || quantity < 0) {
+                        showError("La quantité doit être un nombre positif.");
+                        this.value = 1;
+                        this.focus();
+                    } else if (quantity > 99) {
+                        showError("La quantité maximale autorisée est 99.");
+                        this.value = 99;
+                        this.focus();
+                    } else {
+                        this.form.submit();
+                    }
+                }
+            });
+
+            // Écouteur pour le 'change' (correction visuelle uniquement)
+            quantityInput.addEventListener('change', function() {
+                let quantity = parseInt(this.value);
+                if (isNaN(quantity) || quantity < 0) {
+                    this.value = 1;
+                } else if (quantity > 99) {
+                    this.value = 99;
+                }
+            });
+        });
+    });
 </script>
+
+
