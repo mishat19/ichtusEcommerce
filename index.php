@@ -2,18 +2,112 @@
 
 require_once 'model/model.php';
 
+session_start();
 $_SESSION['idClient'] = 1;
 
+/* ───────── CONTROLLERS ───────── */
 require_once 'controller/c-accueil.php';
 require_once 'controller/c-produit.php';
 require_once 'controller/c-panier.php';
+require_once 'controller/c-profil.php';
+require_once 'controller/c-commandes.php';
+require_once 'controller/c-parcours-commande.php';
 
-if(isset($_GET['page']) && $_GET['page']){
-    switch ($_GET['page']) {
-        case 'produit': produit(); break;
-        case 'panier': panier(); break;
-        default: accueil(); break;
-    }
-}else{
-    accueil();
+/* ───────── ROUTEUR ───────── */
+
+// URL propre
+$url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$url = rtrim($url, '/');
+
+// Découpage de l'URL
+$segments = explode('/', trim($url, '/'));
+
+// Exemple :
+// /produit/pate-fruit → ['produit', 'pate-fruit']
+
+$page = $segments[0] ?? 'accueil';
+$param = $segments[1] ?? null;
+
+/* ══════════════════════════════════════════════
+ * ROUTES
+ * ══════════════════════════════════════════════ */
+
+switch ($page) {
+
+    /* ───────── ACCUEIL ───────── */
+    case '':
+    case 'accueil':
+        accueil();
+        break;
+
+    /* ───────── PRODUIT ───────── */
+    case 'produit':
+        if ($param) {
+            $_GET['identifiant'] = $param;
+        }
+        produit();
+        break;
+
+    /* ───────── PANIER ───────── */
+    case 'panier':
+        panier();
+        break;
+
+    /* ───────── PROFIL ───────── */
+    case 'profil':
+
+        if (isset($segments[1])) {
+
+            // /profil/ajouter-adresse
+            if ($segments[1] === 'ajouter-adresse') {
+                ajouterAdresse();
+                break;
+            }
+
+            // /profil/modifier-adresse
+            if ($segments[1] === 'modifier-adresse') {
+                modifierAdresse();
+                break;
+            }
+
+            // /profil/adresse/12
+            if ($segments[1] === 'adresse' && isset($segments[2])) {
+                $_GET['id'] = $segments[2];
+                getAdresseJson();
+                break;
+            }
+        }
+
+        profil();
+        break;
+
+    /* ───────── COMMANDES ───────── */
+    case 'commandes':
+        commandes();
+        break;
+
+    case 'commande-recap':
+        commandeRecap();
+        break;
+
+    case 'commande-adresses':
+        commandeAdresses();
+        break;
+
+    case 'commande-paiement':
+        commandePaiement();
+        break;
+
+    case 'commande-finaliser':
+        commandeFinaliser();
+        break;
+
+    case 'commande-confirmation':
+        commandeConfirmation();
+        break;
+
+    /* ───────── DEFAULT ───────── */
+    default:
+        accueil();
+        break;
 }

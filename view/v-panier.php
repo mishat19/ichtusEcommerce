@@ -9,6 +9,11 @@
         </a>
     </div>
 
+    adresse
+    complement
+    code_postal
+    ville
+
     <!-- Message si le panier est vide -->
     <?php if ($panier['nb_lignes'] == 0): ?>
         <div class="alert alert-info text-center">

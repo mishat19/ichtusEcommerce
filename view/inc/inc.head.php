@@ -12,6 +12,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary-color: #8B4513;
@@ -32,6 +33,24 @@
             background-size: cover;
             color: white;
             padding: 150px 0;
+        }
+        /* Alignement de la croix de fermeture dans les alertes */
+        #error-container .alert {
+            position: relative;
+            padding-right: 3rem; /* Espace pour la croix */
+            border-radius: 0.5rem;
+            border-left: 4px solid #dc3545;
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        #error-container .btn-close {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%); /* Centre verticalement */
+            padding: 0.5rem;
+            margin: 0;
         }
         .product-card {
             transition: transform 0.3s;

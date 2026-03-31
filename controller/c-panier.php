@@ -3,7 +3,8 @@
 /* ══════════════════════════════════════════════
  *  CONTROLLER PANIER
  * ══════════════════════════════════════════════ */
-function panier() {
+function panier(): void
+{
     global $pdo;
 
     if (session_status() === PHP_SESSION_NONE) {
@@ -28,6 +29,16 @@ function panier() {
         elseif (isset($_POST['id_ligne']) && $_POST['id_ligne']) {
             supprimerLigne((int)$_POST['id_ligne']);
         }
+
+        /* ══════════════════════════════════════════════
+         *  ✅ VALIDER LA COMMANDE
+         * ══════════════════════════════════════════════ */
+        elseif (isset($_POST['valider_commande'])) {
+            //validerCommande();
+            header('Location: /commande-recap');
+            exit;
+        }
+
 
         header('Location: /panier');
         exit;
@@ -106,7 +117,8 @@ function verifPanier() {
 /* ══════════════════════════════════════════════
  *  ➕ AJOUT PRODUIT
  * ══════════════════════════════════════════════ */
-function ajouterProduitDansPanier(int $idProduit, int $quantite) {
+function ajouterProduitDansPanier(int $idProduit, int $quantite): void
+{
     global $pdo;
 
     if ($quantite < 1) return;
@@ -233,3 +245,146 @@ function getNombreArticlesDansPanier(): int
 
     return (int)($result['nb_articles'] ?? 0);
 }
+
+function validerCommande() {
+    global $pdo;
+
+    // 1. Vérifie que l'utilisateur est connecté
+    if (!isset($_SESSION['idClient'])) {
+        header('Location: /connexion');
+        exit;
+    }
+
+    $idClient = $_SESSION['idClient'];
+    $idPanier = verifPanier();
+
+    // Vérifie si l'utilisateur a des adresses
+    $adressesFacturation = getAdressesByType($idClient, 'facturation')[0]['id'] ?? null;
+    $adressesLivraison   = getAdressesByType($idClient, 'livraison')[0]['id'] ?? null;
+
+    if (empty($adressesFacturation) || empty($adressesLivraison)) {
+        $_SESSION['erreur'] = "Veuillez renseigner vos adresses de facturation et de livraison dans votre profil.";
+        header('Location: /profil');
+        exit;
+    }
+
+    // 3. Récupère les produits du panier
+    $stmtPanier = $pdo->prepare("
+        SELECT pp.id_produit, pp.quantite, p.prix_ht, p.id_tva, t.taux
+        FROM panier_produit pp
+        JOIN produit p ON p.id = pp.id_produit
+        JOIN tva t ON t.id = p.id_tva
+        WHERE pp.id_panier = ?
+    ");
+    $stmtPanier->execute([$idPanier]);
+    $lignesPanier = $stmtPanier->fetchAll(PDO::FETCH_ASSOC);
+
+    if (empty($lignesPanier)) {
+        $_SESSION['erreur'] = "Votre panier est vide.";
+        header('Location: /panier');
+        exit;
+    }
+
+    // 4. Calcule le total TTC
+    $totalTTC = 0;
+    foreach ($lignesPanier as $ligne) {
+        $totalTTC += $ligne['prix_ht'] * $ligne['quantite'] * (1 + $ligne['taux'] / 100);
+    }
+
+    // 5. Génère un numéro de facture
+    $numeroFacture = 'FACT-' . date('Ymd') . '-' . strtoupper(uniqid());
+
+    // 6. Crée la commande avec les adresses de session
+    $stmtCommande = $pdo->prepare("
+        INSERT INTO commande (
+            id_client, numero_facture, total_ttc, id_adresse_facturation, id_adresse_livraison, date_commande
+        )
+        VALUES (?, ?, ?, ?, ?, NOW())
+    ");
+    $stmtCommande->execute([
+        $idClient,
+        $numeroFacture,
+        $totalTTC,
+        getAdressesByType($_SESSION['idClient'], 'facturation'),
+        getAdressesByType($_SESSION['idClient'], 'livraison'),
+    ]);
+
+    $idCommande = $pdo->lastInsertId();
+
+    // 7. Ajoute les produits à la commande
+    foreach ($lignesPanier as $ligne) {
+        $stmtProduit = $pdo->prepare("
+            INSERT INTO commande_produit (
+                id_commande, id_produit, prix_ht, taux_tva, quantite
+            )
+            VALUES (?, ?, ?, ?, ?)
+        ");
+        $stmtProduit->execute([
+            $idCommande,
+            $ligne['id_produit'],
+            $ligne['prix_ht'],
+            $ligne['taux'],
+            $ligne['quantite']
+        ]);
+    }
+
+    // 8. Vide le panier
+    $pdo->prepare("DELETE FROM panier_produit WHERE id_panier = ?")->execute([$idPanier]);
+
+    // 9. Retourne l'ID de la commande
+    return $idCommande;
+}
+
+// Récupère les lignes du panier
+function getLignesPanier($idPanier) {
+    global $pdo;
+    $stmt = $pdo->prepare("
+        SELECT pp.id AS id_ligne, pp.quantite,
+               p.id AS id_produit, p.nom, p.identifiant, p.prix_ht, p.image,
+               t.taux AS taux_tva
+        FROM panier_produit pp
+        JOIN produit p ON p.id = pp.id_produit
+        LEFT JOIN tva t ON t.id = p.id_tva
+        WHERE pp.id_panier = ?
+    ");
+    $stmt->execute([$idPanier]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Récupère les totaux du panier
+function getTotauxPanier($idPanier) {
+    global $pdo;
+    $stmt = $pdo->prepare("
+        SELECT
+            COUNT(pp.id) AS nb_lignes,
+            COALESCE(SUM(pp.quantite), 0) AS nb_articles,
+            COALESCE(SUM(p.prix_ht * pp.quantite), 0) AS total_ht,
+            COALESCE(SUM(p.prix_ht * (1 + t.taux/100) * pp.quantite), 0) AS total_ttc
+        FROM panier_produit pp
+        JOIN produit p ON p.id = pp.id_produit
+        LEFT JOIN tva t ON t.id = p.id_tva
+        WHERE pp.id_panier = ?
+    ");
+    $stmt->execute([$idPanier]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+?>
+
+<?php if (isset($_SESSION['erreur']) && strpos($_SESSION['erreur'], 'adresses') !== false): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Adresses manquantes',
+                text: '<?= $_SESSION['erreur'] ?>',
+                confirmButtonText: 'Aller à mon profil',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/profil';
+                }
+            });
+            <?php unset($_SESSION['erreur']); ?>
+        });
+    </script>
+<?php endif; ?>

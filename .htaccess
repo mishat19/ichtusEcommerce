@@ -2,9 +2,12 @@ RewriteEngine On
 
 RewriteBase /
 
+#Ajoute une condition pour que nos url se terminent toujours avec un /
 RewriteCond %{REQUEST_URI} !(/$|\.)
+#Si l'url ne se terminent pas avec un / alors on fait une redirection pour rediriger avec un /
 RewriteRule (.*) %{REQUEST_URI}/ [R=301,L]
 
+#Ajoute une règle pour que la page d'accueil soit sur l'url https://b2-gp97.kevinpecro.info/
 RewriteRule ^$ index.php?page=accueil
 #https://b2-gp97.kevinpecro.info/produit/
 RewriteRule ^([a-zA-Z]+)/$ index.php?page=$1
