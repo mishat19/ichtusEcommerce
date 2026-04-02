@@ -11,47 +11,35 @@ function paiement(): void
         exit;
     }
 
-    if (!isset($_SESSION['commande']) || !is_array($_SESSION['commande'])) {
-        $_SESSION['commande'] = [];
-    }
-
-    $_SESSION['commande']['adresse_facturation'] = $adressesFacturation;
-    $_SESSION['commande']['adresse_livraison'] = $adressesLivraison;
-
-    $idPanier = verifPanier();
+    // ✅ Création commande
     $idCommande = creerCommande();
-    $panier = getTotalCommande($idCommande);
 
-    // 🔐 Identifiants fournis
+    // ✅ On récupère directement la commande (pas le panier !)
+    $commande = getCommandeById($idCommande);
+
+    // 🔐 CONFIG PAIEMENT
     $PBX_SITE       = "3277512";
     $PBX_RANG       = "001";
     $PBX_IDENTIFIANT= "38023694";
 
-    // getTotauxPanier retourne le total TTC en centimes (stocké dans produit.prix_ht)
-    // PBX attend le montant en centimes : on prend directement la valeur
-    $PBX_TOTAL = (int) ($panier['total_ttc'] ?? 0);
-    $PBX_DEVISE     = "978";  // EUR
+    // ✅ On utilise le total de la commande
+    $PBX_TOTAL = (int) ($commande['total_ttc'] * 100); // si stocké en euros
 
+    $PBX_DEVISE = "978";
     $PBX_CMD = "25gp1-" . $idCommande;
-
     $PBX_PORTEUR = "test@test.com";
-
     $PBX_RETOUR = "Mt:M;Ref:R;Auto:A;Erreur:E";
 
-    // Utilise le host courant pour construire des URLs compatibles avec le routeur (URL propres)
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $baseUrl = $protocol . '://' . $_SERVER['HTTP_HOST'];
 
-    // Remarques: le routeur utilise des chemins comme /retour-paiement, /ipn
     $PBX_EFFECTUE = "$baseUrl/retour-paiement?status=ok";
     $PBX_REFUSE   = "$baseUrl/retour-paiement?status=refuse";
     $PBX_ANNULE   = "$baseUrl/retour-paiement?status=annule";
-
     $PBX_REPONDRE_A = "$baseUrl/ipn";
 
     $PBX_TIME = date("c");
 
-    /* 🔐 SIGNATURE HMAC */
     $msg = "PBX_SITE=$PBX_SITE".
         "&PBX_RANG=$PBX_RANG".
         "&PBX_IDENTIFIANT=$PBX_IDENTIFIANT".
@@ -67,8 +55,8 @@ function paiement(): void
         "&PBX_TIME=$PBX_TIME";
 
     $key = hex2bin("E7DD686B8817CD0A6772BBB0C744705A6C3814444C15337FF7878EAFDC1CF4BA67ABAC9E92C8BA5C000C187DAA22CFA9C3182D94C22F69698982A285EBAB8846");
-
     $hmac = strtoupper(hash_hmac('sha512', $msg, $key));
+
 
     require_once 'view/inc/inc.head.php';
     require_once 'view/inc/inc.header.php';

@@ -110,6 +110,15 @@ function creerCommande() {
     return $idCommande;
 }
 
+function getCommandeById($idCommande) {
+    global $pdo;
+
+    $stmt = $pdo->prepare("SELECT * FROM commande WHERE id = ?");
+    $stmt->execute([$idCommande]);
+
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
 function paiementAccepte($idCommande) {
     global $pdo;
 
