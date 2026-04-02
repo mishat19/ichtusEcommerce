@@ -77,7 +77,7 @@ function commandePaiement(): void
 }
 
 // Étape 4 : Finalisation de la commande
-function commandeFinaliser() {
+function creerCommande() {
     global $pdo;
 
     if (!isset($_SESSION['idClient']) || !isset($_SESSION['commande'])) {
@@ -90,38 +90,39 @@ function commandeFinaliser() {
     $lignesPanier = getLignesPanier($idPanier);
     $panier = getTotauxPanier($idPanier);
 
-    // 1. Calcule le total TTC
     $totalTTC = $panier['total_ttc'] / 100;
     $fraisLivraison = ($totalTTC >= 50) ? 0 : 4.99;
     $totalFinal = $totalTTC + $fraisLivraison;
 
-    // 2. Génère un numéro de facture
     $numeroFacture = 'FACT-' . date('Ymd') . '-' . strtoupper(uniqid());
 
-    // 3. Crée la commande
-    $stmtCommande = $pdo->prepare("
+    // Création commande
+    $stmt = $pdo->prepare("
         INSERT INTO commande (
             id_client, numero_facture, total_ttc,
-            id_adresse_facturation, id_adresse_livraison, date_commande
-        ) VALUES (?, ?, ?, ?, ?, NOW())
+            id_adresse_facturation, id_adresse_livraison, date_commande, statut
+        ) VALUES (?, ?, ?, ?, ?, NOW(), ?)
     ");
-    $stmtCommande->execute([
+
+    $stmt->execute([
         $idClient,
         $numeroFacture,
         $totalFinal,
         $_SESSION['commande']['adresse_facturation'],
-        $_SESSION['commande']['adresse_livraison']
+        $_SESSION['commande']['adresse_livraison'],
+        'en_attente',
     ]);
 
     $idCommande = $pdo->lastInsertId();
 
-    // 4. Ajoute les produits à la commande
+    // Produits
     foreach ($lignesPanier as $ligne) {
         $stmtProduit = $pdo->prepare("
             INSERT INTO commande_produit (
                 id_commande, id_produit, prix_ht, taux_tva, quantite
             ) VALUES (?, ?, ?, ?, ?)
         ");
+
         $stmtProduit->execute([
             $idCommande,
             $ligne['id_produit'],
@@ -131,34 +132,55 @@ function commandeFinaliser() {
         ]);
     }
 
-    // 5. Vide le panier
-    $pdo->prepare("DELETE FROM panier_produit WHERE id_panier = ?")->execute([$idPanier]);
+    return $idCommande;
+}
 
-    // 6. Nettoie les adresses inutilisées (voir fonction ci-dessous)
-    nettoyerAdressesInutilisees($idClient);
+function paiementAccepte($idCommande) {
+    global $pdo;
 
-    // 7. Stocke l'ID de la commande pour la page de confirmation
+    $idPanier = verifPanier();
+
+    // Vider panier
+    $pdo->prepare("DELETE FROM panier_produit WHERE id_panier = ?")
+        ->execute([$idPanier]);
+
+    // Nettoyage
+    nettoyerAdressesInutilisees($_SESSION['idClient']);
+
+    // Stock session
     $_SESSION['commande']['id'] = $idCommande;
-    $_SESSION['commande']['numero'] = $numeroFacture;
+}
 
-    header('Location: /commande-confirmation');
-    exit;
+function paiementRefuse($idCommande) {
+    global $pdo;
+
+    // Supprimer produits commande
+    $pdo->prepare("DELETE FROM commande_produit WHERE id_commande = ?")
+        ->execute([$idCommande]);
+
+    // Supprimer commande
+    $pdo->prepare("DELETE FROM commande WHERE id = ?")
+        ->execute([$idCommande]);
 }
 
 // Page de confirmation
 function commandeConfirmation(): void
 {
+    global $param;
+
     if (!isset($_SESSION['commande']['id'])) {
         header('Location: /panier');
         exit;
     }
+
+    // 🔥 état du paiement
+    $etat = $param ?? 'confirme';
 
     require_once 'view/inc/inc.head.php';
     require_once 'view/inc/inc.header.php';
     require_once 'view/commande/v-commande-confirmation.php';
     require_once 'view/inc/inc.footer.php';
 
-    // Nettoie la session après affichage
     unset($_SESSION['commande']);
 }
 

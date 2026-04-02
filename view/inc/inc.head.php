@@ -110,6 +110,56 @@
         .search-bar {
             width: 200px;
         }
+
+        /* Style pour les étapes */
+        .step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+        .step.active .step-icon {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .step.completed .step-icon {
+            background-color: #198754;
+            color: white;
+        }
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-weight: bold;
+        }
+        .step-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .step.active .step-label,
+        .step.completed .step-label {
+            color: #212529;
+            font-weight: 500;
+        }
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+        .step.active::after,
+        .step.completed::after {
+            background-color: #0d6efd;
+        }
+
         @media (max-width: 768px) {
             .footer-column {
                 text-align: center;

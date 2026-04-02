@@ -12,6 +12,7 @@ require_once 'controller/c-panier.php';
 require_once 'controller/c-profil.php';
 require_once 'controller/c-commandes.php';
 require_once 'controller/c-parcours-commande.php';
+require_once 'controller/c-paiement.php';
 
 /* ───────── ROUTEUR ───────── */
 
@@ -33,13 +34,6 @@ $param = $segments[1] ?? null;
  * ══════════════════════════════════════════════ */
 
 switch ($page) {
-
-    /* ───────── ACCUEIL ───────── */
-    case '':
-    case 'accueil':
-        accueil();
-        break;
-
     /* ───────── PRODUIT ───────── */
     case 'produit':
         if ($param) {
@@ -86,23 +80,27 @@ switch ($page) {
         commandes();
         break;
 
-    case 'commande-recap':
+    case 'recapitulatif':
         commandeRecap();
         break;
 
-    case 'commande-adresses':
+    case 'adresses':
         commandeAdresses();
         break;
 
-    case 'commande-paiement':
-        commandePaiement();
+    case 'paiement':
+        paiement();
         break;
 
-    case 'commande-finaliser':
-        commandeFinaliser();
+    case 'retour-paiement':
+        retourPaiement();
         break;
 
-    case 'commande-confirmation':
+    case 'ipn':
+        ipnPaiement();
+        break;
+
+    case 'confirmation':
         commandeConfirmation();
         break;
 

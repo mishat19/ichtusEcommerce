@@ -1,7 +1,8 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10">
-            <!-- Étapes de la commande (même code que précédemment) -->
+
+            <!-- Étapes de la commande -->
             <div class="d-flex justify-content-between mb-5">
                 <div class="step">
                     <div class="step-icon">1</div>
@@ -23,7 +24,8 @@
 
             <h2 class="mb-4">Adresses de livraison et facturation</h2>
 
-            <form method="POST" action="/commande-paiement">
+            <form method="POST" action="/paiement">
+
                 <!-- Adresse de facturation -->
                 <div class="card mb-4">
                     <div class="card-header bg-light">
@@ -40,9 +42,12 @@
                         <?php else:
                             foreach ($adressesFacturation as $adresse): ?>
                                 <div class="form-check mb-3 p-3 border rounded">
-                                    <input class="form-check-input" type="radio" name="id_adresse_facturation"
-                                           id="facturation-<?= $adresse['id'] ?>" value="<?= $adresse['id'] ?>"
-                                        <?= empty($selectedFacturation) && $adresse['est_par_defaut'] ? 'checked' : '' ?>>
+                                    <input class="form-check-input" type="radio"
+                                           name="id_adresse_facturation"
+                                           id="facturation-<?= $adresse['id'] ?>"
+                                           value="<?= $adresse['id'] ?>"
+                                            <?= (!empty($selectedFacturation) && $selectedFacturation == $adresse['id']) ? 'checked' : '' ?>>
+
                                     <label class="form-check-label" for="facturation-<?= $adresse['id'] ?>">
                                         <strong><?= htmlspecialchars($adresse['prenom'] . ' ' . $adresse['nom']) ?></strong><br>
                                         <?= htmlspecialchars($adresse['adresse']) ?><br>
@@ -72,9 +77,12 @@
                         <?php else:
                             foreach ($adressesLivraison as $adresse): ?>
                                 <div class="form-check mb-3 p-3 border rounded">
-                                    <input class="form-check-input" type="radio" name="id_adresse_livraison"
-                                           id="livraison-<?= $adresse['id'] ?>" value="<?= $adresse['id'] ?>"
-                                        <?= empty($selectedLivraison) && $adresse['est_par_defaut'] ? 'checked' : '' ?>>
+                                    <input class="form-check-input" type="radio"
+                                           name="id_adresse_livraison"
+                                           id="livraison-<?= $adresse['id'] ?>"
+                                           value="<?= $adresse['id'] ?>"
+                                            <?= (!empty($selectedLivraison) && $selectedLivraison == $adresse['id']) ? 'checked' : '' ?>>
+
                                     <label class="form-check-label" for="livraison-<?= $adresse['id'] ?>">
                                         <strong><?= htmlspecialchars($adresse['prenom'] . ' ' . $adresse['nom']) ?></strong><br>
                                         <?= htmlspecialchars($adresse['adresse']) ?><br>
@@ -90,14 +98,16 @@
 
                 <!-- Boutons de navigation -->
                 <div class="d-flex justify-content-between">
-                    <a href="/commande/recapitulatif" class="btn btn-outline-secondary">
+                    <a href="/recapitulatif" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left me-2"></i> Retour
                     </a>
                     <button type="submit" class="btn btn-primary">
                         Continuer vers le paiement <i class="fas fa-arrow-right ms-2"></i>
                     </button>
                 </div>
+
             </form>
+
         </div>
     </div>
 </div>

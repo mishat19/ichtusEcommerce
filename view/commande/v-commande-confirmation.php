@@ -1,58 +1,56 @@
+<?php
+$icon = "fa-check-circle text-success";
+$titre = "Commande confirmée";
+$message = "Votre paiement a été accepté.";
+
+if ($etat === "refuse") {
+    $icon = "fa-times-circle text-danger";
+    $titre = "Paiement refusé";
+    $message = "Votre paiement a été refusé.";
+}
+
+if ($etat === "annule") {
+    $icon = "fa-exclamation-circle text-warning";
+    $titre = "Paiement annulé";
+    $message = "Votre paiement a été annulé.";
+}
+?>
+
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="text-center mb-5">
-                <div class="mb-3">
-                    <i class="fas fa-check-circle text-success fa-4x"></i>
-                </div>
-                <h2 class="mb-3">Merci pour votre commande !</h2>
-                <p class="lead">
-                    Votre commande n°<strong><?= htmlspecialchars($_SESSION['commande']['numero']) ?></strong>
-                    a été enregistrée avec succès.
-                </p>
+        <div class="col-lg-10">
+
+            <!-- STEPS -->
+            <div class="d-flex justify-content-between mb-5">
+                <div class="step"><div class="step-icon">1</div><div class="step-label">Récapitulatif</div></div>
+                <div class="step"><div class="step-icon">2</div><div class="step-label">Adresses</div></div>
+                <div class="step"><div class="step-icon">3</div><div class="step-label">Paiement</div></div>
+                <div class="step active"><div class="step-icon">4</div><div class="step-label">Confirmation</div></div>
             </div>
 
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Récapitulatif de votre commande</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-4">
-                        <h6>Adresse de facturation</h6>
-                        <?php
-                        $adresseFacturation = getAdresseById($_SESSION['commande']['adresse_facturation']);
-                        if ($adresseFacturation): ?>
-                            <p class="mb-0">
-                                <strong><?= htmlspecialchars($adresseFacturation['prenom'] . ' ' . $adresseFacturation['nom']) ?></strong><br>
-                                <?= htmlspecialchars($adresseFacturation['adresse']) ?><br>
-                                <?= htmlspecialchars($adresseFacturation['complement']) ?><br>
-                                <?= htmlspecialchars($adresseFacturation['code_postal'] . ' ' . $adresseFacturation['ville']) ?><br>
-                                <?= htmlspecialchars($adresseFacturation['telephone']) ?>
-                            </p>
-                        <?php endif; ?>
-                    </div>
+            <!-- CONTENU -->
+            <div class="card text-center p-5">
+                <i class="fas <?= $icon ?> fa-4x mb-3"></i>
+                <h2><?= $titre ?></h2>
+                <p class="lead"><?= $message ?></p>
 
-                    <div class="mb-4">
-                        <h6>Adresse de livraison</h6>
-                        <?php
-                        $adresseLivraison = getAdresseById($_SESSION['commande']['adresse_livraison']);
-                        if ($adresseLivraison): ?>
-                            <p class="mb-0">
-                                <strong><?= htmlspecialchars($adresseLivraison['prenom'] . ' ' . $adresseLivraison['nom']) ?></strong><br>
-                                <?= htmlspecialchars($adresseLivraison['adresse']) ?><br>
-                                <?= htmlspecialchars($adresseLivraison['complement']) ?><br>
-                                <?= htmlspecialchars($adresseLivraison['code_postal'] . ' ' . $adresseLivraison['ville']) ?><br>
-                                <?= htmlspecialchars($adresseLivraison['telephone']) ?>
-                            </p>
-                        <?php endif; ?>
-                    </div>
+                <?php if ($etat === "confirme"): ?>
+                    <p>
+                        Commande n° <strong><?= htmlspecialchars($_SESSION['commande']['numero']) ?></strong>
+                    </p>
+                <?php endif; ?>
 
-                    <div class="d-grid gap-2">
-                        <a href="/accueil" class="btn btn-primary">Retour à l'accueil</a>
-                        <a href="/commandes" class="btn btn-outline-secondary">Voir mes commandes</a>
-                    </div>
+                <div class="mt-4">
+                    <?php if ($etat !== "confirme"): ?>
+                        <a href="/recapitulatif" class="btn btn-warning">Réessayer</a>
+                    <?php else: ?>
+                        <a href="/commandes" class="btn btn-primary">Mes commandes</a>
+                    <?php endif; ?>
+
+                    <a href="/accueil" class="btn btn-outline-secondary">Accueil</a>
                 </div>
             </div>
+
         </div>
     </div>
 </div>

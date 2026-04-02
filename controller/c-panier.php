@@ -35,7 +35,7 @@ function panier(): void
          * ══════════════════════════════════════════════ */
         elseif (isset($_POST['valider_commande'])) {
             //validerCommande();
-            header('Location: /commande-recap');
+            header('Location: /recapitulatif');
             exit;
         }
 
@@ -244,95 +244,6 @@ function getNombreArticlesDansPanier(): int
     $result = $stmtArticles->fetch(PDO::FETCH_ASSOC);
 
     return (int)($result['nb_articles'] ?? 0);
-}
-
-function validerCommande() {
-    global $pdo;
-
-    // 1. Vérifie que l'utilisateur est connecté
-    if (!isset($_SESSION['idClient'])) {
-        header('Location: /connexion');
-        exit;
-    }
-
-    $idClient = $_SESSION['idClient'];
-    $idPanier = verifPanier();
-
-    // Vérifie si l'utilisateur a des adresses
-    $adressesFacturation = getAdressesByType($idClient, 'facturation')[0]['id'] ?? null;
-    $adressesLivraison   = getAdressesByType($idClient, 'livraison')[0]['id'] ?? null;
-
-    if (empty($adressesFacturation) || empty($adressesLivraison)) {
-        $_SESSION['erreur'] = "Veuillez renseigner vos adresses de facturation et de livraison dans votre profil.";
-        header('Location: /profil');
-        exit;
-    }
-
-    // 3. Récupère les produits du panier
-    $stmtPanier = $pdo->prepare("
-        SELECT pp.id_produit, pp.quantite, p.prix_ht, p.id_tva, t.taux
-        FROM panier_produit pp
-        JOIN produit p ON p.id = pp.id_produit
-        JOIN tva t ON t.id = p.id_tva
-        WHERE pp.id_panier = ?
-    ");
-    $stmtPanier->execute([$idPanier]);
-    $lignesPanier = $stmtPanier->fetchAll(PDO::FETCH_ASSOC);
-
-    if (empty($lignesPanier)) {
-        $_SESSION['erreur'] = "Votre panier est vide.";
-        header('Location: /panier');
-        exit;
-    }
-
-    // 4. Calcule le total TTC
-    $totalTTC = 0;
-    foreach ($lignesPanier as $ligne) {
-        $totalTTC += $ligne['prix_ht'] * $ligne['quantite'] * (1 + $ligne['taux'] / 100);
-    }
-
-    // 5. Génère un numéro de facture
-    $numeroFacture = 'FACT-' . date('Ymd') . '-' . strtoupper(uniqid());
-
-    // 6. Crée la commande avec les adresses de session
-    $stmtCommande = $pdo->prepare("
-        INSERT INTO commande (
-            id_client, numero_facture, total_ttc, id_adresse_facturation, id_adresse_livraison, date_commande
-        )
-        VALUES (?, ?, ?, ?, ?, NOW())
-    ");
-    $stmtCommande->execute([
-        $idClient,
-        $numeroFacture,
-        $totalTTC,
-        getAdressesByType($_SESSION['idClient'], 'facturation'),
-        getAdressesByType($_SESSION['idClient'], 'livraison'),
-    ]);
-
-    $idCommande = $pdo->lastInsertId();
-
-    // 7. Ajoute les produits à la commande
-    foreach ($lignesPanier as $ligne) {
-        $stmtProduit = $pdo->prepare("
-            INSERT INTO commande_produit (
-                id_commande, id_produit, prix_ht, taux_tva, quantite
-            )
-            VALUES (?, ?, ?, ?, ?)
-        ");
-        $stmtProduit->execute([
-            $idCommande,
-            $ligne['id_produit'],
-            $ligne['prix_ht'],
-            $ligne['taux'],
-            $ligne['quantite']
-        ]);
-    }
-
-    // 8. Vide le panier
-    $pdo->prepare("DELETE FROM panier_produit WHERE id_panier = ?")->execute([$idPanier]);
-
-    // 9. Retourne l'ID de la commande
-    return $idCommande;
 }
 
 // Récupère les lignes du panier
