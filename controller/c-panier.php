@@ -279,6 +279,19 @@ function getTotauxPanier($idPanier) {
     $stmt->execute([$idPanier]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
+
+function getTotalCommande($idCommande){
+    global $pdo;
+
+    $stmt = $pdo->prepare("
+        SELECT
+            total_ttc
+        FROM commande
+        WHERE id = ?
+    ");
+    $stmt->execute([$idCommande]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 ?>
 
 <?php if (isset($_SESSION['erreur']) && strpos($_SESSION['erreur'], 'adresses') !== false): ?>

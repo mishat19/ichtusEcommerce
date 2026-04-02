@@ -30,16 +30,6 @@ function commandeAdresses(): void
         exit;
     }
 
-    // Vérifie si l'utilisateur a des adresses
-    $adressesFacturation = getAdressesByType($_SESSION['idClient'], 'facturation');
-    $adressesLivraison = getAdressesByType($_SESSION['idClient'], 'livraison');
-
-    if (empty($adressesFacturation) || empty($adressesLivraison)) {
-        $_SESSION['erreur'] = "Veuillez renseigner vos adresses de facturation et de livraison dans votre profil.";
-        header('Location: /profil');
-        exit;
-    }
-
     require_once 'view/inc/inc.head.php';
     require_once 'view/inc/inc.header.php';
     require_once 'view/commande/v-commande-adresses.php';
@@ -49,31 +39,7 @@ function commandeAdresses(): void
 // Étape 3 : Paiement
 function commandePaiement(): void
 {
-    global $pdo;
-
-    if (!isset($_SESSION['idClient']) || !isset($_POST['id_adresse_facturation'], $_POST['id_adresse_livraison'])) {
-        header('Location: /commande-recap');
-        exit;
-    }
-
-    $idPanier = verifPanier();
-    $lignes_panier = getLignesPanier($idPanier);
-    $panier = getTotauxPanier($idPanier);
-
-    if (empty($lignes_panier)) {
-        $_SESSION['erreur'] = "Votre panier est vide.";
-        header('Location: /panier');
-        exit;
-    }
-
-    // Stocke les IDs d'adresse en session pour la finalisation
-    $_SESSION['commande']['adresse_facturation'] = $_POST['id_adresse_facturation'];
-    $_SESSION['commande']['adresse_livraison'] = $_POST['id_adresse_livraison'];
-
-    require_once 'view/inc/inc.head.php';
-    require_once 'view/inc/inc.header.php';
-    require_once 'view/commande/v-commande-paiement.php';
-    require_once 'view/inc/inc.footer.php';
+    paiement();
 }
 
 // Étape 4 : Finalisation de la commande
@@ -92,7 +58,7 @@ function creerCommande() {
 
     $totalTTC = $panier['total_ttc'] / 100;
     $fraisLivraison = ($totalTTC >= 50) ? 0 : 4.99;
-    $totalFinal = $totalTTC + $fraisLivraison;
+    $totalFinal = round($totalTTC + $fraisLivraison, 2);
 
     $numeroFacture = 'FACT-' . date('Ymd') . '-' . strtoupper(uniqid());
 
@@ -104,12 +70,21 @@ function creerCommande() {
         ) VALUES (?, ?, ?, ?, ?, NOW(), ?)
     ");
 
+    $adresseFact = (int) $_SESSION['commande']['adresse_facturation'][0]['id'];
+    $adresseLivr = (int) $_SESSION['commande']['adresse_livraison'][0]['id'];
+
+    if (empty($adresseFact) || empty($adresseLivr)) {
+        $_SESSION['erreur'] = "Adresses manquantes. Veuillez sélectionner vos adresses.";
+        header('Location: /adresses');
+        exit;
+    }
+
     $stmt->execute([
         $idClient,
         $numeroFacture,
         $totalFinal,
-        $_SESSION['commande']['adresse_facturation'],
-        $_SESSION['commande']['adresse_livraison'],
+        $adresseFact,
+        $adresseLivr,
         'en_attente',
     ]);
 

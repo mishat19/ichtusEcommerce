@@ -89,7 +89,7 @@ switch ($page) {
         break;
 
     case 'paiement':
-        paiement();
+        commandePaiement();
         break;
 
     case 'retour-paiement':

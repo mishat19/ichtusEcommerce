@@ -2,33 +2,52 @@
 
 function paiement(): void
 {
+    $adressesFacturation = getAdressesByType($_SESSION['idClient'], 'facturation');
+    $adressesLivraison = getAdressesByType($_SESSION['idClient'], 'livraison');
+
+    if (empty($adressesFacturation) || empty($adressesLivraison)) {
+        $_SESSION['erreur'] = "Veuillez sélectionner une adresse de facturation et de livraison.";
+        header('Location: /adresses');
+        exit;
+    }
+
+    if (!isset($_SESSION['commande']) || !is_array($_SESSION['commande'])) {
+        $_SESSION['commande'] = [];
+    }
+
+    $_SESSION['commande']['adresse_facturation'] = $adressesFacturation;
+    $_SESSION['commande']['adresse_livraison'] = $adressesLivraison;
+
     $idPanier = verifPanier();
-    $panier = getTotauxPanier($idPanier);
+    $idCommande = creerCommande();
+    $panier = getTotalCommande($idCommande);
 
     // 🔐 Identifiants fournis
     $PBX_SITE       = "3277512";
     $PBX_RANG       = "001";
     $PBX_IDENTIFIANT= "38023694";
 
-    $montantTTC = $panier['total_ttc'] ?? 0;
-
-    $PBX_TOTAL = (int) round($montantTTC * 100); //en centimes
+    // getTotauxPanier retourne le total TTC en centimes (stocké dans produit.prix_ht)
+    // PBX attend le montant en centimes : on prend directement la valeur
+    $PBX_TOTAL = (int) ($panier['total_ttc'] ?? 0);
     $PBX_DEVISE     = "978";  // EUR
 
-    $idCommande = creerCommande();
     $PBX_CMD = "25gp1-" . $idCommande;
 
     $PBX_PORTEUR = "test@test.com";
 
     $PBX_RETOUR = "Mt:M;Ref:R;Auto:A;Erreur:E";
 
-    $baseUrl = "https://b2-gp97.kevinpecro.info";
+    // Utilise le host courant pour construire des URLs compatibles avec le routeur (URL propres)
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $baseUrl = $protocol . '://' . $_SERVER['HTTP_HOST'];
 
-    $PBX_EFFECTUE = "$baseUrl/index.php?page=retour-paiement&status=ok";
-    $PBX_REFUSE   = "$baseUrl/index.php?page=retour-paiement&status=refuse";
-    $PBX_ANNULE   = "$baseUrl/index.php?page=retour-paiement&status=annule";
+    // Remarques: le routeur utilise des chemins comme /retour-paiement, /ipn
+    $PBX_EFFECTUE = "$baseUrl/retour-paiement?status=ok";
+    $PBX_REFUSE   = "$baseUrl/retour-paiement?status=refuse";
+    $PBX_ANNULE   = "$baseUrl/retour-paiement?status=annule";
 
-    $PBX_REPONDRE_A = "$baseUrl/index.php?page=ipn";
+    $PBX_REPONDRE_A = "$baseUrl/ipn";
 
     $PBX_TIME = date("c");
 
@@ -59,9 +78,11 @@ function paiement(): void
 
 function retourPaiement()
 {
-    $erreur = $_GET['Erreur'] ?? null;
-    $status = $_GET['status'] ?? null;
+    // La banque peut renvoyer via POST (ou GET selon le mode) : on lit les deux
+    $erreur = $_POST['Erreur'] ?? ($_GET['Erreur'] ?? null);
+    $status = $_POST['status'] ?? ($_GET['status'] ?? null);
 
+    // Si la banque fournit une référence et/ou un code erreur, on en tient compte
     if ($erreur === "00000" || $status === "ok") {
         $etat = "confirme";
     } elseif ($erreur === "00001" || $status === "annule") {
@@ -70,8 +91,9 @@ function retourPaiement()
         $etat = "refuse";
     }
 
-    // 🔥 Redirection hors iframe + URL propre
-    echo "<script>window.top.location.href = '/confirmation/$etat';</script>";
+    // Redirection hors iframe vers la page de confirmation avec état en paramètre
+    // Utilise URL propre attendue par le routeur : /confirmation/{etat}
+    echo "<script>if(window.top) window.top.location.href = '/confirmation/" . addslashes($etat) . "'; else window.location.href = '/confirmation/" . addslashes($etat) . "';</script>";
     exit;
 }
 function ipnPaiement(): void
