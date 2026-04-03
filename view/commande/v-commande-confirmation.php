@@ -36,7 +36,7 @@
 
                 <?php if ($etat === "confirme"): ?>
                     <p>
-                        Commande n° <strong><?= htmlspecialchars($_SESSION['commande']['numero']) ?></strong>
+                        Commande n° <strong><?= htmlspecialchars($_SESSION['commande']['numero_facture']) ?></strong>
                     </p>
                 <?php endif; ?>
 
@@ -54,3 +54,10 @@
         </div>
     </div>
 </div>
+
+<script>
+    if (window.top !== window.self) {
+        document.documentElement.style.display = 'none';
+        window.top.location.href = window.self.location.href;
+    }
+</script>

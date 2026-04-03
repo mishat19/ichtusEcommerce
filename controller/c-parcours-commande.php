@@ -126,22 +126,14 @@ function paiementAccepte($idCommande) {
     global $pdo;
 
     $idPanier = verifPanier();
+    $commande = getCommandeById($idCommande);
 
-    // Vider panier
     $pdo->prepare("DELETE FROM panier_produit WHERE id_panier = ?")
         ->execute([$idPanier]);
 
-    // Récupérer commande
-    $commande = getCommandeById($idCommande);
-
-    // Stock session
-    $_SESSION['commande'] = [
-        'id' => $idCommande,
-        'numero' => $commande['numero_facture']
-    ];
-
-    // Nettoyage
     nettoyerAdressesInutilisees($_SESSION['idClient']);
+
+    return $commande;
 }
 
 function paiementRefuse($idCommande) {
@@ -161,7 +153,6 @@ function commandeConfirmation(): void
 {
     global $param;
 
-    // 🔥 état du paiement
     $etat = $param ?? 'confirme';
 
     require_once 'view/inc/inc.head.php';

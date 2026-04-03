@@ -14,6 +14,7 @@ function paiement(): void
     $idCommande = creerCommande();
 
     $commande = getCommandeById($idCommande);
+    $_SESSION['commande'] = $commande;
 
     $PBX_SITE = "3277512";
     $PBX_RANG = "001";
@@ -77,7 +78,6 @@ function retourPaiement(): void
     sleep(1);
 
     header("Location: /confirmation/" . $etat);
-    exit;
 }
 
 function ipnPaiement(): void
@@ -109,7 +109,7 @@ function ipnPaiement(): void
             WHERE id = ?
         ")->execute([$idCommande]);
 
-        paiementAccepte($idCommande);
+        $_SESSION['commande'] = paiementAccepte($idCommande);
     } elseif ($erreur === "00001") {
         $statut = "annule";
 
