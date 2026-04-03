@@ -50,6 +50,7 @@
                         <input type="hidden" name="PBX_DEVISE" value="<?= $PBX_DEVISE ?>">
                         <input type="hidden" name="PBX_CMD" value="<?= $PBX_CMD ?>">
                         <input type="hidden" name="PBX_PORTEUR" value="<?= $PBX_PORTEUR ?>">
+                        <input type="hidden" name="PBX_RUF1" value="POST">
                         <input type="hidden" name="PBX_RETOUR" value="<?= $PBX_RETOUR ?>">
                         <input type="hidden" name="PBX_EFFECTUE" value="<?= $PBX_EFFECTUE ?>">
                         <input type="hidden" name="PBX_REFUSE" value="<?= $PBX_REFUSE ?>">

@@ -30,6 +30,9 @@ function commandeAdresses(): void
         exit;
     }
 
+    $adressesFacturation = getAdressesByType($_SESSION['idClient'], 'facturation');
+    $adressesLivraison   = getAdressesByType($_SESSION['idClient'], 'livraison');
+
     require_once 'view/inc/inc.head.php';
     require_once 'view/inc/inc.header.php';
     require_once 'view/commande/v-commande-adresses.php';

@@ -43,6 +43,7 @@ function paiement(): void
         "&PBX_DEVISE=$PBX_DEVISE" .
         "&PBX_CMD=$PBX_CMD" .
         "&PBX_PORTEUR=$PBX_PORTEUR" .
+        "&PBX_RUF1=POST" .
         "&PBX_RETOUR=$PBX_RETOUR" .
         "&PBX_EFFECTUE=$PBX_EFFECTUE" .
         "&PBX_REFUSE=$PBX_REFUSE" .
@@ -147,13 +148,12 @@ function ipnPaiement(): void
     $pdo->prepare("
         INSERT INTO paiement 
         (id_commande, numero_transaction, montant, statut, date_paiement, code_erreur, moyen_paiement)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, NOW(), ?, ?)
     ")->execute([
         $idCommande,
         $transaction,
         $montant,
         $statut,
-        NOW(),
         $erreur,
         $moyenPaiement
     ]);
