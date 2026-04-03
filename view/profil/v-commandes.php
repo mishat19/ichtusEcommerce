@@ -42,10 +42,6 @@
                     </div>
 
                     <div class="text-end">
-                        <h5 class="mb-0">
-                            <?= number_format($commande['total_ttc'], 2, ',', ' ') ?> €
-                        </h5>
-
                         <span class="badge <?= $badgeClass ?>">
                             <?= $label ?>
                         </span>
@@ -81,7 +77,12 @@
                                     </td>
 
                                     <td class="text-center">
-                                        <?= number_format($produit['prix_ht'] * (1 + $produit['taux_tva'] / 100), 2, ',', ' ') ?> €
+                                        <?= number_format(
+                                                ($produit['prix_ht'] / 100) * (1 + $produit['taux_tva'] / 100),
+                                                2,
+                                                ',',
+                                                ' '
+                                        ) ?> €
                                     </td>
 
                                     <td class="text-center">
@@ -89,12 +90,7 @@
                                     </td>
 
                                     <td class="text-end">
-                                        <?= number_format(
-                                                $produit['prix_ht'] * (1 + $produit['taux_tva'] / 100) * $produit['quantite'],
-                                                2,
-                                                ',',
-                                                ' '
-                                        ) ?> €
+                                        <?= number_format($commande['total_ttc'], 2, ',', ' ') ?> €
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
