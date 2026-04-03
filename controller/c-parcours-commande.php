@@ -46,7 +46,7 @@ function commandePaiement(): void
 function creerCommande() {
     global $pdo;
 
-    if (!isset($_SESSION['idClient']) || !isset($_SESSION['commande'])) {
+    if (!isset($_SESSION['idClient'])) {
         header('Location: /panier');
         exit;
     }
@@ -70,8 +70,8 @@ function creerCommande() {
         ) VALUES (?, ?, ?, ?, ?, NOW(), ?)
     ");
 
-    $adresseFact = (int) $_SESSION['commande']['adresse_facturation'][0]['id'];
-    $adresseLivr = (int) $_SESSION['commande']['adresse_livraison'][0]['id'];
+    $adresseFact = getAdressesByType($_SESSION['idClient'], 'facturation')[0]['id'];
+    $adresseLivr = getAdressesByType($_SESSION['idClient'], 'livraison')[0]['id'];
 
     if (empty($adresseFact) || empty($adresseLivr)) {
         $_SESSION['erreur'] = "Adresses manquantes. Veuillez sélectionner vos adresses.";
@@ -128,11 +128,17 @@ function paiementAccepte($idCommande) {
     $pdo->prepare("DELETE FROM panier_produit WHERE id_panier = ?")
         ->execute([$idPanier]);
 
-    // Nettoyage
-    nettoyerAdressesInutilisees($_SESSION['idClient']);
+    // Récupérer commande
+    $commande = getCommandeById($idCommande);
 
     // Stock session
-    $_SESSION['commande']['id'] = $idCommande;
+    $_SESSION['commande'] = [
+        'id' => $idCommande,
+        'numero' => $commande['numero_facture']
+    ];
+
+    // Nettoyage
+    nettoyerAdressesInutilisees($_SESSION['idClient']);
 }
 
 function paiementRefuse($idCommande) {
@@ -151,11 +157,6 @@ function paiementRefuse($idCommande) {
 function commandeConfirmation(): void
 {
     global $param;
-
-    if (!isset($_SESSION['commande']['id'])) {
-        header('Location: /panier');
-        exit;
-    }
 
     // 🔥 état du paiement
     $etat = $param ?? 'confirme';

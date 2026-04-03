@@ -1,19 +1,19 @@
 <?php
-$icon = "fa-check-circle text-success";
-$titre = "Commande confirmée";
-$message = "Votre paiement a été accepté.";
+    $icon = "fa-check-circle text-success";
+    $titre = "Commande confirmée";
+    $message = "Votre paiement a été accepté.";
 
-if ($etat === "refuse") {
-    $icon = "fa-times-circle text-danger";
-    $titre = "Paiement refusé";
-    $message = "Votre paiement a été refusé.";
-}
+    if ($etat === "refuse") {
+        $icon = "fa-times-circle text-danger";
+        $titre = "Paiement refusé";
+        $message = "Votre paiement a été refusé.";
+    }
 
-if ($etat === "annule") {
-    $icon = "fa-exclamation-circle text-warning";
-    $titre = "Paiement annulé";
-    $message = "Votre paiement a été annulé.";
-}
+    if ($etat === "annule") {
+        $icon = "fa-exclamation-circle text-warning";
+        $titre = "Paiement annulé";
+        $message = "Votre paiement a été annulé.";
+    }
 ?>
 
 <div class="container py-5">

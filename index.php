@@ -93,6 +93,9 @@ switch ($page) {
         break;
 
     case 'retour-paiement':
+        if ($param) {
+            $_GET['retourPaiement'] = $param;
+        }
         retourPaiement();
         break;
 
@@ -101,6 +104,9 @@ switch ($page) {
         break;
 
     case 'confirmation':
+        if ($param) {
+            $_GET['confirmation'] = $param;
+        }
         commandeConfirmation();
         break;
 

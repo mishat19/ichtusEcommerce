@@ -13,3 +13,7 @@ RewriteRule ^$ index.php?page=accueil
 RewriteRule ^([a-zA-Z]+)/$ index.php?page=$1
 #https://b2-gp97.kevinpecro.info/produit/framboise/
 RewriteRule ^([a-zA-Z]+)/([a-z-]+)/$ index.php?page=$1&identifiant=$2
+
+RewriteRule ^paiement/$ index.php?page=paiement [L]
+RewriteRule ^retour-paiement/([a-z]+)/$ index.php?page=retour-paiement&identifiant=$1 [L]
+RewriteRule ^ipn/$ index.php?page=ipn [L]

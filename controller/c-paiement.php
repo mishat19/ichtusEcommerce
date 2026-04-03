@@ -11,47 +11,43 @@ function paiement(): void
         exit;
     }
 
-    // ✅ Création commande
     $idCommande = creerCommande();
 
-    // ✅ On récupère directement la commande (pas le panier !)
     $commande = getCommandeById($idCommande);
 
-    // 🔐 CONFIG PAIEMENT
-    $PBX_SITE       = "3277512";
-    $PBX_RANG       = "001";
-    $PBX_IDENTIFIANT= "38023694";
+    $PBX_SITE = "3277512";
+    $PBX_RANG = "001";
+    $PBX_IDENTIFIANT = "38023694";
 
-    // ✅ On utilise le total de la commande
-    $PBX_TOTAL = (int) ($commande['total_ttc'] * 100); // si stocké en euros
+    $PBX_TOTAL = (int)($commande['total_ttc'] * 100);
 
     $PBX_DEVISE = "978";
     $PBX_CMD = "25gp1-" . $idCommande;
     $PBX_PORTEUR = "test@test.com";
-    $PBX_RETOUR = "Mt:M;Ref:R;Auto:A;Erreur:E";
+    $PBX_RETOUR = "Mt:M;Ref:R;Auto:A;Erreur:E;Sign:K";
 
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $baseUrl = $protocol . '://' . $_SERVER['HTTP_HOST'];
 
-    $PBX_EFFECTUE = "$baseUrl/retour-paiement?status=ok";
-    $PBX_REFUSE   = "$baseUrl/retour-paiement?status=refuse";
-    $PBX_ANNULE   = "$baseUrl/retour-paiement?status=annule";
-    $PBX_REPONDRE_A = "$baseUrl/ipn";
+    $PBX_EFFECTUE = "$baseUrl/retour-paiement/ok/";
+    $PBX_REFUSE = "$baseUrl/retour-paiement/refuse/";
+    $PBX_ANNULE = "$baseUrl/retour-paiement/annule/";
+    $PBX_REPONDRE_A = "$baseUrl/ipn/";
 
     $PBX_TIME = date("c");
 
-    $msg = "PBX_SITE=$PBX_SITE".
-        "&PBX_RANG=$PBX_RANG".
-        "&PBX_IDENTIFIANT=$PBX_IDENTIFIANT".
-        "&PBX_TOTAL=$PBX_TOTAL".
-        "&PBX_DEVISE=$PBX_DEVISE".
-        "&PBX_CMD=$PBX_CMD".
-        "&PBX_PORTEUR=$PBX_PORTEUR".
-        "&PBX_RETOUR=$PBX_RETOUR".
-        "&PBX_EFFECTUE=$PBX_EFFECTUE".
-        "&PBX_REFUSE=$PBX_REFUSE".
-        "&PBX_ANNULE=$PBX_ANNULE".
-        "&PBX_REPONDRE_A=$PBX_REPONDRE_A".
+    $msg = "PBX_SITE=$PBX_SITE" .
+        "&PBX_RANG=$PBX_RANG" .
+        "&PBX_IDENTIFIANT=$PBX_IDENTIFIANT" .
+        "&PBX_TOTAL=$PBX_TOTAL" .
+        "&PBX_DEVISE=$PBX_DEVISE" .
+        "&PBX_CMD=$PBX_CMD" .
+        "&PBX_PORTEUR=$PBX_PORTEUR" .
+        "&PBX_RETOUR=$PBX_RETOUR" .
+        "&PBX_EFFECTUE=$PBX_EFFECTUE" .
+        "&PBX_REFUSE=$PBX_REFUSE" .
+        "&PBX_ANNULE=$PBX_ANNULE" .
+        "&PBX_REPONDRE_A=$PBX_REPONDRE_A" .
         "&PBX_TIME=$PBX_TIME";
 
     $key = hex2bin("E7DD686B8817CD0A6772BBB0C744705A6C3814444C15337FF7878EAFDC1CF4BA67ABAC9E92C8BA5C000C187DAA22CFA9C3182D94C22F69698982A285EBAB8846");
@@ -64,34 +60,33 @@ function paiement(): void
     require_once 'view/inc/inc.footer.php';
 }
 
-function retourPaiement()
+function retourPaiement(): void
 {
-    // La banque peut renvoyer via POST (ou GET selon le mode) : on lit les deux
-    $erreur = $_POST['Erreur'] ?? ($_GET['Erreur'] ?? null);
-    $status = $_POST['status'] ?? ($_GET['status'] ?? null);
+    global $param;
 
-    // Si la banque fournit une référence et/ou un code erreur, on en tient compte
-    if ($erreur === "00000" || $status === "ok") {
-        $etat = "confirme";
-    } elseif ($erreur === "00001" || $status === "annule") {
-        $etat = "annule";
-    } else {
-        $etat = "refuse";
+    $etat = 'refuse';
+
+    if ($param === 'ok') {
+        $etat = 'confirme';
+    } elseif ($param === 'annule') {
+        $etat = 'annule';
     }
 
-    // Redirection hors iframe vers la page de confirmation avec état en paramètre
-    // Utilise URL propre attendue par le routeur : /confirmation/{etat}
-    echo "<script>if(window.top) window.top.location.href = '/confirmation/" . addslashes($etat) . "'; else window.location.href = '/confirmation/" . addslashes($etat) . "';</script>";
+    // 🔥 petite sécurité UX : attendre IPN
+    sleep(1);
+
+    header("Location: /confirmation/" . $etat);
     exit;
 }
+
 function ipnPaiement(): void
 {
     global $pdo;
 
     // 🔥 Données envoyées par la banque
     $commande = $_POST['Ref'] ?? null;
-    $montant  = $_POST['Mt'] ?? 0;
-    $erreur   = $_POST['Erreur'] ?? '99999';
+    $montant = $_POST['Mt'] ?? 0;
+    $erreur = $_POST['Erreur'] ?? '99999';
     $transaction = $_POST['Trans'] ?? 'N/A';
     $moyenPaiement = $_POST['Paiement'] ?? 'CB';
 
@@ -158,7 +153,7 @@ function ipnPaiement(): void
         $transaction,
         $montant,
         $statut,
-        date('Y-m-d H:i:s'),
+        NOW(),
         $erreur,
         $moyenPaiement
     ]);
