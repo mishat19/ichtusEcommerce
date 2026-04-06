@@ -72,7 +72,6 @@
 
                 <div class="row">
                     <?php if (empty($adresses)) : ?>
-
                         <!-- 🟢 Aucune adresse -->
                         <div class="col-md-4">
                             <div class="card border-dashed text-center p-4">
@@ -82,9 +81,7 @@
                                 </button>
                             </div>
                         </div>
-
                     <?php else : ?>
-
                         <!-- 🟢 Liste des adresses -->
                         <?php foreach ($adresses as $adresse) : ?>
                             <div class="col-md-4 mb-3">
@@ -99,12 +96,31 @@
                                         <p class="mb-1"><?= htmlspecialchars($adresse['code_postal']) ?> <?= htmlspecialchars($adresse['ville']) ?></p>
 
                                         <span class="badge bg-secondary">
-                                        <?= htmlspecialchars($adresse['type']) ?>
-                                    </span>
+                                            <?= htmlspecialchars($adresse['type']) ?>
+                                        </span>
 
                                         <?php if ($adresse['est_par_defaut']) : ?>
                                             <span class="badge bg-success">Par défaut</span>
                                         <?php endif; ?>
+
+                                        <!-- Boutons Modifier et Supprimer -->
+                                        <div class="mt-2 d-flex gap-2">
+                                            <form method="POST" style="display:inline;">
+                                                <input type="hidden" name="action" value="edit">
+                                                <input type="hidden" name="id" value="<?= $adresse['id'] ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                    Modifier
+                                                </button>
+                                            </form>
+                                            <form method="POST" style="display:inline;">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="id" value="<?= $adresse['id'] ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette adresse ?')">
+                                                    Supprimer
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -118,54 +134,65 @@
                                 </button>
                             </div>
                         </div>
-
                     <?php endif; ?>
                 </div>
 
                 <!-- 🧾 FORMULAIRE -->
-                <div id="formAdresse" style="display:none;" class="mt-4">
+                <div id="formAdresse" style="display:<?= $adresseEdit ? 'block' : 'none' ?>;" class="mt-4">
                     <form method="POST">
+                        <?php if ($adresseEdit) : ?>
+                            <input type="hidden" name="id" value="<?= $adresseEdit['id'] ?>">
+                        <?php endif; ?>
                         <div class="row">
                             <div class="col-md-6 mb-2">
-                                <input type="text" name="prenom" class="form-control" placeholder="Prénom" required>
+                                <input type="text" name="prenom" class="form-control" placeholder="Prénom"
+                                       value="<?= htmlspecialchars($adresseEdit['prenom'] ?? '') ?>" required>
                             </div>
                             <div class="col-md-6 mb-2">
-                                <input type="text" name="nom" class="form-control" placeholder="Nom" required>
+                                <input type="text" name="nom" class="form-control" placeholder="Nom"
+                                       value="<?= htmlspecialchars($adresseEdit['nom'] ?? '') ?>" required>
                             </div>
 
                             <div class="col-md-6 mb-2">
-                                <input type="email" name="email" class="form-control" placeholder="Email" required>
+                                <input type="email" name="email" class="form-control" placeholder="Email"
+                                       value="<?= htmlspecialchars($adresseEdit['email'] ?? '') ?>" required>
                             </div>
                             <div class="col-md-6 mb-2">
-                                <input type="text" name="telephone" class="form-control" placeholder="Téléphone" required>
+                                <input type="text" name="telephone" class="form-control" placeholder="Téléphone"
+                                       value="<?= htmlspecialchars($adresseEdit['telephone'] ?? '') ?>" required>
                             </div>
 
                             <div class="col-md-12 mb-2">
-                                <input type="text" name="adresse" class="form-control" placeholder="Adresse" required>
+                                <input type="text" name="adresse" class="form-control" placeholder="Adresse"
+                                       value="<?= htmlspecialchars($adresseEdit['adresse'] ?? '') ?>" required>
                             </div>
 
                             <div class="col-md-12 mb-2">
-                                <input type="text" name="complement" class="form-control" placeholder="Complément">
+                                <input type="text" name="complement" class="form-control" placeholder="Complément"
+                                       value="<?= htmlspecialchars($adresseEdit['complement'] ?? '') ?>">
                             </div>
 
                             <div class="col-md-6 mb-2">
-                                <input type="text" name="code_postal" class="form-control" placeholder="Code postal" required>
+                                <input type="text" name="code_postal" class="form-control" placeholder="Code postal"
+                                       value="<?= htmlspecialchars($adresseEdit['code_postal'] ?? '') ?>" required>
                             </div>
 
                             <div class="col-md-6 mb-2">
-                                <input type="text" name="ville" class="form-control" placeholder="Ville" required>
+                                <input type="text" name="ville" class="form-control" placeholder="Ville"
+                                       value="<?= htmlspecialchars($adresseEdit['ville'] ?? '') ?>" required>
                             </div>
 
                             <div class="col-md-6 mb-2">
                                 <select name="type" class="form-select" required>
-                                    <option value="livraison">Livraison</option>
-                                    <option value="facturation">Facturation</option>
+                                    <option value="livraison" <?= (isset($adresseEdit['type']) && $adresseEdit['type'] === 'livraison') ? 'selected' : '' ?>>Livraison</option>
+                                    <option value="facturation" <?= (isset($adresseEdit['type']) && $adresseEdit['type'] === 'facturation') ? 'selected' : '' ?>>Facturation</option>
                                 </select>
                             </div>
 
                             <!-- ⭐ Adresse par défaut -->
                             <div class="col-md-6 mb-2 d-flex align-items-center">
-                                <input type="checkbox" name="est_par_defaut" class="form-check-input me-2">
+                                <input type="checkbox" name="est_par_defaut" class="form-check-input me-2"
+                                        <?= (isset($adresseEdit['est_par_defaut']) && $adresseEdit['est_par_defaut']) ? 'checked' : '' ?>>
                                 <label>Adresse par défaut</label>
                             </div>
 
@@ -175,7 +202,6 @@
                         </div>
                     </form>
                 </div>
-
             </div>
         </div>
     </section>
