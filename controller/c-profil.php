@@ -11,9 +11,52 @@ function profil() {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // ❌ DELETE
         if (isset($_POST['action']) && $_POST['action'] === 'delete') {
-            echo 'dans DELETE';
-            $stmt = $pdo->prepare("DELETE FROM adresse WHERE id = ? AND id_client = ?");
+
+            // 🔍 1. Récupérer l'adresse supprimée (pour connaître son type)
+            $stmt = $pdo->prepare("SELECT type FROM adresse WHERE id = ? AND id_client = ?");
             $stmt->execute([$_POST['id'], $_SESSION['idClient']]);
+            $adresse = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($adresse) {
+                $type = $adresse['type'];
+
+                // ❌ 2. Supprimer l'adresse
+                $stmt = $pdo->prepare("DELETE FROM adresse WHERE id = ? AND id_client = ?");
+                $stmt->execute([$_POST['id'], $_SESSION['idClient']]);
+
+                // 🔍 3. Vérifier s'il reste une adresse par défaut pour ce type
+                $stmt = $pdo->prepare("
+                    SELECT COUNT(*) FROM adresse 
+                    WHERE id_client = ? AND type = ? AND est_par_defaut = 1
+                ");
+                $stmt->execute([$_SESSION['idClient'], $type]);
+                $hasDefault = $stmt->fetchColumn();
+
+                // ❌ Si aucune par défaut → en définir une
+                if ($hasDefault == 0) {
+
+                    // 🔍 4. Récupérer la plus ancienne adresse
+                    $stmt = $pdo->prepare("
+                        SELECT id FROM adresse 
+                        WHERE id_client = ? AND type = ?
+                        ORDER BY id ASC
+                        LIMIT 1
+                    ");
+                    $stmt->execute([$_SESSION['idClient'], $type]);
+                    $ancienne = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                    // ✅ 5. La définir par défaut si elle existe
+                    if ($ancienne) {
+                        $stmt = $pdo->prepare("
+                            UPDATE adresse 
+                            SET est_par_defaut = 1 
+                            WHERE id = ?
+                        ");
+                        $stmt->execute([$ancienne['id']]);
+                    }
+                }
+            }
+
             header("Location: /profil");
             exit;
         }
