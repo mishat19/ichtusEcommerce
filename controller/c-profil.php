@@ -7,7 +7,7 @@ function profil() {
         exit;
     }
 
-// 📩 POST (AJOUT / MODIF / SUPPRESSION)
+    // 📩 POST (AJOUT / MODIF / SUPPRESSION)
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // ❌ DELETE
         if (isset($_POST['action']) && $_POST['action'] === 'delete') {
@@ -84,11 +84,11 @@ function profil() {
             if (!empty($_POST['id'])) {
                 // ✏️ UPDATE
                 $stmt = $pdo->prepare("
-                UPDATE adresse SET
-                    prenom=?, nom=?, email=?, telephone=?,
-                    type=?, adresse=?, complement=?, ville=?, code_postal=?, est_par_defaut=?
-                WHERE id=? AND id_client=?
-            ");
+                    UPDATE adresse SET
+                        prenom=?, nom=?, email=?, telephone=?,
+                        type=?, adresse=?, complement=?, ville=?, code_postal=?, est_par_defaut=?
+                    WHERE id=? AND id_client=?
+                ");
 
                 $stmt->execute([
                     $_POST['prenom'],
@@ -144,11 +144,14 @@ function profil() {
     $adresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // 🧠 MODE EDIT
-    $adresseEdit = null;
-    if (isset($_GET['edit'])) {
-        $stmt = $pdo->prepare("SELECT * FROM adresse WHERE id = ? AND id_client = ?");
-        $stmt->execute([$_GET['edit'], $_SESSION['idClient']]);
-        $adresseEdit = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!isset($adresseEdit)) {
+        $adresseEdit = null;
+
+        if (isset($_GET['edit'])) {
+            $stmt = $pdo->prepare("SELECT * FROM adresse WHERE id = ? AND id_client = ?");
+            $stmt->execute([$_GET['edit'], $_SESSION['idClient']]);
+            $adresseEdit = $stmt->fetch(PDO::FETCH_ASSOC);
+        }
     }
 
     require_once 'view/inc/inc.head.php';
