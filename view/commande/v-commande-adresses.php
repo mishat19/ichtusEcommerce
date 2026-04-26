@@ -20,41 +20,32 @@
                         <h5>Adresse de facturation</h5>
                     </div>
                     <div class="card-body">
-
-                        <?php if (!empty($adressesFacturation)): ?>
-                        <?php foreach ($adressesFacturation as $adresse): ?>
-                            <div class="form-check mb-3 p-3 border rounded" data-id="<?= $adresse['id'] ?>">
+                        <?php if ($adresseFacturationSelected): ?>
+                            <div class="form-check mb-3 p-3 border rounded" data-id="<?= $adresseFacturationSelected['id'] ?>">
                                 <input class="form-check-input"
                                        type="radio"
                                        name="id_adresse_facturation"
-                                       value="<?= $adresse['id'] ?>">
+                                       value="<?= $adresseFacturationSelected['id'] ?>"
+                                        <?= $adresseFacturationSelected['est_par_defaut'] ? 'checked' : '' ?>>
 
                                 <label class="form-check-label w-100">
-                                    <strong><?= $adresse['prenom'] ?> <?= $adresse['nom'] ?></strong><br>
-                                    <?= $adresse['adresse'] ?><br>
-                                    <?= $adresse['code_postal'] ?> <?= $adresse['ville'] ?><br>
-                                    <?= $adresse['telephone'] ?>
+                                    <strong><?= htmlspecialchars($adresseFacturationSelected['prenom']) ?> <?= htmlspecialchars($adresseFacturationSelected['nom']) ?></strong><br>
+                                    <?= htmlspecialchars($adresseFacturationSelected['adresse']) ?><br>
+                                    <?= htmlspecialchars($adresseFacturationSelected['code_postal']) ?> <?= htmlspecialchars($adresseFacturationSelected['ville']) ?><br>
+                                    <?= htmlspecialchars($adresseFacturationSelected['telephone']) ?>
                                 </label>
-
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-primary mt-2 edit-adresse"
-                                        data-id="<?= $adresse['id'] ?>"
-                                        data-type="facturation"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editAdresseModal">
-                                    Modifier
-                                </button>
                             </div>
-                        <?php endforeach; ?>
+                        <?php else: ?>
+                            <p>Aucune adresse de facturation enregistrée.</p>
                         <?php endif; ?>
 
-                        <button type="button" class="btn btn-primary"
+                        <button type="button"
+                                class="btn btn-primary open-address-modal"
+                                data-type="facturation"
                                 data-bs-toggle="modal"
-                                data-bs-target="#addAdresseModal"
-                                data-type="facturation">
-                            Ajouter une adresse
+                                data-bs-target="#addressModal">
+                            Modifier mon adresse
                         </button>
-
                     </div>
                 </div>
 
@@ -64,41 +55,32 @@
                         <h5>Adresse de livraison</h5>
                     </div>
                     <div class="card-body">
-
-                        <?php if (!empty($adressesLivraison)): ?>
-                        <?php foreach ($adressesLivraison as $adresse): ?>
-                            <div class="form-check mb-3 p-3 border rounded" data-id="<?= $adresse['id'] ?>">
+                        <?php if ($adresseLivraisonSelected): ?>
+                            <div class="form-check mb-3 p-3 border rounded" data-id="<?= $adresseLivraisonSelected['id'] ?>">
                                 <input class="form-check-input"
                                        type="radio"
                                        name="id_adresse_livraison"
-                                       value="<?= $adresse['id'] ?>">
+                                       value="<?= $adresseLivraisonSelected['id'] ?>"
+                                        <?= $adresseLivraisonSelected['est_par_defaut'] ? 'checked' : '' ?>>
 
                                 <label class="form-check-label w-100">
-                                    <strong><?= $adresse['prenom'] ?> <?= $adresse['nom'] ?></strong><br>
-                                    <?= $adresse['adresse'] ?><br>
-                                    <?= $adresse['code_postal'] ?> <?= $adresse['ville'] ?><br>
-                                    <?= $adresse['telephone'] ?>
+                                    <strong><?= htmlspecialchars($adresseLivraisonSelected['prenom']) ?> <?= htmlspecialchars($adresseLivraisonSelected['nom']) ?></strong><br>
+                                    <?= htmlspecialchars($adresseLivraisonSelected['adresse']) ?><br>
+                                    <?= htmlspecialchars($adresseLivraisonSelected['code_postal']) ?> <?= htmlspecialchars($adresseLivraisonSelected['ville']) ?><br>
+                                    <?= htmlspecialchars($adresseLivraisonSelected['telephone']) ?>
                                 </label>
-
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-primary mt-2 edit-adresse"
-                                        data-id="<?= $adresse['id'] ?>"
-                                        data-type="livraison"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editAdresseModal">
-                                    Modifier
-                                </button>
                             </div>
-                        <?php endforeach; ?>
+                        <?php else: ?>
+                            <p>Aucune adresse de livraison enregistrée.</p>
                         <?php endif; ?>
 
-                        <button type="button" class="btn btn-primary"
+                        <button type="button"
+                                class="btn btn-primary open-address-modal"
+                                data-type="livraison"
                                 data-bs-toggle="modal"
-                                data-bs-target="#addAdresseModal"
-                                data-type="livraison">
-                            Ajouter une adresse
+                                data-bs-target="#addressModal">
+                            Modifier mon adresse
                         </button>
-
                     </div>
                 </div>
 
@@ -112,50 +94,134 @@
     </div>
 </div>
 
-<!-- ADD -->
-<div class="modal fade" id="addAdresseModal">
-    <div class="modal-dialog">
+<!-- MODAL: Sélection/Modification d'adresse -->
+<div class="modal fade" id="addressModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="addAdresseForm">
-                <input type="hidden" name="type" id="addType">
+            <div class="modal-header">
+                <h5 class="modal-title">Gérer mes adresses</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Onglets pour Facturation/Livraison -->
+                <ul class="nav nav-tabs mb-3">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#facturationTab">Facturation</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#livraisonTab">Livraison</a>
+                    </li>
+                </ul>
 
-                <div class="modal-body">
-                    <input name="prenom" placeholder="Prénom" class="form-control mb-2">
-                    <input name="nom" placeholder="Nom" class="form-control mb-2">
-                    <input name="telephone" placeholder="Téléphone" class="form-control mb-2">
-                    <input name="adresse" placeholder="Adresse" class="form-control mb-2">
-                    <input name="code_postal" placeholder="CP" class="form-control mb-2">
-                    <input name="ville" placeholder="Ville" class="form-control mb-2">
+                <!-- Contenu des onglets -->
+                <div class="tab-content">
+                    <!-- Onglet Facturation -->
+                    <div class="tab-pane fade show active" id="facturationTab">
+                        <div id="facturationAddressesList">
+                            <?php foreach ($adressesFacturation as $adresse): ?>
+                                <div class="address-card mb-2 p-3 border rounded" data-id="<?= $adresse['id'] ?>">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="selectedFacturationAddress"
+                                               value="<?= $adresse['id'] ?>" <?= $adresse['est_par_defaut'] ? 'checked' : '' ?>>
+                                        <label class="form-check-label w-100">
+                                            <strong><?= htmlspecialchars($adresse['prenom']) ?> <?= htmlspecialchars($adresse['nom']) ?></strong><br>
+                                            <?= htmlspecialchars($adresse['adresse']) ?><br>
+                                            <?= htmlspecialchars($adresse['code_postal']) ?> <?= htmlspecialchars($adresse['ville']) ?><br>
+                                            <?= htmlspecialchars($adresse['telephone']) ?>
+                                        </label>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2 edit-address-btn"
+                                            data-id="<?= $adresse['id'] ?>" data-type="facturation">
+                                        Modifier
+                                    </button>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary mt-3" id="addNewFacturationAddress">
+                            + Ajouter une adresse de facturation
+                        </button>
+                    </div>
+
+                    <!-- Onglet Livraison -->
+                    <div class="tab-pane fade" id="livraisonTab">
+                        <div id="livraisonAddressesList">
+                            <?php foreach ($adressesLivraison as $adresse): ?>
+                                <div class="address-card mb-2 p-3 border rounded" data-id="<?= $adresse['id'] ?>">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="selectedLivraisonAddress"
+                                               value="<?= $adresse['id'] ?>" <?= $adresse['est_par_defaut'] ? 'checked' : '' ?>>
+                                        <label class="form-check-label w-100">
+                                            <strong><?= htmlspecialchars($adresse['prenom']) ?> <?= htmlspecialchars($adresse['nom']) ?></strong><br>
+                                            <?= htmlspecialchars($adresse['adresse']) ?><br>
+                                            <?= htmlspecialchars($adresse['code_postal']) ?> <?= htmlspecialchars($adresse['ville']) ?><br>
+                                            <?= htmlspecialchars($adresse['telephone']) ?>
+                                        </label>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2 edit-address-btn"
+                                            data-id="<?= $adresse['id'] ?>" data-type="livraison">
+                                        Modifier
+                                    </button>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary mt-3" id="addNewLivraisonAddress">
+                            + Ajouter une adresse de livraison
+                        </button>
+                    </div>
                 </div>
 
-                <div class="modal-footer">
-                    <button class="btn btn-primary">Ajouter</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+                <!-- Formulaire d'ajout/modification (caché par défaut) -->
+                <div id="addressFormContainer" style="display: none; margin-top: 20px;">
+                    <h6 id="addressFormTitle">Ajouter une nouvelle adresse</h6>
+                    <form id="addressForm" method="post" action="/commande/adresses">
+                        <input type="hidden" name="action" id="addressAction">
+                        <input type="hidden" name="id" id="addressId">
+                        <input type="hidden" name="type" id="addressType">
 
-<!-- EDIT -->
-<div class="modal fade" id="editAdresseModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="editAdresseForm">
-                <input type="hidden" name="type" id="editType">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <input type="text" name="prenom" id="addressPrenom" class="form-control" placeholder="Prénom" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" name="nom" id="addressNom" class="form-control" placeholder="Nom" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="email" name="email" id="addressEmail" class="form-control" placeholder="Email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" name="telephone" id="addressTelephone" class="form-control" placeholder="Téléphone" required>
+                            </div>
+                            <div class="col-12">
+                                <input type="text" name="adresse" id="addressAdresse" class="form-control" placeholder="Adresse" required>
+                            </div>
+                            <div class="col-12">
+                                <input type="text" name="complement" id="addressComplement" class="form-control" placeholder="Complément">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" name="code_postal" id="addressCodePostal" class="form-control" placeholder="Code postal" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" name="ville" id="addressVille" class="form-control" placeholder="Ville" required>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-check">
+                                    <input type="checkbox" name="est_par_defaut" id="addressEstParDefaut" class="form-check-input">
+                                    <label class="form-check-label" for="addressEstParDefaut">Définir comme adresse par défaut</label>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="modal-body">
-                    <input name="prenom" id="editPrenom" class="form-control mb-2">
-                    <input name="nom" id="editNom" class="form-control mb-2">
-                    <input name="telephone" id="editTelephone" class="form-control mb-2">
-                    <input name="adresse" id="editAdresse" class="form-control mb-2">
-                    <input name="code_postal" id="editCP" class="form-control mb-2">
-                    <input name="ville" id="editVille" class="form-control mb-2">
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="button" class="btn btn-light me-2" id="cancelAddressForm">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        </div>
+                    </form>
                 </div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-primary">Enregistrer</button>
-                </div>
-            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="confirmSelectedAddress">Valider la sélection</button>
+            </div>
         </div>
     </div>
 </div>
@@ -163,67 +229,225 @@
 <script>
     document.addEventListener("DOMContentLoaded", () => {
 
-        // ADD
-        document.querySelectorAll('[data-bs-target="#addAdresseModal"]').forEach(btn => {
-            btn.onclick = () => {
-                document.getElementById("addType").value = btn.dataset.type;
-            };
-        });
-
-        document.getElementById("addAdresseForm").onsubmit = async (e) => {
-            e.preventDefault();
-
-            const data = new FormData(e.target);
-
-            const res = await fetch("/commande/ajouter-adresse", {
-                method: "POST",
-                body: data
-            });
-
-            const json = await res.json();
-
-            if (json.success) {
-                location.reload();
-            }
+        let currentType = null;
+        let selectedAddressId = {
+            facturation: null,
+            livraison: null
         };
 
-        // EDIT (préremplissage)
-        document.querySelectorAll('.edit-adresse').forEach(btn => {
-            btn.onclick = async () => {
+        const facturationTab = document.querySelector('[href="#facturationTab"]');
+        const livraisonTab   = document.querySelector('[href="#livraisonTab"]');
+
+        const facturationContent = document.getElementById('facturationTab');
+        const livraisonContent   = document.getElementById('livraisonTab');
+
+        const addressFormContainer = document.getElementById('addressFormContainer');
+
+        // =========================
+        // 🟢 OUVERTURE MODALE (TYPE)
+        // =========================
+        document.querySelectorAll('.open-address-modal').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+
+                const type = e.currentTarget.dataset.type;
+                currentType = type;
+
+                // RESET onglets
+                facturationTab.classList.remove('active');
+                livraisonTab.classList.remove('active');
+
+                facturationContent.classList.remove('show', 'active');
+                livraisonContent.classList.remove('show', 'active');
+
+                // RESET affichage onglets
+                facturationTab.parentElement.style.display = 'block';
+                livraisonTab.parentElement.style.display = 'block';
+
+                // ACTIVER BON ONGLET + cacher l'autre
+                if (type === 'facturation') {
+                    facturationTab.classList.add('active');
+                    facturationContent.classList.add('show', 'active');
+
+                    livraisonTab.parentElement.style.display = 'none';
+                } else {
+                    livraisonTab.classList.add('active');
+                    livraisonContent.classList.add('show', 'active');
+
+                    facturationTab.parentElement.style.display = 'none';
+                }
+
+                // Reset formulaire
+                addressFormContainer.style.display = 'none';
+            });
+        });
+
+        // =========================
+        // 🟢 SELECTION RADIO
+        // =========================
+        document.querySelectorAll('input[name="selectedFacturationAddress"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                selectedAddressId.facturation = e.target.value;
+            });
+        });
+
+        document.querySelectorAll('input[name="selectedLivraisonAddress"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                selectedAddressId.livraison = e.target.value;
+            });
+        });
+
+        // =========================
+        // 🟢 VALIDATION SELECTION
+        // =========================
+        document.getElementById('confirmSelectedAddress').addEventListener('click', () => {
+
+            if (currentType === 'facturation') {
+                const selected = document.querySelector('input[name="selectedFacturationAddress"]:checked');
+
+                if (selected) {
+                    const id = selected.value;
+
+                    const addresses = <?php echo json_encode(array_merge($adressesFacturation, $adressesLivraison)); ?>;
+                    const address = addresses.find(a => a.id == id);
+
+                    if (address) {
+                        const container = document.querySelector('#facturationAdresses .card-body');
+
+                        container.querySelector('.form-check').innerHTML = `
+                    <input class="form-check-input"
+                           type="radio"
+                           name="id_adresse_facturation"
+                           value="${address.id}"
+                           checked>
+
+                    <label class="form-check-label w-100">
+                        <strong>${address.prenom} ${address.nom}</strong><br>
+                        ${address.adresse}<br>
+                        ${address.code_postal} ${address.ville}<br>
+                        ${address.telephone}
+                    </label>
+                `;
+                    }
+                }
+            }
+
+            if (currentType === 'livraison') {
+                const selected = document.querySelector('input[name="selectedLivraisonAddress"]:checked');
+
+                if (selected) {
+                    const id = selected.value;
+
+                    const addresses = <?php echo json_encode(array_merge($adressesFacturation, $adressesLivraison)); ?>;
+                    const address = addresses.find(a => a.id == id);
+
+                    if (address) {
+                        const container = document.querySelector('#livraisonAdresses .card-body');
+
+                        container.querySelector('.form-check').innerHTML = `
+                    <input class="form-check-input"
+                           type="radio"
+                           name="id_adresse_livraison"
+                           value="${address.id}"
+                           checked>
+
+                    <label class="form-check-label w-100">
+                        <strong>${address.prenom} ${address.nom}</strong><br>
+                        ${address.adresse}<br>
+                        ${address.code_postal} ${address.ville}<br>
+                        ${address.telephone}
+                    </label>
+                `;
+                    }
+                }
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById('addressModal')).hide();
+        });        // =========================
+        // 🟢 AJOUT ADRESSE
+        // =========================
+        document.getElementById('addNewFacturationAddress').addEventListener('click', () => {
+            currentType = 'facturation';
+            showForm('add');
+        });
+
+        document.getElementById('addNewLivraisonAddress').addEventListener('click', () => {
+            currentType = 'livraison';
+            showForm('add');
+        });
+
+        function showForm(action) {
+
+            document.getElementById('addressAction').value = action;
+            document.getElementById('addressId').value = '';
+            document.getElementById('addressType').value = currentType;
+
+            document.getElementById('addressForm').reset();
+
+            document.getElementById('addressFormTitle').textContent =
+                action === 'add'
+                    ? `Ajouter une adresse (${currentType})`
+                    : 'Modifier l\'adresse';
+
+            addressFormContainer.style.display = 'block';
+        }
+
+        // =========================
+        // 🟢 ANNULER FORMULAIRE
+        // =========================
+        document.getElementById('cancelAddressForm').addEventListener('click', () => {
+            addressFormContainer.style.display = 'none';
+        });
+
+        // =========================
+        // 🟢 EDIT ADRESSE
+        // =========================
+        document.querySelectorAll('.edit-address-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
 
                 const id = btn.dataset.id;
                 const type = btn.dataset.type;
 
-                document.getElementById("editType").value = type;
+                currentType = type;
 
-                const res = await fetch(`/profil/adresse/${id}`);
-                const data = await res.json();
+                const addresses = <?php echo json_encode(array_merge($adressesFacturation, $adressesLivraison)); ?>;
+                const address = addresses.find(a => a.id == id);
 
-                editPrenom.value = data.prenom;
-                editNom.value = data.nom;
-                editTelephone.value = data.telephone;
-                editAdresse.value = data.adresse;
-                editCP.value = data.code_postal;
-                editVille.value = data.ville;
-            };
+                if (!address) return;
+
+                // Activer bon onglet automatiquement
+                facturationTab.classList.remove('active');
+                livraisonTab.classList.remove('active');
+                facturationContent.classList.remove('show', 'active');
+                livraisonContent.classList.remove('show', 'active');
+
+                if (type === 'facturation') {
+                    facturationTab.classList.add('active');
+                    facturationContent.classList.add('show', 'active');
+                } else {
+                    livraisonTab.classList.add('active');
+                    livraisonContent.classList.add('show', 'active');
+                }
+
+                // Remplir formulaire
+                document.getElementById('addressAction').value = 'edit';
+                document.getElementById('addressId').value = address.id;
+                document.getElementById('addressType').value = address.type;
+
+                document.getElementById('addressPrenom').value = address.prenom;
+                document.getElementById('addressNom').value = address.nom;
+                document.getElementById('addressEmail').value = address.email;
+                document.getElementById('addressTelephone').value = address.telephone;
+                document.getElementById('addressAdresse').value = address.adresse;
+                document.getElementById('addressComplement').value = address.complement || '';
+                document.getElementById('addressCodePostal').value = address.code_postal;
+                document.getElementById('addressVille').value = address.ville;
+                document.getElementById('addressEstParDefaut').checked = !!address.est_par_defaut;
+
+                document.getElementById('addressFormTitle').textContent = 'Modifier l\'adresse';
+
+                addressFormContainer.style.display = 'block';
+            });
         });
 
-        // EDIT submit (INSERT)
-        document.getElementById("editAdresseForm").onsubmit = async (e) => {
-            e.preventDefault();
-
-            const data = new FormData(e.target);
-
-            const res = await fetch("/profil/modifier-adresse", {
-                method: "POST",
-                body: data
-            });
-
-            const json = await res.json();
-
-            if (json.success) {
-                location.reload();
-            }
-        };
     });
 </script>
