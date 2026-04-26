@@ -173,8 +173,9 @@
                 <!-- Formulaire d'ajout/modification (caché par défaut) -->
                 <div id="addressFormContainer" style="display: none; margin-top: 20px;">
                     <h6 id="addressFormTitle">Ajouter une nouvelle adresse</h6>
-                    <form id="addressForm" method="post" action="/commande/adresses">
-                        <input type="hidden" name="action" id="addressAction">
+
+                    <form id="addressForm" method="POST">
+                        <input type="hidden" name="action" id="addressAction" value="add">
                         <input type="hidden" name="id" id="addressId">
                         <input type="hidden" name="type" id="addressType">
 
@@ -206,7 +207,7 @@
                             <div class="col-md-12">
                                 <div class="form-check">
                                     <input type="checkbox" name="est_par_defaut" id="addressEstParDefaut" class="form-check-input">
-                                    <label class="form-check-label" for="addressEstParDefaut">Définir comme adresse par défaut</label>
+                                    <label class="form-check-label">Adresse par défaut</label>
                                 </div>
                             </div>
                         </div>
@@ -217,7 +218,6 @@
                         </div>
                     </form>
                 </div>
-            </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
                 <button type="button" class="btn btn-primary" id="confirmSelectedAddress">Valider la sélection</button>

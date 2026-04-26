@@ -30,8 +30,156 @@ function commandeAdresses(): void
         exit;
     }
 
-    $adressesFacturation = getAdressesByType($_SESSION['idClient'], 'facturation');
-    $adressesLivraison   = getAdressesByType($_SESSION['idClient'], 'livraison');
+    $idClient = $_SESSION['idClient'];
+
+    /* =========================
+       POST (DELETE / EDIT / SAVE)
+    ========================== */
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+        // ❌ DELETE
+        if (isset($_POST['action']) && $_POST['action'] === 'delete') {
+
+            $stmt = $pdo->prepare("SELECT type FROM adresse WHERE id = ? AND id_client = ?");
+            $stmt->execute([$_POST['id'], $idClient]);
+            $adresse = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($adresse) {
+                $type = $adresse['type'];
+
+                $pdo->prepare("DELETE FROM adresse WHERE id = ? AND id_client = ?")
+                    ->execute([$_POST['id'], $idClient]);
+
+                // vérifier adresse par défaut
+                $stmt = $pdo->prepare("
+                    SELECT COUNT(*) FROM adresse 
+                    WHERE id_client = ? AND type = ? AND est_par_defaut = 1
+                ");
+                $stmt->execute([$idClient, $type]);
+
+                if ($stmt->fetchColumn() == 0) {
+                    $stmt = $pdo->prepare("
+                        SELECT id FROM adresse 
+                        WHERE id_client = ? AND type = ?
+                        ORDER BY id ASC LIMIT 1
+                    ");
+                    $stmt->execute([$idClient, $type]);
+                    $ancienne = $stmt->fetch();
+
+                    if ($ancienne) {
+                        $pdo->prepare("UPDATE adresse SET est_par_defaut = 1 WHERE id = ?")
+                            ->execute([$ancienne['id']]);
+                    }
+                }
+            }
+
+            header("Location: /adresses");
+            exit;
+        }
+
+        // ✏️ EDIT (mode édition)
+        if (isset($_POST['action']) && $_POST['action'] === 'edit') {
+            $stmt = $pdo->prepare("SELECT * FROM adresse WHERE id = ? AND id_client = ?");
+            $stmt->execute([$_POST['id'], $idClient]);
+            $adresseEdit = $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+
+        // 💾 SAVE (INSERT / UPDATE)
+        if (isset($_POST['prenom'])) {
+
+            $estParDefaut = isset($_POST['est_par_defaut']) ? 1 : 0;
+
+            if ($estParDefaut) {
+                $pdo->prepare("
+                    UPDATE adresse SET est_par_defaut = 0 
+                    WHERE id_client = ? AND type = ?
+                ")->execute([$idClient, $_POST['type']]);
+            }
+
+            if (!empty($_POST['id'])) {
+                // UPDATE
+                $stmt = $pdo->prepare("
+                    UPDATE adresse SET
+                        prenom=?, nom=?, email=?, telephone=?,
+                        type=?, adresse=?, complement=?, ville=?, code_postal=?, est_par_defaut=?
+                    WHERE id=? AND id_client=?
+                ");
+
+                $stmt->execute([
+                    $_POST['prenom'],
+                    $_POST['nom'],
+                    $_POST['email'],
+                    $_POST['telephone'],
+                    $_POST['type'],
+                    $_POST['adresse'],
+                    $_POST['complement'] ?? '',
+                    $_POST['ville'],
+                    $_POST['code_postal'],
+                    $estParDefaut,
+                    $_POST['id'],
+                    $idClient
+                ]);
+            } else {
+                // INSERT
+                $stmt = $pdo->prepare("
+                    INSERT INTO adresse (
+                        id_client, prenom, nom, email, telephone,
+                        type, adresse, complement, ville, code_postal, est_par_defaut
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ");
+
+                $stmt->execute([
+                    $idClient,
+                    $_POST['prenom'],
+                    $_POST['nom'],
+                    $_POST['email'],
+                    $_POST['telephone'],
+                    $_POST['type'],
+                    $_POST['adresse'],
+                    $_POST['complement'] ?? '',
+                    $_POST['ville'],
+                    $_POST['code_postal'],
+                    $estParDefaut
+                ]);
+            }
+
+            // 🔥 IMPORTANT (comme profil)
+            header("Location: " . $_SERVER['HTTP_REFERER']);
+            exit;
+        }
+    }
+
+    /* =========================
+       DATA
+    ========================== */
+
+    $adressesFacturation = getAdressesByType($idClient, 'facturation');
+    $adressesLivraison   = getAdressesByType($idClient, 'livraison');
+
+    function getAdresseParDefautOuRecente($adresses) {
+        foreach ($adresses as $a) {
+            if ($a['est_par_defaut']) return $a;
+        }
+        return $adresses[0] ?? null;
+    }
+
+    $adresseFacturationSelected = getAdresseParDefautOuRecente($adressesFacturation);
+    $adresseLivraisonSelected   = getAdresseParDefautOuRecente($adressesLivraison);
+
+    // 🧠 MODE EDIT
+    if (!isset($adresseEdit)) {
+        $adresseEdit = null;
+
+        if (isset($_GET['edit'])) {
+            $stmt = $pdo->prepare("SELECT * FROM adresse WHERE id = ? AND id_client = ?");
+            $stmt->execute([$_GET['edit'], $idClient]);
+            $adresseEdit = $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+    }
+
+    /* =========================
+       VIEW
+    ========================== */
 
     require_once 'view/inc/inc.head.php';
     require_once 'view/inc/inc.header.php';
