@@ -13,6 +13,7 @@ require_once 'controller/c-profil.php';
 require_once 'controller/c-commandes.php';
 require_once 'controller/c-parcours-commande.php';
 require_once 'controller/c-paiement.php';
+require_once './backoffice/controller/c-backoffice.php';
 
 /* ───────── ROUTEUR ───────── */
 
@@ -34,6 +35,11 @@ $param = $segments[1] ?? null;
  * ══════════════════════════════════════════════ */
 
 switch ($page) {
+    /* ───────── BO ───────── */
+    case 'bo':
+        bo();
+        break;
+
     /* ───────── PRODUIT ───────── */
     case 'produit':
         if ($param) {

@@ -113,9 +113,10 @@
 
         /* Style pour les étapes */
         .step {
+            position: relative;
+            z-index: 1;
             text-align: center;
             flex: 1;
-            position: relative;
         }
         .step.active .step-icon {
             background-color: #0d6efd;
@@ -126,6 +127,9 @@
             color: white;
         }
         .step-icon {
+            position: relative;
+            z-index: 2;         /* au-dessus du trait */
+
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -137,6 +141,7 @@
             font-weight: bold;
         }
         .step-label {
+            z-index: 10;
             font-size: 0.9rem;
             color: #6c757d;
         }
@@ -153,7 +158,7 @@
             width: 100%;
             height: 2px;
             background-color: #e9ecef;
-            z-index: 1;
+            z-index: 0; /* derrière */
         }
         .step.active::after,
         .step.completed::after {
@@ -165,6 +170,40 @@
                 text-align: center;
                 margin-bottom: 20px;
             }
+        }
+
+        /* Style Adresses */
+         .address-card {
+             border: 1px solid #e0e0e0;
+             border-radius: 8px;
+             padding: 15px;
+             margin-bottom: 10px;
+             cursor: pointer;
+             transition: all 0.2s;
+         }
+        .address-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+        }
+        .address-card.selected {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        .modal-header {
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px;
+        }
+        .modal-title {
+            font-weight: 600;
+            color: #333;
+        }
+        .btn-light-blue {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        .btn-light-blue:hover {
+            background-color: #bbdefb;
         }
     </style>
 </head>

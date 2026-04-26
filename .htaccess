@@ -12,8 +12,7 @@ RewriteRule ^$ index.php?page=accueil
 #https://b2-gp97.kevinpecro.info/produit/
 RewriteRule ^([a-zA-Z]+)/$ index.php?page=$1
 #https://b2-gp97.kevinpecro.info/produit/framboise/
-RewriteRule ^([a-zA-Z]+)/([a-z-]+)/$ index.php?page=$1&identifiant=$2
-RewriteRule ^([a-zA-Z]+)/([a-z-]+)/([0-9]+)/$ index.php?page=$1&action=$2&id=$3 [L]
+RewriteRule ^([a-zA-Z]+)/([a-z0-9-]+)/$ index.php?page=$1&identifiant=$2
 
 RewriteRule ^paiement/$ index.php?page=paiement [QSA,L]
 RewriteRule ^retour-paiement/([a-z]+)/$ index.php?page=retour-paiement&identifiant=$1 [QSA,L]
