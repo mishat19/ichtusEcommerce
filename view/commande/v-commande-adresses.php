@@ -317,7 +317,7 @@
                     <input class="form-check-input"
                            type="radio"
                            name="id_adresse_facturation"
-                           value="${address.id}"
+                           value="${address.id}" ${true ? 'checked' : ''}
                            checked>
 
                     <label class="form-check-label w-100">
@@ -347,7 +347,7 @@
                     <input class="form-check-input"
                            type="radio"
                            name="id_adresse_livraison"
-                           value="${address.id}"
+                           value="${address.id}" ${true ? 'checked' : ''}
                            checked>
 
                     <label class="form-check-label w-100">

@@ -128,7 +128,7 @@ function profil() {
                 ]);
             }
 
-            header("Location: /profil");
+            header("Location: " . $_SERVER['HTTP_REFERER']);
             exit;
         }
     }
@@ -178,4 +178,15 @@ function getAdresseById($id) {
     $stmt = $pdo->prepare("SELECT * FROM adresse WHERE id = ?");
     $stmt->execute([$id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function getAdressesJson() {
+    global $pdo;
+
+    $stmt = $pdo->prepare("SELECT * FROM adresse WHERE id_client = ?");
+    $stmt->execute([$_SESSION['idClient']]);
+
+    header('Content-Type: application/json');
+    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    exit;
 }
