@@ -2,7 +2,8 @@
 
 header('Content-Type: application/json');
 
-$url = $_GET['url'] ?? '';
+$url = $_SERVER['REQUEST_URI'];
+$url = str_replace('/api/', '', $url);
 $params = explode('/', trim($url, '/'));
 
 $resource = $params[0] ?? null;

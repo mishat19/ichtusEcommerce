@@ -1,19 +1,19 @@
 <div class="sidebar">
-    <h4 class="mb-4">🛠 Admin</h4>
+    <h4 class="mb-4">🛠 bo</h4>
 
-    <a href="/admin">
+    <a href="/bo">
         <i class="fas fa-chart-line me-2"></i> Dashboard
     </a>
 
-    <a href="/admin/commandes">
+    <a href="/bo/commandes">
         <i class="fas fa-box me-2"></i> Commandes
     </a>
 
-    <a href="/admin/paiements">
+    <a href="/bo/paiements">
         <i class="fas fa-credit-card me-2"></i> Paiements
     </a>
 
-    <a href="/admin/produits">
+    <a href="/bo/produits">
         <i class="fas fa-tag me-2"></i> Produits
     </a>
 

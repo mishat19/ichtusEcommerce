@@ -37,9 +37,46 @@ $param = $segments[1] ?? null;
 switch ($page) {
     /* ───────── BO ───────── */
     case 'bo':
+
+        // /bo/commande
+        if (isset($segments[1])) {
+
+            if ($segments[1] === 'commandes') {
+                boCommandes();
+                break;
+            }
+
+            // /bo/commande/12
+            if ($segments[1] === 'commande' && isset($segments[2])) {
+                $_GET['id'] = $segments[2];
+                boCommandeDetail();
+                break;
+            }
+
+            // /bo/paiements
+            if ($segments[1] === 'paiements') {
+                boPaiements();
+                break;
+            }
+
+            // /bo/paiements
+            if ($segments[1] === 'produits') {
+                boProduits();
+                break;
+            }
+
+            // Si route inconnue → erreur 404
+            http_response_code(404);
+            echo "Page BO introuvable";
+            exit;
+        }
+
+        // /bo → dashboard
         bo();
         break;
-
+    case 'api':
+        require_once 'backoffice/controller/api/c-apiListe.php';
+        break;
     /* ───────── PRODUIT ───────── */
     case 'produit':
         if ($param) {
