@@ -14,6 +14,12 @@ require_once 'controller/c-commandes.php';
 require_once 'controller/c-parcours-commande.php';
 require_once 'controller/c-paiement.php';
 require_once './backoffice/controller/c-backoffice.php';
+require_once 'controller/api/c-apiLIste.php';
+require_once 'controller/api/c-apiCommande.php';
+require_once 'controller/api/c-apiPaiement.php';
+require_once 'backoffice/controller/c-bo-dashboard.php';
+require_once 'backoffice/controller/c-bo-commande.php';
+require_once 'backoffice/controller/c-bo-paiement.php';
 
 /* ───────── ROUTEUR ───────── */
 
@@ -34,28 +40,37 @@ $param = $segments[1] ?? null;
  * ROUTES
  * ══════════════════════════════════════════════ */
 
+/* ══ ROUTING API ══════════════════════════════════════════════════ */
+if (isset($_GET['pageAPI'])) {
+    switch ($_GET['pageAPI']) {
+        case 'commande': APICommande(); break;
+        case 'paiement': APIPaiement(); break;
+        default:         APIListe();    break;
+    }
+    exit;
+}
+
 switch ($page) {
     /* ───────── BO ───────── */
-    case 'bo':
+    case 'backoffice':
 
         // /bo/commande
         if (isset($segments[1])) {
 
             if ($segments[1] === 'commandes') {
-                boCommandes();
+                BOCommande();
                 break;
             }
 
             // /bo/commande/12
             if ($segments[1] === 'commande' && isset($segments[2])) {
-                $_GET['id'] = $segments[2];
-                boCommandeDetail();
+                BOCommande($segments[2]);
                 break;
             }
 
             // /bo/paiements
             if ($segments[1] === 'paiements') {
-                boPaiements();
+                BOPaiement();
                 break;
             }
 
@@ -72,7 +87,7 @@ switch ($page) {
         }
 
         // /bo → dashboard
-        bo();
+        BODashboard();
         break;
     case 'api':
         require_once 'backoffice/controller/api/c-apiListe.php';
