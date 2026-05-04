@@ -57,24 +57,21 @@ switch ($page) {
         // /bo/commande
         if (isset($segments[1])) {
 
-            if ($segments[1] === 'commandes') {
+            // /backoffice/commandes [ /ID ]
+            if ($segments[1] === 'commandes' || $segments[1] === 'commande') {
+                if (isset($segments[2])) $_GET['id'] = $segments[2];
                 BOCommande();
                 break;
             }
 
-            // /bo/commande/12
-            if ($segments[1] === 'commande' && isset($segments[2])) {
-                BOCommande($segments[2]);
-                break;
-            }
-
-            // /bo/paiements
-            if ($segments[1] === 'paiements') {
+            // /backoffice/paiements [ /ID ]
+            if ($segments[1] === 'paiements' || $segments[1] === 'paiement') {
+                if (isset($segments[2])) $_GET['id'] = $segments[2];
                 BOPaiement();
                 break;
             }
 
-            // /bo/paiements
+            // /backoffice/produits
             if ($segments[1] === 'produits') {
                 boProduits();
                 break;

@@ -25,7 +25,7 @@ function paiement(): void
     $PBX_DEVISE = "978";
     $PBX_CMD = "25gp1-" . $idCommande;
     $PBX_PORTEUR = "test@test.com";
-    $PBX_RETOUR = "Mt:M;Ref:R;Auto:A;Erreur:E;Sign:K";
+    $PBX_RETOUR = "Mt:M;Ref:R;Auto:A;Erreur:E;Trans:S;Paiement:P;Sign:K";
 
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $baseUrl = $protocol . '://' . $_SERVER['HTTP_HOST'];
@@ -88,8 +88,9 @@ function ipnPaiement(): void
     $commande = $_POST['Ref'] ?? null;
     $montant = $_POST['Mt'] ?? 0;
     $erreur = $_POST['Erreur'] ?? '99999';
-    $transaction = $_POST['Trans'] ?? 'N/A';
+    $transaction = $_POST['Trans'] ?? null;
     $moyenPaiement = $_POST['Paiement'] ?? 'CB';
+    $autorisation = $_POST['Auto'] ?? 'N/A';
 
     if (!$commande) return;
 
@@ -134,10 +135,12 @@ function ipnPaiement(): void
     /* ════════════════════════════════════════
      * 💾 INSERT PAIEMENT
      * ════════════════════════════════════════ */
+    if (!$transaction) return;
+
     $stmt = $pdo->prepare("
-    SELECT id FROM paiement 
-    WHERE numero_transaction = ?
-");
+        SELECT id FROM paiement 
+        WHERE numero_transaction = ?
+    ");
     $stmt->execute([$transaction]);
 
     if ($stmt->fetch()) {

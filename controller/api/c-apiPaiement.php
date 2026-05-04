@@ -52,7 +52,6 @@ function APIPaiement() {
         $paiement['commande'] = $commande;
 
         echo json_encode($paiement);
-
     } else {
 
         /* ── Liste tous les paiements avec infos commande essentielles ── */

@@ -42,7 +42,7 @@ function BOCommande() {
         $bo_commande = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$bo_commande) {
-            header('Location: /bo/commande/');
+            header('Location: /backoffice/commandes/');
             exit;
         }
 
@@ -68,7 +68,7 @@ function BOCommande() {
 
         /* ── Paiement ── */
         $stmtPay = $pdo->prepare("
-            SELECT *
+            SELECT id, id_commande, numero_transaction, (montant / 100) AS montant, statut, date_paiement
             FROM paiement
             WHERE id_commande = ?
             ORDER BY id DESC

@@ -1,81 +1,119 @@
-<div class="container py-5">
-
-    <h1 class="mb-4">Gestion des paiements</h1>
-
-    <div class="card shadow-sm">
-        <div class="card-body">
-
-            <?php if (empty($paiements)): ?>
-                <div class="alert alert-info">Aucun paiement trouvé</div>
-            <?php else: ?>
-
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Transaction</th>
-                            <th>Commande</th>
-                            <th>Montant</th>
-                            <th>Moyen</th>
-                            <th>Statut</th>
-                            <th>Date</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-
-                        <?php foreach ($paiements as $paiement): ?>
-
-                            <?php
-                            $badge = "bg-secondary";
-                            $label = $paiement['statut'];
-
-                            if ($paiement['statut'] === 'accepte') {
-                                $badge = "bg-success";
-                                $label = "Accepté";
-                            } elseif ($paiement['statut'] === 'refuse') {
-                                $badge = "bg-danger";
-                                $label = "Refusé";
-                            }
-                            ?>
-
-                            <tr>
-                                <td>#<?= $paiement['id'] ?></td>
-
-                                <td><?= htmlspecialchars($paiement['numero_transaction']) ?></td>
-
-                                <td>
-                                    <a href="/bo/commande/<?= $paiement['id_commande'] ?>">
-                                        #<?= $paiement['id_commande'] ?>
-                                    </a>
-                                </td>
-
-                                <td>
-                                    <?= number_format($paiement['montant'] / 100, 2, ',', ' ') ?> €
-                                </td>
-
-                                <td><?= htmlspecialchars($paiement['moyen_paiement']) ?></td>
-
-                                <td>
-                                    <span class="badge <?= $badge ?>">
-                                        <?= $label ?>
-                                    </span>
-                                </td>
-
-                                <td>
-                                    <?= (new DateTime($paiement['date_paiement']))->format('d/m/Y H:i') ?>
-                                </td>
-                            </tr>
-
-                        <?php endforeach; ?>
-
-                        </tbody>
-                    </table>
-                </div>
-
-            <?php endif; ?>
-
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0" style="letter-spacing: -0.025em;">Flux de Paiements</h2>
+            <p class="text-muted small mb-0">Suivez l'état de vos transactions financières en temps réel.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-primary rounded-pill px-3"><?php echo count($bo_paiements); ?> transactions</span>
         </div>
     </div>
-</div>
+
+    <div class="bo-content">
+
+        <div class="bo-card">
+            <div class="d-flex gap-2 flex-wrap align-items-center mb-1">
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary active filtre-btn" data-statut="tous">Tous</button>
+                    <button class="btn btn-outline-secondary filtre-btn" data-statut="accepte">Acceptés</button>
+                    <button class="btn btn-outline-secondary filtre-btn" data-statut="refuse">Refusés</button>
+                </div>
+                
+                <div class="ms-auto" style="min-width: 300px;">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" id="search-paiement" class="form-control border-start-0 ps-0" placeholder="Rechercher une référence, un client...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bo-card p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="bo-table mb-0">
+                    <thead>
+                    <tr>
+                        <th class="ps-4"># ID</th>
+                        <th>Numéro de transaction</th>
+                        <th>Client</th>
+                        <th>Montant</th>
+                        <th>Statut Paiement</th>
+                        <th>Statut Commande</th>
+                        <th>Date</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($bo_paiements as $p) : ?>
+                        <tr class="paiement-row"
+                            data-statut="<?php echo $p['statut']; ?>"
+                            data-search="<?php echo strtolower(($p['numero_transaction'] ?? '') . ' ' . ($p['facturation_nom'] ?? '') . ' ' . ($p['facturation_prenom'] ?? '') . ' ' . ($p['facturation_email'] ?? '')); ?>">
+                            <td class="ps-4 fw-bold">#<?php echo $p['id']; ?></td>
+                            <td>
+                                <code class="small text-primary bg-primary bg-opacity-10 px-2 py-1 rounded">
+                                    <?php echo htmlspecialchars($p['numero_transaction'] ?? 'N/A'); ?>
+                                </code>
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-dark"><?php echo htmlspecialchars(($p['facturation_prenom'] ?? '') . ' ' . ($p['facturation_nom'] ?? '')); ?></div>
+                                <div class="text-muted extra-small" style="font-size: 0.7rem;"><?php echo htmlspecialchars($p['facturation_email'] ?? ''); ?></div>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-dark fs-6">
+                                    <?php echo number_format((float)$p['montant'], 2, ',', ' '); ?> €
+                                </span>
+                            </td>
+                            <td>
+                                <span class="bo-badge bo-badge-<?php echo $p['statut']; ?>">
+                                    <?php echo $p['statut']; ?>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="bo-badge bo-badge-<?php echo $p['statut_commande']; ?>">
+                                    <?php echo str_replace('_', ' ', $p['statut_commande']); ?>
+                                </span>
+                            </td>
+                            <td class="small text-muted">
+                                <?php echo date('d/m/Y H:i', strtotime($p['date_paiement'])); ?>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="/backoffice/commande/<?php echo $p['id_commande']; ?>" class="btn btn-light" title="Détails du paiement">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.querySelectorAll('.filtre-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filtre-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.classList.remove('btn-primary');
+                    b.classList.add('btn-outline-secondary');
+                });
+                btn.classList.add('active');
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-primary');
+                applyFilters();
+            });
+        });
+        document.getElementById('search-paiement').addEventListener('input', applyFilters);
+
+        function applyFilters() {
+            const statut = document.querySelector('.filtre-btn.active').dataset.statut;
+            const search = document.getElementById('search-paiement').value.toLowerCase();
+            document.querySelectorAll('.paiement-row').forEach(row => {
+                const matchS = statut === 'tous' || row.dataset.statut === statut;
+                const matchQ = search === '' || row.dataset.search.includes(search);
+                row.style.display = matchS && matchQ ? '' : 'none';
+            });
+        }
+    </script>

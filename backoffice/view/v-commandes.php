@@ -1,6 +1,7 @@
 <div class="bo-topbar">
-    <div class="bo-topbar-title">COMMANDES</div>
-
+    <h2 class="bo-topbar-title">
+        COMMANDES
+    </h2>
     <div class="bo-topbar-right">
         <span style="font-size:.75rem;">
             <?php echo count($bo_commandes); ?> commande<?php echo count($bo_commandes) > 1 ? 's' : ''; ?>
