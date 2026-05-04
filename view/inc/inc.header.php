@@ -27,7 +27,7 @@
                     <input class="form-control search-bar" type="search" placeholder="Rechercher...">
                 </form>
                 <div class="d-flex">
-                    <a href="/bo" class="btn btn-outline-dark me-2">
+                    <a href="/backoffice" class="btn btn-outline-dark me-2">
                         <i class="">BO</i>
                     </a>
                     <a href="/profil" class="btn btn-outline-dark me-2">
