@@ -1,11 +1,10 @@
-<div class="bo-topbar">
-    <h2 class="bo-topbar-title">
-        COMMANDES
-    </h2>
-    <div class="bo-topbar-right">
-        <span style="font-size:.75rem;">
-            <?php echo count($bo_commandes); ?> commande<?php echo count($bo_commandes) > 1 ? 's' : ''; ?>
-        </span>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0" style="letter-spacing: -0.025em;">Commandes</h2>
+        <p class="text-muted small mb-0">Suivre l'état des commandes.</p>
+    </div>
+    <div class="text-end">
+        <span class="badge bg-primary rounded-pill px-3"><?php echo count($bo_commandes); ?> commandes</span>
     </div>
 </div>
 
@@ -59,16 +58,8 @@
                     </td>
 
                     <td>
-                        <?php
-                        $badge = 'bo-badge-secondary';
-
-                        if ($c['statut'] === 'payee') $badge = 'bo-badge-success';
-                        elseif ($c['statut'] === 'annulee') $badge = 'bo-badge-danger';
-                        elseif ($c['statut'] === 'en_attente') $badge = 'bo-badge-warning';
-                        ?>
-
-                        <span class="bo-badge <?php echo $badge; ?>">
-                            <?php echo ucfirst($c['statut']); ?>
+                        <span class="bo-badge bo-badge-<?php echo $c['statut']; ?>">
+                            <?php echo $c['statut']; ?>
                         </span>
                     </td>
 

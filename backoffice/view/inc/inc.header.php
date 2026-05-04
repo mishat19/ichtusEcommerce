@@ -1,5 +1,5 @@
 <div class="sidebar">
-    <h4 class="mb-4">🛠 bo</h4>
+    <h4 class="mb-4">Backoffice</h4>
 
     <a href="/backoffice">
         <i class="fas fa-chart-line me-2"></i> Dashboard

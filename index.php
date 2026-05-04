@@ -13,7 +13,6 @@ require_once 'controller/c-profil.php';
 require_once 'controller/c-commandes.php';
 require_once 'controller/c-parcours-commande.php';
 require_once 'controller/c-paiement.php';
-require_once './backoffice/controller/c-backoffice.php';
 require_once 'controller/api/c-apiLIste.php';
 require_once 'controller/api/c-apiCommande.php';
 require_once 'controller/api/c-apiPaiement.php';
@@ -85,9 +84,6 @@ switch ($page) {
 
         // /bo → dashboard
         BODashboard();
-        break;
-    case 'api':
-        require_once 'backoffice/controller/api/c-apiListe.php';
         break;
     /* ───────── PRODUIT ───────── */
     case 'produit':

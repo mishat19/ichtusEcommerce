@@ -65,8 +65,7 @@ function BOPaiement() {
         $bo_paiement_produits = $stmtP->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($bo_paiement_produits as &$p) {
-            $imgs = array_values(array_filter(array_map('trim', explode(',', $p['image'] ?? ''))));
-            $p['image'] = $imgs[0] ?? null;
+            $p['image'] = 'images/' . $p['image'] . '.png';
             $p['prix_ht'] = $p['prix_ht'] / 100; // Normalisation en euros
             $p['prix_ttc'] = round($p['prix_ht'] * (1 + $p['taux_tva'] / 100), 2);
         }

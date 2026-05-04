@@ -1,85 +1,80 @@
-<div class="container py-5">
-
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Gestion des produits</h1>
-        <a href="/bo/produit/ajouter" class="btn btn-primary">
-            + Ajouter un produit
+        <div>
+            <h2 class="fw-bold mb-0" style="letter-spacing: -0.025em;">Catalogue Produits</h2>
+            <p class="text-muted small mb-0">Gérez votre inventaire et les détails de vos articles.</p>
+        </div>
+        <a href="/bo/produit/ajouter" class="bo-btn-outline">
+            <i class="bi bi-plus-lg me-1"></i> Nouveau produit
         </a>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
+    <div class="bo-content">
 
+        <div class="bo-card p-0 overflow-hidden">
             <?php if (empty($produits)): ?>
-                <div class="alert alert-info">Aucun produit disponible</div>
+                <div class="p-5 text-center text-muted">
+                    <i class="bi bi-box-seam fs-1 mb-3 d-block"></i>
+                    <p>Aucun produit n'a été trouvé dans votre catalogue.</p>
+                </div>
             <?php else: ?>
 
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="bo-table mb-0">
                         <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Image</th>
-                            <th>Nom</th>
-                            <th>Identifiant</th>
+                            <th class="ps-4">ID</th>
+                            <th>Aperçu</th>
+                            <th>Nom du produit</th>
+                            <th>Identifiant (SKU)</th>
                             <th>Prix HT</th>
                             <th>Statut</th>
-                            <th></th>
+                            <th class="text-end pe-4">Actions</th>
                         </tr>
                         </thead>
 
                         <tbody>
-
                         <?php foreach ($produits as $produit): ?>
-
-                            <?php
-                            $badge = $produit['statut'] === 'actif'
-                                ? 'bg-success'
-                                : 'bg-secondary';
-                            ?>
-
                             <tr>
-                                <td>#<?= $produit['id'] ?></td>
+                                <td class="ps-4 fw-bold">#<?php echo $produit['id']; ?></td>
 
                                 <td>
                                     <?php if ($produit['image']): ?>
-                                        <img src="<?= htmlspecialchars($produit['image']) ?>"
-                                             style="width:50px; height:50px; object-fit:cover;">
+                                        <img src="/<?php echo htmlspecialchars($produit['image']); ?>"
+                                             class="rounded border"
+                                             style="width:40px; height:40px; object-fit:cover;">
                                     <?php else: ?>
-                                        -
+                                        <div class="bg-light rounded border d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
+                                            <i class="bi bi-image text-muted small"></i>
+                                        </div>
                                     <?php endif; ?>
                                 </td>
 
-                                <td><?= htmlspecialchars($produit['nom']) ?></td>
+                                <td class="fw-semibold text-dark"><?php echo htmlspecialchars($produit['nom']); ?></td>
 
-                                <td><?= htmlspecialchars($produit['identifiant']) ?></td>
+                                <td><code class="small text-muted"><?php echo htmlspecialchars($produit['identifiant']); ?></code></td>
 
-                                <td>
-                                    <?= number_format($produit['prix_ht'] / 100, 2, ',', ' ') ?> €
+                                <td class="fw-bold text-dark">
+                                    <?php echo number_format($produit['prix_ht'] / 100, 2, ',', ' '); ?> €
                                 </td>
 
                                 <td>
-                                    <span class="badge <?= $badge ?>">
-                                        <?= ucfirst($produit['statut']) ?>
+                                    <span class="badge rounded-pill <?php echo $produit['statut'] === 'actif' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'; ?>" style="font-size: 0.7rem; padding: 0.4em 0.8em;">
+                                        <?php echo strtoupper($produit['statut']); ?>
                                     </span>
                                 </td>
 
-                                <td>
-                                    <a href="/bo/produit/<?= $produit['id'] ?>"
-                                       class="btn btn-sm btn-outline-primary">
-                                        Modifier
+                                <td class="text-end pe-4">
+                                    <a href="/bo/produit/<?php echo $produit['id']; ?>"
+                                       class="btn btn-light btn-sm fw-medium">
+                                        <i class="bi bi-pencil me-1"></i> Modifier
                                     </a>
                                 </td>
                             </tr>
-
                         <?php endforeach; ?>
-
                         </tbody>
                     </table>
                 </div>
 
             <?php endif; ?>
-
         </div>
     </div>
-</div>
