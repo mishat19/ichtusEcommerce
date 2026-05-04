@@ -12,9 +12,12 @@ function getPaiements() {
     global $pdo;
 
     $stmt = $pdo->query("
-        SELECT *
-        FROM paiement
-        ORDER BY date_paiement DESC
+        SELECT 
+            p.*,
+            c.numero_facture
+        FROM paiement p
+        JOIN commande c ON c.id = p.id_commande
+        ORDER BY p.date_paiement DESC
         LIMIT 50
     ");
 
