@@ -11,20 +11,26 @@ function BOCommande() {
         $stmt = $pdo->prepare("
             SELECT 
                 c.*,
-                cl.nom,
-                cl.prenom,
-                cl.email,
+                
+                af.prenom AS fact_prenom,
+                af.nom AS fact_nom,
+                af.email AS fact_email,
+                af.telephone AS fact_tel,
+                af.adresse AS fact_adresse,
+                af.complement AS fact_complement,
+                af.code_postal AS fact_cp,
+                af.ville AS fact_ville,
 
-                af.adresse AS adresse_facturation,
-                af.ville AS ville_facturation,
-                af.code_postal AS cp_facturation,
-
-                al.adresse AS adresse_livraison,
-                al.ville AS ville_livraison,
-                al.code_postal AS cp_livraison
+                al.prenom AS liv_prenom,
+                al.nom AS liv_nom,
+                al.email AS liv_email,
+                al.telephone AS liv_tel,
+                al.adresse AS liv_adresse,
+                al.complement AS liv_complement,
+                al.code_postal AS liv_cp,
+                al.ville AS liv_ville
 
             FROM commande c
-            JOIN client cl ON cl.id = c.id_client
             LEFT JOIN adresse af ON af.id = c.id_adresse_facturation
             LEFT JOIN adresse al ON al.id = c.id_adresse_livraison
 
@@ -56,6 +62,7 @@ function BOCommande() {
         foreach ($bo_commande_produits as &$p) {
             $imgs = array_values(array_filter(array_map('trim', explode(',', $p['image'] ?? ''))));
             $p['image'] = $imgs[0] ?? null;
+            $p['prix_ht'] = $p['prix_ht'] / 100; // Normalisation en euros
             $p['prix_ttc'] = round($p['prix_ht'] * (1 + $p['taux_tva'] / 100), 2);
         }
 
