@@ -145,7 +145,7 @@
                                 <td><?php echo $p['taux_tva']; ?>%</td>
                                 <td><?php echo number_format($p['prix_ttc'], 2, ',', ' '); ?>€</td>
                                 <td style="font-weight:700;">
-                                    <?php echo number_format($p['prix_ttc'] * $p['quantite'] + 4.99, 2, ',', ' '); ?>€
+                                    <?php echo number_format($p['prix_ttc'] * $p['quantite'], 2, ',', ' '); ?>€
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -159,13 +159,20 @@
                 <div class="bo-card">
                     <div class="bo-card-title"><i class="bi bi-calculator"></i> Récapitulatif</div>
                     <div class="bo-info-row">
-                        <span class="label">Total TTC</span>
-                        <span class="value" style="font-size:1.5rem;">
-                        <?php echo number_format((float)$bo_commande['total_ttc'], 2, ',', ' '); ?>€
-                    </span>
+                        <span class="label">Frais de livraison</span>
+                        <span class="value">
+                            <?php echo number_format((float)($bo_commande['frais_livraison'] ?? 0), 2, ',', ' '); ?>€
+                        </span>
+                    </div>
+
+                    <div class="bo-info-row mt-3">
+                        <span class="label">Total :</span>
+                        <span class="value" style="font-size:1.5rem; color: var(--bo-primary);">
+                            <?php echo number_format((float)$bo_commande['total_ttc'], 2, ',', ' '); ?>€
+                        </span>
                     </div>
                     <div class="bo-info-row">
-                        <span class="label">Statut commande</span>
+                        <span class="label">Statut commande :</span>
                         <span class="value"><span class="bo-badge bo-badge-<?php echo $bo_commande['statut']; ?>"><?php echo $bo_commande['statut']; ?></span></span>
                     </div>
                 </div>

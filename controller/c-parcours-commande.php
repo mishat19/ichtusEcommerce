@@ -216,9 +216,9 @@ function creerCommande() {
     // Création commande
     $stmt = $pdo->prepare("
         INSERT INTO commande (
-            id_client, numero_facture, total_ttc,
+            id_client, numero_facture, total_ttc, frais_livraison,
             id_adresse_facturation, id_adresse_livraison, date_commande, statut
-        ) VALUES (?, ?, ?, ?, ?, NOW(), ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)
     ");
 
     $adresseFact = getAdressesByType($_SESSION['idClient'], 'facturation')[0]['id'];
@@ -234,6 +234,7 @@ function creerCommande() {
         $idClient,
         $numeroFacture,
         $totalFinal,
+        $fraisLivraison,
         $adresseFact,
         $adresseLivr,
         'en_attente',

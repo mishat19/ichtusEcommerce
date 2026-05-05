@@ -14,17 +14,142 @@
     </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- CA Chart (Line) ---
+    const caCtx = document.getElementById('caChart').getContext('2d');
+    const chartData = <?php echo json_encode($bo_stats['charts']); ?>;
+    let currentCAChart;
+
+    function updateCAChart(period) {
+        const data = chartData[period];
+        const labels = data.map(item => {
+            if (period === 'jour') {
+                return new Date(item.label).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+            }
+            return item.label;
+        });
+        const values = data.map(item => item.total / 100);
+
+        if (currentCAChart) currentCAChart.destroy();
+
+        currentCAChart = new Chart(caCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Chiffre d\'Affaires (€)',
+                    data: values,
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#4f46e5',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: '#1e293b',
+                        callbacks: {
+                            label: (context) => context.parsed.y.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { callback: (value) => value.toLocaleString('fr-FR') + ' €' } 
+                    }
+                }
+            }
+        });
+    }
+
+    // --- Status Chart (Doughnut) ---
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Payées', 'En attente', 'Annulées'],
+            datasets: [{
+                data: [
+                    <?php echo $bo_stats['commandes_payees']; ?>,
+                    <?php echo $bo_stats['commandes_attente']; ?>,
+                    <?php echo $bo_stats['commandes_annulees']; ?>
+                ],
+                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                hoverOffset: 4,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { usePointStyle: true, font: { size: 11 } }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // Toggle logic for CA Chart
+    document.querySelectorAll('.chart-toggle').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.chart-toggle').forEach(b => {
+                b.classList.remove('active', 'btn-white', 'shadow-sm');
+                b.classList.add('btn-transparent');
+            });
+            this.classList.add('active', 'btn-white', 'shadow-sm');
+            this.classList.remove('btn-transparent');
+            updateCAChart(this.dataset.period);
+        });
+    });
+
+    // Initial load
+    updateCAChart('jour');
+});
+</script>
+
+
+
+
+
+
 <div class="bo-content">
 
     <!-- STATS -->
-    <div class="row g-4 mb-5">
+    <div class="row g-4 mb-4">
 
         <?php
+        $count_current = $bo_stats['evo_commandes']['count_current'];
+        $count_prev = $bo_stats['evo_commandes']['count_prev'];
+        $evo_percent = 0;
+        if ($count_prev > 0) {
+            $evo_percent = (($count_current - $count_prev) / $count_prev) * 100;
+        } elseif ($count_current > 0) {
+            $evo_percent = 100;
+        }
+        $evo_class = $evo_percent >= 0 ? 'text-success' : 'text-danger';
+        $evo_icon = $evo_percent >= 0 ? 'bi-arrow-up-right' : 'bi-arrow-down-right';
+
         $statsCards = [
                 ['label' => "Chiffre d'affaires", 'value' => number_format((float)($bo_stats['ca_total'] / 100), 2, ',', ' ') . ' €', 'icon' => 'bi-currency-euro', 'color' => 'primary'],
-                ['label' => "Commandes totales", 'value' => $bo_stats['total_commandes'], 'icon' => 'bi-cart-check', 'color' => 'success'],
+                ['label' => "Panier Moyen", 'value' => number_format((float)$bo_stats['panier_moyen'], 2, ',', ' ') . ' €', 'icon' => 'bi-basket', 'color' => 'info'],
+                ['label' => "Commandes du mois", 'value' => $count_current, 'icon' => 'bi-cart-check', 'color' => 'success', 'evo' => $evo_percent],
                 ['label' => "En attente", 'value' => $bo_stats['commandes_attente'], 'icon' => 'bi-hourglass-split', 'color' => 'warning'],
-                ['label' => "Clients actifs", 'value' => '124', 'icon' => 'bi-people', 'color' => 'info'], // Mock value for visual
         ];
         ?>
 
@@ -34,6 +159,12 @@
                     <div>
                         <div class="bo-stat-label"><?php echo $s['label']; ?></div>
                         <div class="bo-stat-value"><?php echo $s['value']; ?></div>
+                        <?php if (isset($s['evo'])): ?>
+                            <div class="extra-small mt-2 <?php echo $evo_class; ?> fw-bold">
+                                <i class="bi <?php echo $evo_icon; ?>"></i>
+                                <?php echo number_format(abs($s['evo']), 1); ?>% vs mois dernier
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <div class="bo-stat-icon" style="background: rgba(var(--bs-<?php echo $s['color']; ?>-rgb), 0.1); color: var(--bs-<?php echo $s['color']; ?>);">
                         <i class="bi <?php echo $s['icon']; ?>"></i>
@@ -42,6 +173,42 @@
             </div>
         <?php endforeach; ?>
 
+    </div>
+
+    <!-- GRAPHS -->
+    <div class="row mb-5 g-4">
+        <!-- GRAPH CA -->
+        <div class="col-lg-8">
+            <div class="bo-card h-100 mb-0">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="bo-card-title mb-0">
+                        <i class="bi bi-graph-up-arrow text-primary"></i>
+                        Évolution du Chiffre d'Affaires
+                    </div>
+                    <div class="btn-group btn-group-sm p-1 bg-light rounded-pill" role="group">
+                        <button type="button" class="btn btn-white rounded-pill px-3 shadow-sm chart-toggle active" data-period="jour">Jour</button>
+                        <button type="button" class="btn btn-transparent rounded-pill px-3 chart-toggle" data-period="mois">Mois</button>
+                        <button type="button" class="btn btn-transparent rounded-pill px-3 chart-toggle" data-period="an">Année</button>
+                    </div>
+                </div>
+                <div style="height: 300px;">
+                    <canvas id="caChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRAPH STATUS -->
+        <div class="col-lg-4">
+            <div class="bo-card h-100 mb-0">
+                <div class="bo-card-title mb-4">
+                    <i class="bi bi-pie-chart-fill text-info"></i>
+                    Statuts des Commandes
+                </div>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row g-4">
