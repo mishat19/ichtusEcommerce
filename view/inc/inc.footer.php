@@ -3,44 +3,49 @@
 <!-- Footer -->
 <footer class="py-5">
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-4 footer-column">
-                <h5 class="text-center text-md-start">Les Délices Fruités</h5>
-                <p class="text-center text-md-start">
-                    Artisans depuis 1985, nous créons des pâtes de fruits d'exception pour vos moments gourmands.
+        <div class="row g-4 text-center text-md-start">
+            <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+                <div class="d-flex align-items-center mb-3 justify-content-center justify-content-md-start">
+                    <img src="/images/logo.png" alt="Les Délices Fruités" height="45" class="me-2">
+                    <h5 class="mb-0 fw-bold">Les Délices Fruités</h5>
+                </div>
+                <p class="opacity-75 mb-4">
+                    Artisans depuis 1985, nous créons des pâtes de fruits d'exception pour vos moments gourmands avec passion et savoir-faire.
                 </p>
-                <div class="d-flex justify-content-center justify-content-md-start">
-                    <a href="#" class="text-white me-2"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="text-white me-2"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-pinterest"></i></a>
+                <div class="d-flex justify-content-center justify-content-md-start gap-3">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f fa-lg"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram fa-lg"></i></a>
+                    <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest fa-lg"></i></a>
                 </div>
             </div>
-            <div class="col-md-2 footer-column">
-                <h5 class="text-center text-md-start">Liens utiles</h5>
-                <ul class="list-unstyled text-center text-md-start">
-                    <li><a href="/produit" class="text-white">Boutique</a></li>
-                    <li><a href="/about" class="text-white">À Propos</a></li>
-                    <li><a href="/contact" class="text-white">Contact</a></li>
-                    <li><a href="/faq" class="text-white">FAQ</a></li>
+            
+            <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+                <h5 class="mb-3">Liens utiles</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><a href="/produit">Boutique</a></li>
+                    <li class="mb-2"><a href="/about">À Propos</a></li>
+                    <li class="mb-2"><a href="/contact">Contact</a></li>
+                    <li class="mb-2"><a href="/faq">FAQ</a></li>
                 </ul>
             </div>
-            <div class="col-md-3 footer-column">
-                <h5 class="text-center text-md-start">Newsletter</h5>
-                <p class="text-center text-md-start">Inscrivez-vous pour recevoir nos offres spéciales.</p>
-                <form class="d-flex justify-content-center justify-content-md-start">
+            
+            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                <h5 class="mb-3">Newsletter</h5>
+                <p class="opacity-75 mb-3">Inscrivez-vous pour recevoir nos offres spéciales.</p>
+                <form class="d-flex">
                     <div class="input-group">
-                        <input type="email" class="form-control" placeholder="Votre email">
-                        <button class="btn btn-outline-light" type="submit">S'inscrire</button>
+                        <input type="email" class="form-control bg-transparent text-white border-white" placeholder="Votre email" aria-label="Email pour newsletter" style="border-opacity: 0.5;">
+                        <button class="btn btn-outline-light" type="submit">OK</button>
                     </div>
                 </form>
             </div>
-            <div class="col-md-3 footer-column">
-                <h5 class="text-center text-md-start">Contact</h5>
-                <address class="text-center text-md-start">
-                    123 Rue des Gourmets<br>
-                    75000 Paris, France<br>
-                    <i class="fas fa-phone"></i> +33 1 23 45 67 89<br>
-                    <i class="fas fa-envelope"></i> contact@lesdelicesfruites.fr
+            
+            <div class="col-lg-3 col-md-6">
+                <h5 class="mb-3">Contact</h5>
+                <address class="opacity-75 mb-0">
+                    <p class="mb-2"><i class="fas fa-location-dot me-2"></i> 123 Rue des Gourmets<br>75000 Paris, France</p>
+                    <p class="mb-2"><i class="fas fa-phone me-2"></i> +33 1 23 45 67 89</p>
+                    <p class="mb-0"><i class="fas fa-envelope me-2"></i> contact@lesdelicesfruites.fr</p>
                 </address>
             </div>
         </div>

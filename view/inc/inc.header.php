@@ -3,8 +3,9 @@
 <header class="bg-white shadow-sm sticky-top">
     <nav class="navbar navbar-expand-lg navbar-light container">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/accueil">
-                Les Délices Fruités
+            <a class="navbar-brand d-flex align-items-center" href="/accueil">
+                <img src="/images/logo.png" alt="Les Délices Fruités" height="45" class="me-2">
+                <span class="fw-bold" style="font-family: 'Outfit', sans-serif; color: var(--primary-color);">Les Délices Fruités</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>

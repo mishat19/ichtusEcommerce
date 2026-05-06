@@ -10,23 +10,45 @@
     <title>Les Délices Fruités - Pâtes de Fruits Haut de Gamme</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
-            --primary-color: #8B4513;
-            --secondary-color: #F5DEB3;
-            --accent-color: #D2691E;
+            --primary-color: #2D5A27;    /* Vert Forêt */
+            --secondary-color: #FCF8F3;  /* Crème */
+            --accent-color: #FF6B6B;     /* Corail */
+            --text-dark: #2C3E50;        /* Ardoise */
         }
         body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #f8f9fa;
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfdfd;
+            color: var(--text-dark);
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            color: var(--text-dark);
         }
         .nav-link.active {
-            font-weight: bold;
-            color: var(--accent-color) !important;
-            border-bottom: 2px solid var(--accent-color);
+            font-weight: 600;
+            color: var(--primary-color) !important;
+            border-bottom: 2px solid var(--primary-color);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            font-weight: 500;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+        }
+        .btn-primary:hover {
+            background-color: #24491f;
+            border-color: #24491f;
         }
         .hero-section {
             background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://source.unsplash.com/random/1600x900/?fruit') no-repeat center center;
@@ -97,15 +119,98 @@
         }
         footer {
             background-color: var(--primary-color);
+            color: rgba(255, 255, 255, 0.8);
+        }
+        footer h1, footer h2, footer h3, footer h4, footer h5, footer h6 {
+            color: white !important;
+        }
+        footer a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        footer a:hover {
+            color: white;
+            opacity: 0.7;
+        }
+        footer .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        footer .form-control:focus {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            box-shadow: none;
             color: white;
         }
         .testimonial {
             background-color: var(--secondary-color);
-            padding: 20px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 15px;
             height: 100%;
             display: flex;
             flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+        .testimonial:hover {
+            transform: scale(1.02);
+        }
+        .carousel-indicators [data-bs-target] {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--primary-color);
+            opacity: 0.3;
+        }
+        .carousel-indicators .active {
+            opacity: 1;
+        }
+        /* Style des contrôles du carrousel */
+        .carousel-control-prev, .carousel-control-next {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 1;
+            transition: all 0.3s ease;
+        }
+        .carousel-control-prev {
+            left: -60px;
+        }
+        .carousel-control-next {
+            right: -60px;
+        }
+        .carousel-control-prev:hover, .carousel-control-next:hover {
+            background-color: var(--text-dark);
+            transform: translateY(-50%) scale(1.1);
+        }
+        .carousel-control-prev-icon, .carousel-control-next-icon {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Ajustement du conteneur pour laisser de la place aux flèches sur PC */
+        @media (min-width: 1200px) {
+            #testimonialCarousel {
+                padding: 0 60px;
+            }
+            .carousel-control-prev {
+                left: 0;
+            }
+            .carousel-control-next {
+                right: 0;
+            }
+        }
+        
+        @media (max-width: 991px) {
+            .carousel-control-prev, .carousel-control-next {
+                display: none !important;
+            }
+            #testimonialCarousel {
+                padding: 0;
+            }
         }
         .search-bar {
             width: 200px;
@@ -204,6 +309,9 @@
         }
         .btn-light-blue:hover {
             background-color: #bbdefb;
+        }
+        .filter-white {
+            filter: brightness(0) invert(1);
         }
     </style>
 </head>

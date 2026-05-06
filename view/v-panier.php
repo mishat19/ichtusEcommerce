@@ -9,11 +9,6 @@
         </a>
     </div>
 
-    adresse
-    complement
-    code_postal
-    ville
-
     <!-- Message si le panier est vide -->
     <?php if ($panier['nb_lignes'] == 0): ?>
         <div class="alert alert-info text-center">
@@ -143,8 +138,8 @@
                             <p class="small text-muted mb-1"><i class="fa-solid fa-lock me-1"></i> Paiement 100% sécurisé</p>
                             <div class="d-flex justify-content-center gap-2">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Visa_Inc._logo_%282021%E2%80%93present%29.svg" alt="Visa" style="height: 20px;">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/MasterCard_Logo.svg/1200px-MasterCard_Logo.svg.png" alt="Mastercard" style="height: 20px;">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/1200px-PayPal.svg.png" alt="PayPal" style="height: 20px;">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style="height: 20px;">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style="height: 20px;">
                             </div>
                         </div>
                     </div>

@@ -27,11 +27,15 @@
                 $badgeClass = "bg-warning text-dark";
                 $label = "Annulée";
             }
+            elseif ($statut === "en_attente") {
+                $badgeClass = "bg-warning text-dark";
+                $label = "En attente";
+            }
             ?>
 
             <!-- Card Commande -->
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div class="card-header bg-light d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                     <div>
                         <h5 class="mb-0">
                             Commande n°<?= htmlspecialchars($commande['numero_facture']) ?>
@@ -41,7 +45,10 @@
                         </small>
                     </div>
 
-                    <div class="text-end">
+                    <div class="d-flex align-items-center gap-3 text-md-end">
+                        <span class="fw-bold">
+                            <?= number_format($commande['total_ttc'], 2, ',', ' ') ?> €
+                        </span>
                         <span class="badge <?= $badgeClass ?>">
                             <?= $label ?>
                         </span>
@@ -58,7 +65,6 @@
                                 <th>Produit</th>
                                 <th class="text-center">Prix unitaire</th>
                                 <th class="text-center">Quantité</th>
-                                <th class="text-end">Total</th>
                             </tr>
                             </thead>
 
@@ -87,10 +93,6 @@
 
                                     <td class="text-center">
                                         <?= htmlspecialchars($produit['quantite']) ?>
-                                    </td>
-
-                                    <td class="text-end">
-                                        <?= number_format($commande['total_ttc'], 2, ',', ' ') ?> €
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
