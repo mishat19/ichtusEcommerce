@@ -17,6 +17,7 @@ function panier(): void
      *  🔥 TRAITEMENT DES ACTIONS (POST)
      * ══════════════════════════════════════════════ */
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        verify_csrf();
         // 🔄 Modifier quantité
         if (isset($_POST['id_ligne'], $_POST['quantite']) && $_POST['id_ligne'] && $_POST['quantite'] >= 0) {
             modifierQuantite(
@@ -300,7 +301,7 @@ function getTotalCommande($idCommande){
             Swal.fire({
                 icon: 'warning',
                 title: 'Adresses manquantes',
-                text: '<?= $_SESSION['erreur'] ?>',
+                text: '<?php e($_SESSION['erreur']); ?>',
                 confirmButtonText: 'Aller à mon profil',
                 allowOutsideClick: false
             }).then((result) => {

@@ -17,8 +17,8 @@
                             <!-- Infos utilisateur -->
                             <div>
                                 <h2 class="mb-1">
-                                    <?= htmlspecialchars($client['prenom'] ?? 'Prénom') ?>
-                                    <?= htmlspecialchars($client['nom'] ?? 'Nom') ?>
+                                    <?php e($client['prenom'] ?? 'Prénom'); ?>
+                                    <?php e($client['nom'] ?? 'Nom'); ?>
                                 </h2>
                                 <p class="text-muted mb-2">
                                     Âge non renseigné
@@ -88,15 +88,15 @@
                                 <div class="card h-100 shadow-sm">
                                     <div class="card-body">
                                         <h6>
-                                            <?= htmlspecialchars($adresse['prenom']) ?>
-                                            <?= htmlspecialchars($adresse['nom']) ?>
+                                            <?php e($adresse['prenom']); ?>
+                                            <?php e($adresse['nom']); ?>
                                         </h6>
 
-                                        <p class="mb-1"><?= htmlspecialchars($adresse['adresse']) ?></p>
-                                        <p class="mb-1"><?= htmlspecialchars($adresse['code_postal']) ?> <?= htmlspecialchars($adresse['ville']) ?></p>
+                                        <p class="mb-1"><?php e($adresse['adresse']); ?></p>
+                                        <p class="mb-1"><?php e($adresse['code_postal']); ?> <?php e($adresse['ville']); ?></p>
 
                                         <span class="badge bg-secondary">
-                                            <?= htmlspecialchars($adresse['type']) ?>
+                                            <?php e($adresse['type']); ?>
                                         </span>
 
                                         <?php if ($adresse['est_par_defaut']) : ?>
@@ -106,15 +106,17 @@
                                         <!-- Boutons Modifier et Supprimer -->
                                         <div class="mt-2 d-flex gap-2">
                                             <form method="POST" style="display:inline;">
+    <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
                                                 <input type="hidden" name="action" value="edit">
-                                                <input type="hidden" name="id" value="<?= $adresse['id'] ?>">
+                                                <input type="hidden" name="id" value="<?php e($adresse['id']); ?>">
                                                 <button type="submit" class="btn btn-sm btn-outline-primary">
                                                     Modifier
                                                 </button>
                                             </form>
                                             <form method="POST" style="display:inline;">
+    <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
                                                 <input type="hidden" name="action" value="delete">
-                                                <input type="hidden" name="id" value="<?= $adresse['id'] ?>">
+                                                <input type="hidden" name="id" value="<?php e($adresse['id']); ?>">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger"
                                                         onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette adresse ?')">
                                                     Supprimer
@@ -138,61 +140,62 @@
                 </div>
 
                 <!-- 🧾 FORMULAIRE -->
-                <div id="formAdresse" style="display:<?= $adresseEdit ? 'block' : 'none' ?>;" class="mt-4">
+                <div id="formAdresse" style="display:<?php e($adresseEdit ? 'block' : 'none'); ?>;" class="mt-4">
                     <form method="POST">
+    <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
                         <?php if ($adresseEdit) : ?>
-                            <input type="hidden" name="id" value="<?= $adresseEdit['id'] ?>">
+                            <input type="hidden" name="id" value="<?php e($adresseEdit['id']); ?>">
                         <?php endif; ?>
                         <div class="row">
                             <div class="col-md-6 mb-2">
                                 <input type="text" name="prenom" class="form-control" placeholder="Prénom"
-                                       value="<?= htmlspecialchars($adresseEdit['prenom'] ?? '') ?>" required>
+                                       value="<?php e($adresseEdit['prenom'] ?? ''); ?>" required>
                             </div>
                             <div class="col-md-6 mb-2">
                                 <input type="text" name="nom" class="form-control" placeholder="Nom"
-                                       value="<?= htmlspecialchars($adresseEdit['nom'] ?? '') ?>" required>
+                                       value="<?php e($adresseEdit['nom'] ?? ''); ?>" required>
                             </div>
 
                             <div class="col-md-6 mb-2">
                                 <input type="email" name="email" class="form-control" placeholder="Email"
-                                       value="<?= htmlspecialchars($adresseEdit['email'] ?? '') ?>" required>
+                                       value="<?php e($adresseEdit['email'] ?? ''); ?>" required>
                             </div>
                             <div class="col-md-6 mb-2">
                                 <input type="text" name="telephone" class="form-control" placeholder="Téléphone"
-                                       value="<?= htmlspecialchars($adresseEdit['telephone'] ?? '') ?>" required>
+                                       value="<?php e($adresseEdit['telephone'] ?? ''); ?>" required>
                             </div>
 
                             <div class="col-md-12 mb-2">
                                 <input type="text" name="adresse" class="form-control" placeholder="Adresse"
-                                       value="<?= htmlspecialchars($adresseEdit['adresse'] ?? '') ?>" required>
+                                       value="<?php e($adresseEdit['adresse'] ?? ''); ?>" required>
                             </div>
 
                             <div class="col-md-12 mb-2">
                                 <input type="text" name="complement" class="form-control" placeholder="Complément"
-                                       value="<?= htmlspecialchars($adresseEdit['complement'] ?? '') ?>">
+                                       value="<?php e($adresseEdit['complement'] ?? ''); ?>">
                             </div>
 
                             <div class="col-md-6 mb-2">
                                 <input type="text" name="code_postal" class="form-control" placeholder="Code postal"
-                                       value="<?= htmlspecialchars($adresseEdit['code_postal'] ?? '') ?>" required>
+                                       value="<?php e($adresseEdit['code_postal'] ?? ''); ?>" required>
                             </div>
 
                             <div class="col-md-6 mb-2">
                                 <input type="text" name="ville" class="form-control" placeholder="Ville"
-                                       value="<?= htmlspecialchars($adresseEdit['ville'] ?? '') ?>" required>
+                                       value="<?php e($adresseEdit['ville'] ?? ''); ?>" required>
                             </div>
 
                             <div class="col-md-6 mb-2">
                                 <select name="type" class="form-select" required>
-                                    <option value="livraison" <?= (isset($adresseEdit['type']) && $adresseEdit['type'] === 'livraison') ? 'selected' : '' ?>>Livraison</option>
-                                    <option value="facturation" <?= (isset($adresseEdit['type']) && $adresseEdit['type'] === 'facturation') ? 'selected' : '' ?>>Facturation</option>
+                                    <option value="livraison" <?php e((isset($adresseEdit['type']) && $adresseEdit['type'] === 'livraison') ? 'selected' : ''); ?>>Livraison</option>
+                                    <option value="facturation" <?php e((isset($adresseEdit['type']) && $adresseEdit['type'] === 'facturation') ? 'selected' : ''); ?>>Facturation</option>
                                 </select>
                             </div>
 
                             <!-- ⭐ Adresse par défaut -->
                             <div class="col-md-6 mb-2 d-flex align-items-center">
                                 <input type="checkbox" name="est_par_defaut" class="form-check-input me-2"
-                                        <?= (isset($adresseEdit['est_par_defaut']) && $adresseEdit['est_par_defaut']) ? 'checked' : '' ?>>
+                                        <?php e((isset($adresseEdit['est_par_defaut']) && $adresseEdit['est_par_defaut']) ? 'checked' : ''); ?>>
                                 <label>Adresse par défaut</label>
                             </div>
 

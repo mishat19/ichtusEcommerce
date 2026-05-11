@@ -16,7 +16,7 @@
                 <p class="lead">Votre commande a été confirmée.</p>
 
                 <p>
-                    Commande n° <strong><?= htmlspecialchars($_SESSION['commande']['numero']) ?></strong>
+                    Commande n° <strong><?php e($_SESSION['commande']['numero']); ?></strong>
                 </p>
 
                 <div class="mt-4">

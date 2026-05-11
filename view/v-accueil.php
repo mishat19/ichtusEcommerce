@@ -19,12 +19,12 @@
                 ?>
                 <div class="col-md-4">
                     <div class="card product-card h-100">
-                        <img src="/images/<?= htmlspecialchars($produit['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($produit['nom']) ?>">
+                        <img src="/images/<?php e($produit['image']); ?>" class="card-img-top" alt="<?php e($produit['nom']); ?>">
                         <div class="card-body d-flex flex-column align-items-center text-center">
-                            <h5 class="card-title"><?= htmlspecialchars($produit['nom']) ?></h5>
+                            <h5 class="card-title"><?php e($produit['nom']); ?></h5>
                             <div class="mt-auto w-100">
-                                <p class="fw-bold mt-2 mb-0"><?= number_format($produit['prix_ttc'] / 100, 2, ',', ' ') ?>€ / 100g</p>
-                                <form method="GET" action="/produit/<?= $produit['identifiant'] ?>" class="mt-3">
+                                <p class="fw-bold mt-2 mb-0"><?php e(number_format($produit['prix_ttc'] / 100, 2, ',', ' ')); ?>€ / 100g</p>
+                                <form method="GET" action="/produit/<?php e($produit['identifiant']); ?>" class="mt-3">
                                     <button type="submit" class="btn btn-primary w-100">
                                         <i class="fas fa-eye me-2"></i> Voir le produit
                                     </button>
@@ -77,26 +77,26 @@
             <!-- Indicators (dots) -->
             <div class="carousel-indicators" style="bottom: -40px;">
                 <?php for ($i = 0; $i < count($testimonials); $i++): ?>
-                    <button type="button" data-bs-target="#testimonialCarousel" data-bs-slide-to="<?= $i ?>" class="<?= $i === 0 ? 'active' : '' ?>" aria-current="<?= $i === 0 ? 'true' : 'false' ?>" aria-label="Slide <?= $i + 1 ?>"></button>
+                    <button type="button" data-bs-target="#testimonialCarousel" data-bs-slide-to="<?php e($i); ?>" class="<?php echo $i === 0 ? 'active' : ''; ?>" aria-current="<?php echo $i === 0 ? 'true' : 'false'; ?>" aria-label="Slide <?php e($i + 1); ?>"></button>
                 <?php endfor; ?>
             </div>
 
             <div class="carousel-inner pb-5">
                 <?php foreach ($testimonials as $index => $t): ?>
-                    <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                    <div class="carousel-item <?php echo $index === 0 ? 'active' : ''; ?>">
                         <div class="row g-4">
                             <!-- Item 1 (Always visible) -->
                             <div class="col-12 col-md-6 col-lg-4">
                                 <div class="testimonial shadow-sm border-0 h-100">
                                     <div class="mb-3 text-warning">
                                         <?php for($s=0; $s<5; $s++): ?>
-                                            <i class="fas fa-star<?= ($s < floor($t['stars'])) ? '' : ($t['stars'] > $s ? '-half-alt' : '-o') ?>"></i>
+                                            <i class="fas fa-star<?php e(($s < floor($t['stars'])) ? '' : ($t['stars'] > $s ? '-half-alt' : '-o')); ?>"></i>
                                         <?php endfor; ?>
                                     </div>
-                                    <p class="mb-4 flex-grow-1"><?= htmlspecialchars($t['text']) ?></p>
+                                    <p class="mb-4 flex-grow-1"><?php e($t['text']); ?></p>
                                     <div class="mt-auto">
-                                        <h6 class="fw-bold mb-0"><?= htmlspecialchars($t['name']) ?></h6>
-                                        <small class="text-muted"><?= htmlspecialchars($t['role']) ?></small>
+                                        <h6 class="fw-bold mb-0"><?php e($t['name']); ?></h6>
+                                        <small class="text-muted"><?php e($t['role']); ?></small>
                                     </div>
                                 </div>
                             </div>
@@ -110,13 +110,13 @@
                                 <div class="testimonial shadow-sm border-0 h-100">
                                     <div class="mb-3 text-warning">
                                         <?php for($s=0; $s<5; $s++): ?>
-                                            <i class="fas fa-star<?= ($s < floor($t2['stars'])) ? '' : ($t2['stars'] > $s ? '-half-alt' : '-o') ?>"></i>
+                                            <i class="fas fa-star<?php e(($s < floor($t2['stars'])) ? '' : ($t2['stars'] > $s ? '-half-alt' : '-o')); ?>"></i>
                                         <?php endfor; ?>
                                     </div>
-                                    <p class="mb-4 flex-grow-1"><?= htmlspecialchars($t2['text']) ?></p>
+                                    <p class="mb-4 flex-grow-1"><?php e($t2['text']); ?></p>
                                     <div class="mt-auto">
-                                        <h6 class="fw-bold mb-0"><?= htmlspecialchars($t2['name']) ?></h6>
-                                        <small class="text-muted"><?= htmlspecialchars($t2['role']) ?></small>
+                                        <h6 class="fw-bold mb-0"><?php e($t2['name']); ?></h6>
+                                        <small class="text-muted"><?php e($t2['role']); ?></small>
                                     </div>
                                 </div>
                             </div>
@@ -130,13 +130,13 @@
                                 <div class="testimonial shadow-sm border-0 h-100">
                                     <div class="mb-3 text-warning">
                                         <?php for($s=0; $s<5; $s++): ?>
-                                            <i class="fas fa-star<?= ($s < floor($t3['stars'])) ? '' : ($t3['stars'] > $s ? '-half-alt' : '-o') ?>"></i>
+                                            <i class="fas fa-star<?php e(($s < floor($t3['stars'])) ? '' : ($t3['stars'] > $s ? '-half-alt' : '-o')); ?>"></i>
                                         <?php endfor; ?>
                                     </div>
-                                    <p class="mb-4 flex-grow-1"><?= htmlspecialchars($t3['text']) ?></p>
+                                    <p class="mb-4 flex-grow-1"><?php e($t3['text']); ?></p>
                                     <div class="mt-auto">
-                                        <h6 class="fw-bold mb-0"><?= htmlspecialchars($t3['name']) ?></h6>
-                                        <small class="text-muted"><?= htmlspecialchars($t3['role']) ?></small>
+                                        <h6 class="fw-bold mb-0"><?php e($t3['name']); ?></h6>
+                                        <small class="text-muted"><?php e($t3['role']); ?></small>
                                     </div>
                                 </div>
                             </div>

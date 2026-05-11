@@ -36,6 +36,7 @@ function commandeAdresses(): void
        POST (DELETE / EDIT / SAVE)
     ========================== */
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        verify_csrf();
 
         // ❌ DELETE
         if (isset($_POST['action']) && $_POST['action'] === 'delete') {
@@ -211,36 +212,55 @@ function creerCommande() {
     $fraisLivraison = ($totalTTC >= 50) ? 0 : 4.99;
     $totalFinal = round($totalTTC + $fraisLivraison, 2);
 
-    $numeroFacture = 'FACT-' . date('Ymd') . '-' . strtoupper(uniqid());
-
-    // Création commande
-    $stmt = $pdo->prepare("
-        INSERT INTO commande (
-            id_client, numero_facture, total_ttc, frais_livraison,
-            id_adresse_facturation, id_adresse_livraison, date_commande, statut
-        ) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)
+    // Vérifier si une commande en attente existe déjà pour ce client et ce panier
+    // On évite ainsi les doublons si l'utilisateur rafraîchit la page de paiement
+    $stmtCheck = $pdo->prepare("
+        SELECT id FROM commande 
+        WHERE id_client = ? AND statut = 'en_attente' 
+        ORDER BY date_commande DESC LIMIT 1
     ");
+    $stmtCheck->execute([$idClient]);
+    $existingCommande = $stmtCheck->fetch();
 
-    $adresseFact = getAdressesByType($_SESSION['idClient'], 'facturation')[0]['id'];
-    $adresseLivr = getAdressesByType($_SESSION['idClient'], 'livraison')[0]['id'];
+    if ($existingCommande) {
+        $idCommande = $existingCommande['id'];
+        // On met à jour le montant au cas où le panier aurait changé
+        $pdo->prepare("UPDATE commande SET total_ttc = ?, date_commande = NOW() WHERE id = ?")
+            ->execute([$totalFinal, $idCommande]);
+        
+        // On vide et on re-remplit les produits pour être sûr qu'ils correspondent au panier actuel
+        $pdo->prepare("DELETE FROM commande_produit WHERE id_commande = ?")->execute([$idCommande]);
+    } else {
+        $numeroFacture = 'FACT-' . date('Ymd') . '-' . strtoupper(uniqid());
+        
+        $stmt = $pdo->prepare("
+            INSERT INTO commande (
+                id_client, numero_facture, total_ttc, frais_livraison,
+                id_adresse_facturation, id_adresse_livraison, date_commande, statut
+            ) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)
+        ");
 
-    if (empty($adresseFact) || empty($adresseLivr)) {
-        $_SESSION['erreur'] = "Adresses manquantes. Veuillez sélectionner vos adresses.";
-        header('Location: /adresses');
-        exit;
+        $adresseFact = getAdressesByType($_SESSION['idClient'], 'facturation')[0]['id'];
+        $adresseLivr = getAdressesByType($_SESSION['idClient'], 'livraison')[0]['id'];
+
+        if (empty($adresseFact) || empty($adresseLivr)) {
+            $_SESSION['erreur'] = "Adresses manquantes. Veuillez sélectionner vos adresses.";
+            header('Location: /adresses');
+            exit;
+        }
+
+        $stmt->execute([
+            $idClient,
+            $numeroFacture,
+            $totalFinal,
+            $fraisLivraison,
+            $adresseFact,
+            $adresseLivr,
+            'en_attente',
+        ]);
+
+        $idCommande = $pdo->lastInsertId();
     }
-
-    $stmt->execute([
-        $idClient,
-        $numeroFacture,
-        $totalFinal,
-        $fraisLivraison,
-        $adresseFact,
-        $adresseLivr,
-        'en_attente',
-    ]);
-
-    $idCommande = $pdo->lastInsertId();
 
     // Produits
     foreach ($lignesPanier as $ligne) {
@@ -300,9 +320,21 @@ function paiementRefuse($idCommande) {
 // Page de confirmation
 function commandeConfirmation(): void
 {
-    global $param;
+    global $param, $pdo;
 
     $etat = $param ?? 'confirme';
+
+    // Si le paiement est confirmé, on vide le panier de l'utilisateur
+    if ($etat === 'confirme' || $etat === 'ok') {
+        if (isset($_SESSION['idClient'])) {
+            $idPanier = verifPanier();
+            $pdo->prepare("DELETE FROM panier_produit WHERE id_panier = ?")
+                ->execute([$idPanier]);
+            
+            // On peut aussi nettoyer les adresses ici
+            nettoyerAdressesInutilisees($_SESSION['idClient']);
+        }
+    }
 
     require_once 'view/inc/inc.head.php';
     require_once 'view/inc/inc.header.php';

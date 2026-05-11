@@ -28,11 +28,21 @@ function runFullDiagnostic() {
     ];
 
     foreach ($routes_to_test as $name => $path) {
-        $api_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$path";
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
+        $api_url = "$protocol://$host$path";
+        
         $ch = curl_init($api_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 3);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        
+        // Authentification pour les APIs internes
+        if (strpos($path, '/api/') === 0) {
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(['token' => 'WDIhUThWMz9aN0Y0VDFwOUE2']));
+        }
+
         curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);

@@ -2,14 +2,17 @@
 
 require_once 'model/model.php';
 
-session_start();
-$_SESSION['idClient'] = 1;
+// Debugging (temp)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 /* ───────── CONTROLLERS ───────── */
 require_once 'controller/c-accueil.php';
 require_once 'controller/c-produit.php';
 require_once 'controller/c-panier.php';
 require_once 'controller/c-profil.php';
+require_once 'controller/c-auth.php';
 require_once 'controller/c-commandes.php';
 require_once 'controller/c-parcours-commande.php';
 require_once 'controller/c-paiement.php';
@@ -55,6 +58,11 @@ if (isset($_GET['pageAPI'])) {
 switch ($page) {
     /* ───────── BO ───────── */
     case 'backoffice':
+        // Protection du Backoffice : Seulement pour les ADMINs
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'ADMIN') {
+            header('Location: /connexion');
+            exit;
+        }
 
         // /bo/commande
         if (isset($segments[1])) {
@@ -110,6 +118,10 @@ switch ($page) {
 
     /* ───────── PROFIL ───────── */
     case 'profil':
+        if (!isset($_SESSION['idClient'])) {
+            header('Location: /connexion');
+            exit;
+        }
 
         if (isset($segments[1])) {
 
@@ -169,6 +181,19 @@ switch ($page) {
             $_GET['confirmation'] = $param;
         }
         commandeConfirmation();
+        break;
+
+    /* ───────── AUTH ───────── */
+    case 'connexion':
+        connexion();
+        break;
+
+    case 'inscription':
+        inscription();
+        break;
+
+    case 'deconnexion':
+        deconnexion();
         break;
 
     /* ───────── DEFAULT ───────── */

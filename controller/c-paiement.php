@@ -23,7 +23,7 @@ function paiement(): void
     $PBX_TOTAL = (int)($commande['total_ttc'] * 100);
 
     $PBX_DEVISE = "978";
-    $PBX_CMD = "25gp1-" . $idCommande;
+    $PBX_CMD = "97gp1-" . $idCommande;
     $PBX_PORTEUR = "test@test.com";
     $PBX_RETOUR = "Mt:M;Ref:R;Auto:A;Erreur:E;Trans:S;Paiement:P;Sign:K";
 
@@ -109,8 +109,6 @@ function ipnPaiement(): void
             SET statut = 'payee' 
             WHERE id = ?
         ")->execute([$idCommande]);
-
-        $_SESSION['commande'] = paiementAccepte($idCommande);
     } elseif ($erreur === "00001") {
         $statut = "annule";
 

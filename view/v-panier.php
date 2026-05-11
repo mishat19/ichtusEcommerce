@@ -37,25 +37,26 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <img src="/images/<?= htmlspecialchars($ligne['image']) ?>" alt="<?= htmlspecialchars($ligne['nom']) ?>" class="img-thumbnail me-3" style="width: 80px;">
+                                        <img src="/images/<?php e($ligne['image']); ?>" alt="<?php e($ligne['nom']); ?>" class="img-thumbnail me-3" style="width: 80px;">
                                         <div>
-                                            <h6 class="mb-0"><?= htmlspecialchars($ligne['nom']) ?></h6>
-                                            <small class="text-muted">Réf: <?= htmlspecialchars($ligne['identifiant']) ?></small>
+                                            <h6 class="mb-0"><?php e($ligne['nom']); ?></h6>
+                                            <small class="text-muted">Réf: <?php e($ligne['identifiant']); ?></small>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <?= number_format(($ligne['prix_ht'] / 100) * (1 + $ligne['taux_tva'] / 100), 2, ',', ' ') ?>€
+                                    <?php e(number_format(($ligne['prix_ht'] / 100) * (1 + $ligne['taux_tva'] / 100), 2, ',', ' ')); ?>€
                                 </td>
                                 <td>
                                     <form method="POST" class="d-flex align-items-center">
-                                        <input type="hidden" name="id_ligne" value="<?= $ligne['id_ligne'] ?>">
+                                        <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
+                                        <input type="hidden" name="id_ligne" value="<?php e($ligne['id_ligne']); ?>">
                                         <div class="input-group" style="width: 100px;">
                                             <input
                                                     type="number"
                                                     name="quantite"
                                                     class="form-control text-center"
-                                                    value="<?= $ligne['quantite'] ?>"
+                                                    value="<?php e($ligne['quantite']); ?>"
                                                     min="0"
                                                     max="99"
                                                     required
@@ -64,11 +65,12 @@
                                     </form>
                                 </td>
                                 <td>
-                                    <?= number_format(($ligne['prix_ht'] / 100) * (1 + $ligne['taux_tva'] / 100) * $ligne['quantite'], 2, ',', ' ') ?>€
+                                    <?php e(number_format(($ligne['prix_ht'] / 100) * (1 + $ligne['taux_tva'] / 100) * $ligne['quantite'], 2, ',', ' ')); ?>€
                                 </td>
                                 <td>
                                     <form method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer ce produit ?');">
-                                        <input type="hidden" name="id_ligne" value="<?= $ligne['id_ligne'] ?>">
+                                        <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
+                                        <input type="hidden" name="id_ligne" value="<?php e($ligne['id_ligne']); ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger p-2">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
@@ -89,11 +91,11 @@
                         <ul class="list-group list-group-flush mb-4">
                             <li class="list-group-item d-flex justify-content-between px-0 py-2">
                                 <span>Nombre d'articles</span>
-                                <span><?= $panier['nb_articles'] ?></span>
+                                <span><?php e($panier['nb_articles']); ?></span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between px-0 py-2">
                                 <span>Total HT</span>
-                                <span><?= number_format($panier['total_ht'] / 100, 2, ',', ' ') ?>€</span>
+                                <span><?php e(number_format($panier['total_ht'] / 100, 2, ',', ' ')); ?>€</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between px-0 py-2">
                                 <span>Frais de livraison</span>
@@ -101,12 +103,12 @@
                                 $totalTTC = $panier['total_ttc'] / 100;
                                 $fraisLivraison = ($totalTTC >= 50) ? 0 : 4.99;
                                 ?>
-                                <span><?= ($fraisLivraison == 0) ? 'Gratuits' : number_format($fraisLivraison, 2, ',', ' ') . '€' ?></span>
+                                <span><?php e(($fraisLivraison == 0) ? 'Gratuits' : number_format($fraisLivraison, 2, ',', ' ') . '€'); ?></span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between px-0 py-2">
                                 <span>Total TTC</span>
                                 <span class="fw-bold fs-5">
-                                    <?= number_format($totalTTC + $fraisLivraison, 2, ',', ' ') ?>€
+                                    <?php e(number_format($totalTTC + $fraisLivraison, 2, ',', ' ')); ?>€
                                 </span>
                             </li>
                         </ul>
@@ -115,12 +117,12 @@
                         <?php if ($totalTTC < 50): ?>
                             <div class="mb-4">
                                 <p class="small text-muted mb-2">
-                                    Il vous manque <?= number_format(50 - $totalTTC, 2, ',', ' ') ?>€ pour bénéficier de la livraison gratuite.
+                                    Il vous manque <?php e(number_format(50 - $totalTTC, 2, ',', ' ')); ?>€ pour bénéficier de la livraison gratuite.
                                 </p>
                                 <div class="progress" style="height: 8px;">
                                     <div class="progress-bar bg-success" role="progressbar"
-                                         style="width: <?= min(100, ($totalTTC / 50) * 100) ?>%;"
-                                         aria-valuenow="<?= min(100, ($totalTTC / 50) * 100) ?>"
+                                         style="width: <?php e(min(100, ($totalTTC / 50) * 100)); ?>%;"
+                                         aria-valuenow="<?php e(min(100, ($totalTTC / 50) * 100)); ?>"
                                          aria-valuemin="0"
                                          aria-valuemax="100"></div>
                                 </div>
@@ -129,6 +131,7 @@
 
                         <!-- Bouton Valider la commande -->
                         <form method="POST" class="mb-3">
+                            <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
                             <button type="submit" class="btn btn-primary w-100 py-2" name="valider_commande">
                                 Valider la commande
                             </button>

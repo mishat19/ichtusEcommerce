@@ -9,6 +9,7 @@ function profil() {
 
     // 📩 POST (AJOUT / MODIF / SUPPRESSION)
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        verify_csrf();
         // ❌ DELETE
         if (isset($_POST['action']) && $_POST['action'] === 'delete') {
 

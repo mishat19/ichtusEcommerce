@@ -12,7 +12,8 @@
 
             <h2 class="mb-4">Adresses</h2>
 
-            <form method="POST" action="/paiement">
+            <form method="POST" action="/paiement/">
+    <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
 
                 <!-- FACTURATION -->
                 <div class="card mb-4" id="facturationAdresses">
@@ -21,18 +22,18 @@
                     </div>
                     <div class="card-body">
                         <?php if ($adresseFacturationSelected): ?>
-                            <div class="form-check mb-3 p-3 border rounded" data-id="<?= $adresseFacturationSelected['id'] ?>">
+                            <div class="form-check mb-3 p-3 border rounded" data-id="<?php e($adresseFacturationSelected['id']); ?>">
                                 <input class="form-check-input"
                                        type="radio"
                                        name="id_adresse_facturation"
-                                       value="<?= $adresseFacturationSelected['id'] ?>"
-                                        <?= $adresseFacturationSelected['est_par_defaut'] ? 'checked' : '' ?>>
+                                       value="<?php e($adresseFacturationSelected['id']); ?>"
+                                        <?php e($adresseFacturationSelected['est_par_defaut'] ? 'checked' : ''); ?>>
 
                                 <label class="form-check-label w-100">
-                                    <strong><?= htmlspecialchars($adresseFacturationSelected['prenom']) ?> <?= htmlspecialchars($adresseFacturationSelected['nom']) ?></strong><br>
-                                    <?= htmlspecialchars($adresseFacturationSelected['adresse']) ?><br>
-                                    <?= htmlspecialchars($adresseFacturationSelected['code_postal']) ?> <?= htmlspecialchars($adresseFacturationSelected['ville']) ?><br>
-                                    <?= htmlspecialchars($adresseFacturationSelected['telephone']) ?>
+                                    <strong><?php e($adresseFacturationSelected['prenom']); ?> <?php e($adresseFacturationSelected['nom']); ?></strong><br>
+                                    <?php e($adresseFacturationSelected['adresse']); ?><br>
+                                    <?php e($adresseFacturationSelected['code_postal']); ?> <?php e($adresseFacturationSelected['ville']); ?><br>
+                                    <?php e($adresseFacturationSelected['telephone']); ?>
                                 </label>
                             </div>
                         <?php else: ?>
@@ -56,18 +57,18 @@
                     </div>
                     <div class="card-body">
                         <?php if ($adresseLivraisonSelected): ?>
-                            <div class="form-check mb-3 p-3 border rounded" data-id="<?= $adresseLivraisonSelected['id'] ?>">
+                            <div class="form-check mb-3 p-3 border rounded" data-id="<?php e($adresseLivraisonSelected['id']); ?>">
                                 <input class="form-check-input"
                                        type="radio"
                                        name="id_adresse_livraison"
-                                       value="<?= $adresseLivraisonSelected['id'] ?>"
-                                        <?= $adresseLivraisonSelected['est_par_defaut'] ? 'checked' : '' ?>>
+                                       value="<?php e($adresseLivraisonSelected['id']); ?>"
+                                        <?php e($adresseLivraisonSelected['est_par_defaut'] ? 'checked' : ''); ?>>
 
                                 <label class="form-check-label w-100">
-                                    <strong><?= htmlspecialchars($adresseLivraisonSelected['prenom']) ?> <?= htmlspecialchars($adresseLivraisonSelected['nom']) ?></strong><br>
-                                    <?= htmlspecialchars($adresseLivraisonSelected['adresse']) ?><br>
-                                    <?= htmlspecialchars($adresseLivraisonSelected['code_postal']) ?> <?= htmlspecialchars($adresseLivraisonSelected['ville']) ?><br>
-                                    <?= htmlspecialchars($adresseLivraisonSelected['telephone']) ?>
+                                    <strong><?php e($adresseLivraisonSelected['prenom']); ?> <?php e($adresseLivraisonSelected['nom']); ?></strong><br>
+                                    <?php e($adresseLivraisonSelected['adresse']); ?><br>
+                                    <?php e($adresseLivraisonSelected['code_postal']); ?> <?php e($adresseLivraisonSelected['ville']); ?><br>
+                                    <?php e($adresseLivraisonSelected['telephone']); ?>
                                 </label>
                             </div>
                         <?php else: ?>
@@ -119,19 +120,19 @@
                     <div class="tab-pane fade show active" id="facturationTab">
                         <div id="facturationAddressesList">
                             <?php foreach ($adressesFacturation as $adresse): ?>
-                                <div class="address-card mb-2 p-3 border rounded" data-id="<?= $adresse['id'] ?>">
+                                <div class="address-card mb-2 p-3 border rounded" data-id="<?php e($adresse['id']); ?>">
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="selectedFacturationAddress"
-                                               value="<?= $adresse['id'] ?>" <?= $adresse['est_par_defaut'] ? 'checked' : '' ?>>
+                                               value="<?php e($adresse['id']); ?>" <?php e($adresse['est_par_defaut'] ? 'checked' : ''); ?>>
                                         <label class="form-check-label w-100">
-                                            <strong><?= htmlspecialchars($adresse['prenom']) ?> <?= htmlspecialchars($adresse['nom']) ?></strong><br>
-                                            <?= htmlspecialchars($adresse['adresse']) ?><br>
-                                            <?= htmlspecialchars($adresse['code_postal']) ?> <?= htmlspecialchars($adresse['ville']) ?><br>
-                                            <?= htmlspecialchars($adresse['telephone']) ?>
+                                            <strong><?php e($adresse['prenom']); ?> <?php e($adresse['nom']); ?></strong><br>
+                                            <?php e($adresse['adresse']); ?><br>
+                                            <?php e($adresse['code_postal']); ?> <?php e($adresse['ville']); ?><br>
+                                            <?php e($adresse['telephone']); ?>
                                         </label>
                                     </div>
                                     <button type="button" class="btn btn-sm btn-outline-primary mt-2 edit-address-btn"
-                                            data-id="<?= $adresse['id'] ?>" data-type="facturation">
+                                            data-id="<?php e($adresse['id']); ?>" data-type="facturation">
                                         Modifier
                                     </button>
                                 </div>
@@ -146,19 +147,19 @@
                     <div class="tab-pane fade" id="livraisonTab">
                         <div id="livraisonAddressesList">
                             <?php foreach ($adressesLivraison as $adresse): ?>
-                                <div class="address-card mb-2 p-3 border rounded" data-id="<?= $adresse['id'] ?>">
+                                <div class="address-card mb-2 p-3 border rounded" data-id="<?php e($adresse['id']); ?>">
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="selectedLivraisonAddress"
-                                               value="<?= $adresse['id'] ?>" <?= $adresse['est_par_defaut'] ? 'checked' : '' ?>>
+                                               value="<?php e($adresse['id']); ?>" <?php e($adresse['est_par_defaut'] ? 'checked' : ''); ?>>
                                         <label class="form-check-label w-100">
-                                            <strong><?= htmlspecialchars($adresse['prenom']) ?> <?= htmlspecialchars($adresse['nom']) ?></strong><br>
-                                            <?= htmlspecialchars($adresse['adresse']) ?><br>
-                                            <?= htmlspecialchars($adresse['code_postal']) ?> <?= htmlspecialchars($adresse['ville']) ?><br>
-                                            <?= htmlspecialchars($adresse['telephone']) ?>
+                                            <strong><?php e($adresse['prenom']); ?> <?php e($adresse['nom']); ?></strong><br>
+                                            <?php e($adresse['adresse']); ?><br>
+                                            <?php e($adresse['code_postal']); ?> <?php e($adresse['ville']); ?><br>
+                                            <?php e($adresse['telephone']); ?>
                                         </label>
                                     </div>
                                     <button type="button" class="btn btn-sm btn-outline-primary mt-2 edit-address-btn"
-                                            data-id="<?= $adresse['id'] ?>" data-type="livraison">
+                                            data-id="<?php e($adresse['id']); ?>" data-type="livraison">
                                         Modifier
                                     </button>
                                 </div>
@@ -175,6 +176,7 @@
                     <h6 id="addressFormTitle">Ajouter une nouvelle adresse</h6>
 
                     <form id="addressForm" method="POST">
+    <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
                         <input type="hidden" name="action" id="addressAction" value="add">
                         <input type="hidden" name="id" id="addressId">
                         <input type="hidden" name="type" id="addressType">

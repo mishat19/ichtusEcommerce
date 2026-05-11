@@ -42,32 +42,32 @@
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img src="/images/<?= htmlspecialchars($ligne['image']) ?>" class="me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                            <span><?= htmlspecialchars($ligne['nom']) ?></span>
+                                            <img src="/images/<?php e($ligne['image']); ?>" class="me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                            <span><?php e($ligne['nom']); ?></span>
                                         </div>
                                     </td>
-                                    <td class="text-center"><?= $ligne['quantite'] ?></td>
-                                    <td class="text-end"><?= number_format(($ligne['prix_ht'] / 100) * (1 + $ligne['taux_tva'] / 100), 2, ',', ' ') ?>€</td>
-                                    <td class="text-end"><?= number_format(($ligne['prix_ht'] / 100) * (1 + $ligne['taux_tva'] / 100) * $ligne['quantite'], 2, ',', ' ') ?>€</td>
+                                    <td class="text-center"><?php e($ligne['quantite']); ?></td>
+                                    <td class="text-end"><?php e(number_format(($ligne['prix_ht'] / 100) * (1 + $ligne['taux_tva'] / 100), 2, ',', ' ')); ?>€</td>
+                                    <td class="text-end"><?php e(number_format(($ligne['prix_ht'] / 100) * (1 + $ligne['taux_tva'] / 100) * $ligne['quantite'], 2, ',', ' ')); ?>€</td>
                                 </tr>
                             <?php endforeach; ?>
                             </tbody>
                             <tfoot>
                             <tr>
                                 <th colspan="3" class="text-end">Sous-total</th>
-                                <td class="text-end"><?= number_format($panier['total_ht'] / 100, 2, ',', ' ') ?>€</td>
+                                <td class="text-end"><?php e(number_format($panier['total_ht'] / 100, 2, ',', ' ')); ?>€</td>
                             </tr>
                             <tr>
                                 <th colspan="3" class="text-end">Frais de livraison</th>
                                 <td class="text-end">
                                     <?php $fraisLivraison = ($panier['total_ttc'] / 100 >= 50) ? 0 : 4.99; ?>
-                                    <?= ($fraisLivraison == 0) ? 'Gratuits' : number_format($fraisLivraison, 2, ',', ' ') . '€' ?>
+                                    <?php e(($fraisLivraison == 0) ? 'Gratuits' : number_format($fraisLivraison, 2, ',', ' ') . '€'); ?>
                                 </td>
                             </tr>
                             <tr>
                                 <th colspan="3" class="text-end">Total TTC</th>
                                 <td class="text-end fw-bold">
-                                    <?= number_format(($panier['total_ttc'] / 100) + $fraisLivraison, 2, ',', ' ') ?>€
+                                    <?php e(number_format(($panier['total_ttc'] / 100) + $fraisLivraison, 2, ',', ' ')); ?>€
                                 </td>
                             </tr>
                             </tfoot>
@@ -78,12 +78,14 @@
 
             <!-- Boutons de navigation -->
             <div class="d-flex justify-content-between">
-                <form method="POST" action="/panier">
+                <form method="POST" action="/panier/">
+    <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
                     <button type="submit" class="btn btn-primary">
                         Retour au panier <i class="fas fa-arrow-right ms-2"></i>
                     </button>
                 </form>
-                <form method="POST" action="/adresses">
+                <form method="POST" action="/adresses/">
+    <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
                     <button type="submit" class="btn btn-primary">
                         Continuer <i class="fas fa-arrow-right ms-2"></i>
                     </button>

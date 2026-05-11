@@ -38,19 +38,19 @@
                 <div class="card-header bg-light d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                     <div>
                         <h5 class="mb-0">
-                            Commande n°<?= htmlspecialchars($commande['numero_facture']) ?>
+                            Commande n°<?php e($commande['numero_facture']); ?>
                         </h5>
                         <small class="text-muted">
-                            Passée le <?= (new DateTime($commande['date_commande']))->format('d/m/Y') ?>
+                            Passée le <?php e((new DateTime($commande['date_commande']))->format('d/m/Y')); ?>
                         </small>
                     </div>
 
                     <div class="d-flex align-items-center gap-3 text-md-end">
                         <span class="fw-bold">
-                            <?= number_format($commande['total_ttc'], 2, ',', ' ') ?> €
+                            <?php e(number_format($commande['total_ttc'], 2, ',', ' ')); ?> €
                         </span>
-                        <span class="badge <?= $badgeClass ?>">
-                            <?= $label ?>
+                        <span class="badge <?php e($badgeClass); ?>">
+                            <?php e($label); ?>
                         </span>
                     </div>
                 </div>
@@ -74,25 +74,25 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <img
-                                                    src="/images/<?= htmlspecialchars($produit['image']) ?>"
+                                                    src="/images/<?php e($produit['image']); ?>"
                                                     class="img-thumbnail me-3"
                                                     style="width: 60px; height: 60px; object-fit: cover;"
                                             >
-                                            <span><?= htmlspecialchars($produit['nom']) ?></span>
+                                            <span><?php e($produit['nom']); ?></span>
                                         </div>
                                     </td>
 
                                     <td class="text-center">
-                                        <?= number_format(
+                                        <?php e(number_format(
                                                 ($produit['prix_ht'] / 100) * (1 + $produit['taux_tva'] / 100),
                                                 2,
                                                 ',',
                                                 ' '
-                                        ) ?> €
+                                        )); ?> €
                                     </td>
 
                                     <td class="text-center">
-                                        <?= htmlspecialchars($produit['quantite']) ?>
+                                        <?php e($produit['quantite']); ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

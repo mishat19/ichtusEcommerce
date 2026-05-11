@@ -39,16 +39,38 @@
             color: var(--primary-color) !important;
             border-bottom: 2px solid var(--primary-color);
         }
+        .btn-primary, .btn-outline-dark, .dropdown-toggle, .btn-outline-secondary {
+            padding: 0.6rem 1.5rem !important;
+            border-radius: 8px !important;
+            font-weight: 500 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            height: 48px !important;
+            white-space: nowrap !important;
+        }
         .btn-primary {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
-            font-weight: 500;
-            padding: 0.6rem 1.5rem;
-            border-radius: 8px;
         }
         .btn-primary:hover {
             background-color: #24491f;
             border-color: #24491f;
+        }
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+        .bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
         }
         .hero-section {
             background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://source.unsplash.com/random/1600x900/?fruit') no-repeat center center;

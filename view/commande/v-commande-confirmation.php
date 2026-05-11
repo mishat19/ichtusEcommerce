@@ -30,13 +30,13 @@
 
             <!-- CONTENU -->
             <div class="card text-center p-5">
-                <i class="fas <?= $icon ?> fa-4x mb-3"></i>
-                <h2><?= $titre ?></h2>
-                <p class="lead"><?= $message ?></p>
+                <i class="fas <?php e($icon); ?> fa-4x mb-3"></i>
+                <h2><?php e($titre); ?></h2>
+                <p class="lead"><?php e($message); ?></p>
 
                 <?php if ($etat === "confirme"): ?>
                     <p>
-                        Commande n° <strong><?= htmlspecialchars($_SESSION['commande']['numero_facture']) ?></strong>
+                        Commande n° <strong><?php e($_SESSION['commande']['numero_facture']); ?></strong>
                     </p>
                 <?php endif; ?>
 
