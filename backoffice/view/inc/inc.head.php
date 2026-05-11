@@ -273,22 +273,44 @@
         }
 
         .filtre-btn {
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #aaa;
+            background: #fff;
+            border: 1px solid var(--bo-border);
+            color: var(--bo-text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.2s;
         }
 
         .filtre-btn:hover {
-            border-color: #c8ff00;
-            color: #fff;
+            border-color: #2D5A27;
+            color: #2D5A27;
+            background: rgba(45, 90, 39, 0.05);
         }
 
         .filtre-btn.active {
-            background: #c8ff00;
-            color: #000;
-            border-color: #c8ff00;
+            background: #2D5A27;
+            color: #fff;
+            border-color: #2D5A27;
+            box-shadow: 0 4px 6px -1px rgba(45, 90, 39, 0.2);
+        }
+
+        .bo-search-input {
+            margin-left: auto;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            border: 1px solid var(--bo-border);
+            border-radius: 0.5rem;
+            outline: none;
+            transition: all 0.2s;
+            width: 300px;
+        }
+
+        .bo-search-input:focus {
+            border-color: #2D5A27;
+            box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
         }
     </style>
 </head>

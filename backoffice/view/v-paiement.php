@@ -10,21 +10,13 @@
 
     <div class="bo-content">
 
-        <div class="bo-card">
-            <div class="d-flex gap-2 flex-wrap align-items-center mb-1">
-                <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-secondary active filtre-btn" data-statut="tous">Tous</button>
-                    <button class="btn btn-outline-secondary filtre-btn" data-statut="accepte">Acceptés</button>
-                    <button class="btn btn-outline-secondary filtre-btn" data-statut="refuse">Refusés</button>
-                </div>
-                
-                <div class="ms-auto" style="min-width: 300px;">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" id="search-paiement" class="form-control border-start-0 ps-0" placeholder="Rechercher une référence, un client...">
-                    </div>
-                </div>
-            </div>
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+            <button class="filtre-btn active" data-statut="tous">Tous</button>
+            <button class="filtre-btn" data-statut="accepte">Acceptés</button>
+            <button class="filtre-btn" data-statut="refuse">Refusés</button>
+
+            <input type="text" id="search-paiement" class="bo-search-input"
+                   placeholder="Rechercher une référence, un client..." />
         </div>
 
         <div class="bo-card p-0 overflow-hidden">

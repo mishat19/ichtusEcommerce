@@ -3,12 +3,18 @@
             <h2 class="fw-bold mb-0" style="letter-spacing: -0.025em;">Catalogue Produits</h2>
             <p class="text-muted small mb-0">Gérez votre inventaire et les détails de vos articles.</p>
         </div>
-        <a href="/bo/produit/ajouter" class="bo-btn-outline">
-            <i class="bi bi-plus-lg me-1"></i> Nouveau produit
-        </a>
     </div>
 
     <div class="bo-content">
+        
+        <!-- FILTRES -->
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+            <button class="filtre-btn active" data-statut="tous">Tous</button>
+            <button class="filtre-btn" data-statut="actif">Actifs</button>
+            <button class="filtre-btn" data-statut="inactif">Inactifs</button>
+            
+            <input type="text" id="search-produit" class="bo-search-input" placeholder="Rechercher un nom, identifiant...">
+        </div>
 
         <div class="bo-card p-0 overflow-hidden">
             <?php if (empty($produits)): ?>
@@ -28,13 +34,14 @@
                             <th>Identifiant (SKU)</th>
                             <th>Prix HT</th>
                             <th>Statut</th>
-                            <th class="text-end pe-4">Actions</th>
                         </tr>
                         </thead>
 
                         <tbody>
                         <?php foreach ($produits as $produit): ?>
-                            <tr>
+                            <tr class="row-produit" 
+                                data-statut="<?php echo $produit['statut']; ?>"
+                                data-search="<?php echo strtolower($produit['nom'] . ' ' . $produit['identifiant']); ?>">
                                 <td class="ps-4 fw-bold">#<?php echo $produit['id']; ?></td>
 
                                 <td>
@@ -61,13 +68,6 @@
                                     <span class="badge rounded-pill <?php echo $produit['statut'] === 'actif' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'; ?>" style="font-size: 0.7rem; padding: 0.4em 0.8em;">
                                         <?php echo strtoupper($produit['statut']); ?>
                                     </span>
-                                </td>
-
-                                <td class="text-end pe-4">
-                                    <a href="/bo/produit/<?php echo $produit['id']; ?>"
-                                       class="btn btn-light btn-sm fw-medium">
-                                        <i class="bi bi-pencil me-1"></i> Modifier
-                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

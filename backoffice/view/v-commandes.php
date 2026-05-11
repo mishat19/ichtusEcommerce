@@ -18,9 +18,7 @@
         <button class="filtre-btn" data-statut="en_attente">En attente</button>
         <button class="filtre-btn" data-statut="annulee">Annulées</button>
 
-        <input type="text" id="search"
-               placeholder="Rechercher client ou email..."
-               style="margin-left:auto; padding:.4rem .8rem; font-size:.8rem;" />
+        <input type="text" id="search" class="bo-search-input" placeholder="Rechercher client ou email..." />
     </div>
 
     <!-- TABLE -->

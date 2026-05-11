@@ -19,6 +19,7 @@ require_once 'controller/api/c-apiPaiement.php';
 require_once 'backoffice/controller/c-bo-dashboard.php';
 require_once 'backoffice/controller/c-bo-commande.php';
 require_once 'backoffice/controller/c-bo-paiement.php';
+require_once 'backoffice/controller/c-bo-produit.php';
 require_once 'backoffice/controller/c-bo-tests.php';
 
 
@@ -72,8 +73,9 @@ switch ($page) {
                 break;
             }
 
-            // /backoffice/produits
-            if ($segments[1] === 'produits') {
+            // /backoffice/produits [ /ID ]
+            if ($segments[1] === 'produits' || $segments[1] === 'produit') {
+                if (isset($segments[2])) $_GET['id'] = $segments[2];
                 boProduits();
                 break;
             }
