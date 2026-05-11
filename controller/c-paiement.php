@@ -74,7 +74,7 @@ function retourPaiement(): void
         $etat = 'annule';
     }
 
-    // 🔥 petite sécurité UX : attendre IPN
+    // Attente IPN
     sleep(1);
 
     header("Location: /confirmation/" . $etat);
@@ -84,7 +84,7 @@ function ipnPaiement(): void
 {
     global $pdo;
 
-    // 🔥 Données envoyées par la banque
+    // Données envoyées par la banque
     $commande = $_POST['Ref'] ?? null;
     $montant = $_POST['Mt'] ?? 0;
     $erreur = $_POST['Erreur'] ?? '99999';
@@ -94,12 +94,12 @@ function ipnPaiement(): void
 
     if (!$commande) return;
 
-    // 🔍 Extraire ID commande
+    // Extraire ID commande
     $idCommande = explode('-', $commande)[1] ?? null;
     if (!$idCommande) return;
 
     /* ════════════════════════════════════════
-     * 🎯 Déterminer le statut
+     * Déterminer le statut
      * ════════════════════════════════════════ */
     if ($erreur === "00000") {
         $statut = "accepte";
@@ -133,7 +133,7 @@ function ipnPaiement(): void
     }
 
     /* ════════════════════════════════════════
-     * 💾 INSERT PAIEMENT
+     * INSERT PAIEMENT
      * ════════════════════════════════════════ */
     if (!$transaction) return;
 

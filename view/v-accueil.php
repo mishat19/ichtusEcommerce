@@ -62,97 +62,87 @@
     <div class="container">
         <h2 class="text-center mb-5">Ils nous font confiance</h2>
         
+        <?php
+        $testimonials = [
+            ['name' => 'Marie L.', 'role' => 'Cliente fidèle', 'text' => '"Les meilleures pâtes de fruits que j\'aie jamais goûtées ! Un vrai voyage gustatif."', 'stars' => 5],
+            ['name' => 'Pierre D.', 'role' => 'Achat cadeau', 'text' => '"Un vrai délice, et un emballage magnifique pour offrir. Mes proches ont adoré."', 'stars' => 5],
+            ['name' => 'Sophie R.', 'role' => 'Chef Pâtissière', 'text' => '"Service impeccable et produits toujours frais. On sent la qualité artisanale."', 'stars' => 5],
+            ['name' => 'Jean-Paul M.', 'role' => 'Gastronome', 'text' => '"Le coffret dégustation est une merveille. Chaque fruit est une explosion de saveurs."', 'stars' => 5],
+            ['name' => 'Clara B.', 'role' => 'Cliente régulière', 'text' => '"Goût intense et texture parfaite. On ne s\'en lasse jamais, c\'est addictif !"', 'stars' => 4.5],
+            ['name' => 'Thomas V.', 'role' => 'Amateur de fruits', 'text' => '"On sent vraiment le fruit frais, c\'est incroyable. Rien à voir avec l\'industriel."', 'stars' => 5],
+        ];
+        ?>
+
         <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
             <!-- Indicators (dots) -->
-            <div class="carousel-indicators" style="bottom: -20px;">
-                <button type="button" data-bs-target="#testimonialCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                <button type="button" data-bs-target="#testimonialCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <div class="carousel-indicators" style="bottom: -40px;">
+                <?php for ($i = 0; $i < count($testimonials); $i++): ?>
+                    <button type="button" data-bs-target="#testimonialCarousel" data-bs-slide-to="<?= $i ?>" class="<?= $i === 0 ? 'active' : '' ?>" aria-current="<?= $i === 0 ? 'true' : 'false' ?>" aria-label="Slide <?= $i + 1 ?>"></button>
+                <?php endfor; ?>
             </div>
 
             <div class="carousel-inner pb-5">
-                <!-- Slide 1 -->
-                <div class="carousel-item active">
-                    <div class="row g-4">
-                        <div class="col-md-4">
-                            <div class="testimonial shadow-sm border-0">
-                                <div class="mb-3 text-warning">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                                <p class="mb-4 flex-grow-1">"Les meilleures pâtes de fruits que j'aie jamais goûtées ! Un vrai voyage gustatif."</p>
-                                <div class="mt-auto">
-                                    <h6 class="fw-bold mb-0">Marie L.</h6>
-                                    <small class="text-muted">Cliente fidèle</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 d-none d-md-block">
-                            <div class="testimonial shadow-sm border-0">
-                                <div class="mb-3 text-warning">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                                <p class="mb-4 flex-grow-1">"Un vrai délice, et un emballage magnifique pour offrir. Mes proches ont adoré."</p>
-                                <div class="mt-auto">
-                                    <h6 class="fw-bold mb-0">Pierre D.</h6>
-                                    <small class="text-muted">Achat cadeau</small>
+                <?php foreach ($testimonials as $index => $t): ?>
+                    <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                        <div class="row g-4">
+                            <!-- Item 1 (Always visible) -->
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="testimonial shadow-sm border-0 h-100">
+                                    <div class="mb-3 text-warning">
+                                        <?php for($s=0; $s<5; $s++): ?>
+                                            <i class="fas fa-star<?= ($s < floor($t['stars'])) ? '' : ($t['stars'] > $s ? '-half-alt' : '-o') ?>"></i>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <p class="mb-4 flex-grow-1"><?= htmlspecialchars($t['text']) ?></p>
+                                    <div class="mt-auto">
+                                        <h6 class="fw-bold mb-0"><?= htmlspecialchars($t['name']) ?></h6>
+                                        <small class="text-muted"><?= htmlspecialchars($t['role']) ?></small>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-4 d-none d-md-block">
-                            <div class="testimonial shadow-sm border-0">
-                                <div class="mb-3 text-warning">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                                <p class="mb-4 flex-grow-1">"Service impeccable et produits toujours frais. On sent la qualité artisanale."</p>
-                                <div class="mt-auto">
-                                    <h6 class="fw-bold mb-0">Sophie R.</h6>
-                                    <small class="text-muted">Chef Pâtissière</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Slide 2 -->
-                <div class="carousel-item">
-                    <div class="row g-4">
-                        <div class="col-md-4">
-                            <div class="testimonial shadow-sm border-0">
-                                <div class="mb-3 text-warning">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                                <p class="mb-4 flex-grow-1">"Le coffret dégustation est une merveille. Chaque fruit est une explosion de saveurs."</p>
-                                <div class="mt-auto">
-                                    <h6 class="fw-bold mb-0">Jean-Paul M.</h6>
-                                    <small class="text-muted">Gastronome</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 d-none d-md-block">
-                            <div class="testimonial shadow-sm border-0">
-                                <div class="mb-3 text-warning">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                                </div>
-                                <p class="mb-4 flex-grow-1">"Goût intense et texture parfaite. On ne s'en lasse jamais, c'est addictif !"</p>
-                                <div class="mt-auto">
-                                    <h6 class="fw-bold mb-0">Clara B.</h6>
-                                    <small class="text-muted">Cliente régulière</small>
+                            <!-- Item 2 (Visible on Tablet+) -->
+                            <?php 
+                            $nextIndex = ($index + 1) % count($testimonials);
+                            $t2 = $testimonials[$nextIndex];
+                            ?>
+                            <div class="col-md-6 col-lg-4 d-none d-md-block">
+                                <div class="testimonial shadow-sm border-0 h-100">
+                                    <div class="mb-3 text-warning">
+                                        <?php for($s=0; $s<5; $s++): ?>
+                                            <i class="fas fa-star<?= ($s < floor($t2['stars'])) ? '' : ($t2['stars'] > $s ? '-half-alt' : '-o') ?>"></i>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <p class="mb-4 flex-grow-1"><?= htmlspecialchars($t2['text']) ?></p>
+                                    <div class="mt-auto">
+                                        <h6 class="fw-bold mb-0"><?= htmlspecialchars($t2['name']) ?></h6>
+                                        <small class="text-muted"><?= htmlspecialchars($t2['role']) ?></small>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-4 d-none d-md-block">
-                            <div class="testimonial shadow-sm border-0">
-                                <div class="mb-3 text-warning">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                                <p class="mb-4 flex-grow-1">"On sent vraiment le fruit frais, c'est incroyable. Rien à voir avec l'industriel."</p>
-                                <div class="mt-auto">
-                                    <h6 class="fw-bold mb-0">Thomas V.</h6>
-                                    <small class="text-muted">Amateur de fruits</small>
+
+                            <!-- Item 3 (Visible on Desktop+) -->
+                            <?php 
+                            $nextIndex2 = ($index + 2) % count($testimonials);
+                            $t3 = $testimonials[$nextIndex2];
+                            ?>
+                            <div class="col-lg-4 d-none d-lg-block">
+                                <div class="testimonial shadow-sm border-0 h-100">
+                                    <div class="mb-3 text-warning">
+                                        <?php for($s=0; $s<5; $s++): ?>
+                                            <i class="fas fa-star<?= ($s < floor($t3['stars'])) ? '' : ($t3['stars'] > $s ? '-half-alt' : '-o') ?>"></i>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <p class="mb-4 flex-grow-1"><?= htmlspecialchars($t3['text']) ?></p>
+                                    <div class="mt-auto">
+                                        <h6 class="fw-bold mb-0"><?= htmlspecialchars($t3['name']) ?></h6>
+                                        <small class="text-muted"><?= htmlspecialchars($t3['role']) ?></small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                <?php endforeach; ?>
             </div>
 
             <!-- Controls (Arrows) -->
