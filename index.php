@@ -19,6 +19,8 @@ require_once 'controller/api/c-apiPaiement.php';
 require_once 'backoffice/controller/c-bo-dashboard.php';
 require_once 'backoffice/controller/c-bo-commande.php';
 require_once 'backoffice/controller/c-bo-paiement.php';
+require_once 'backoffice/controller/c-bo-tests.php';
+
 
 /* ───────── ROUTEUR ───────── */
 
@@ -73,6 +75,12 @@ switch ($page) {
             // /backoffice/produits
             if ($segments[1] === 'produits') {
                 boProduits();
+                break;
+            }
+
+            // /backoffice/tests
+            if ($segments[1] === 'tests') {
+                BOTests();
                 break;
             }
 

@@ -17,6 +17,10 @@
         <i class="fas fa-tag me-2"></i> Produits
     </a>
 
+    <a href="/backoffice/tests">
+        <i class="fas fa-vial me-2"></i> Tests & Stats
+    </a>
+
     <hr>
 
     <a href="/" class="text-danger">
