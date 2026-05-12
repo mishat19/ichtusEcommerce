@@ -17,6 +17,14 @@
         <i class="fas fa-tag me-2"></i> Produits
     </a>
 
+    <a href="/backoffice/entrepots">
+        <i class="fas fa-warehouse me-2"></i> Entrepôts
+    </a>
+
+    <a href="/backoffice/stock-ajout">
+        <i class="fas fa-boxes-stacked me-2"></i> Ajout Stock
+    </a>
+
     <a href="/backoffice/tests">
         <i class="fas fa-vial me-2"></i> Tests & Stats
     </a>

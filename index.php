@@ -19,11 +19,13 @@ require_once 'controller/c-paiement.php';
 require_once 'controller/api/c-apiLIste.php';
 require_once 'controller/api/c-apiCommande.php';
 require_once 'controller/api/c-apiPaiement.php';
+require_once 'controller/api/c-apiStock.php';
 require_once 'backoffice/controller/c-bo-dashboard.php';
 require_once 'backoffice/controller/c-bo-commande.php';
 require_once 'backoffice/controller/c-bo-paiement.php';
 require_once 'backoffice/controller/c-bo-produit.php';
 require_once 'backoffice/controller/c-bo-tests.php';
+require_once 'backoffice/controller/c-bo-stock.php';
 
 
 /* ───────── ROUTEUR ───────── */
@@ -50,6 +52,7 @@ if (isset($_GET['pageAPI'])) {
     switch ($_GET['pageAPI']) {
         case 'commande': APICommande(); break;
         case 'paiement': APIPaiement(); break;
+        case 'stock':    APIStock();    break;
         default:         APIListe();    break;
     }
     exit;
@@ -91,6 +94,18 @@ switch ($page) {
             // /backoffice/tests
             if ($segments[1] === 'tests') {
                 BOTests();
+                break;
+            }
+
+            // /backoffice/entrepots
+            if ($segments[1] === 'entrepots') {
+                BOEntrepots();
+                break;
+            }
+
+            // /backoffice/stock-ajout
+            if ($segments[1] === 'stock-ajout') {
+                BOStockAjout();
                 break;
             }
 

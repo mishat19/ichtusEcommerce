@@ -312,6 +312,22 @@
             border-color: #2D5A27;
             box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
         }
+
+        /* Stock Visuals */
+        .stack-box {
+            user-select: none;
+        }
+        
+        .product-line {
+            background: #fff;
+            border: 1px solid var(--bo-border);
+            padding: 0.5rem;
+            border-radius: 12px;
+            transition: border-color 0.2s;
+        }
+        .product-line:focus-within {
+            border-color: var(--bo-primary);
+        }
     </style>
 </head>
 <body>

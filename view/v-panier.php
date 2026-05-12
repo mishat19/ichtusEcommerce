@@ -9,6 +9,27 @@
         </a>
     </div>
 
+    <!-- Message si le panier a expiré -->
+    <?php if (isset($_SESSION['panier_expire']) && $_SESSION['panier_expire']): ?>
+        <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center" role="alert" style="border-radius: 12px; border-left: 4px solid #f59e0b;">
+            <i class="fas fa-clock me-3 fs-4" style="color: #f59e0b;"></i>
+            <div>
+                <strong>Panier expiré !</strong> Votre réservation de 20 minutes a expiré. Les produits ont été remis en stock pour les autres clients. Vous pouvez les ajouter à nouveau.
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <?php unset($_SESSION['panier_expire']); ?>
+    <?php endif; ?>
+
+    <!-- Message erreur panier -->
+    <?php if (isset($_SESSION['erreur_panier'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <?php e($_SESSION['erreur_panier']); unset($_SESSION['erreur_panier']); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
     <!-- Message si le panier est vide -->
     <?php if ($panier['nb_lignes'] == 0): ?>
         <div class="alert alert-info text-center">
@@ -87,6 +108,25 @@
             <div class="col-lg-4">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body p-4">
+
+                        <!-- Timer de réservation -->
+                        <?php if ($tempsRestant > 0): ?>
+                            <div class="mb-3 p-3 text-center" id="timer-box"
+                                 style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px; border: 1px solid #90caf9;">
+                                <p class="mb-1 small" style="color: #1565c0;">
+                                    <i class="fas fa-clock me-1"></i> Réservation expire dans
+                                </p>
+                                <span id="countdown-timer" class="fw-bold fs-4" style="color: #0d47a1;"
+                                      data-seconds="<?php e($tempsRestant); ?>">
+                                    <?php
+                                    $min = floor($tempsRestant / 60);
+                                    $sec = $tempsRestant % 60;
+                                    echo sprintf('%02d:%02d', $min, $sec);
+                                    ?>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+
                         <h5 class="card-title mb-4">Résumé de la commande</h5>
                         <ul class="list-group list-group-flush mb-4">
                             <li class="list-group-item d-flex justify-content-between px-0 py-2">
@@ -154,10 +194,43 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        /* ── Countdown Timer ── */
+        const timerEl = document.getElementById('countdown-timer');
+        if (timerEl) {
+            let seconds = parseInt(timerEl.dataset.seconds);
+            const timerBox = document.getElementById('timer-box');
+
+            const interval = setInterval(function() {
+                seconds--;
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    // Recharger la page pour déclencher l'expiration côté serveur
+                    window.location.reload();
+                    return;
+                }
+
+                const min = Math.floor(seconds / 60);
+                const sec = seconds % 60;
+                timerEl.textContent = String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+
+                // Changer la couleur quand il reste peu de temps
+                if (seconds <= 120) { // 2 minutes
+                    timerBox.style.background = 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)';
+                    timerBox.style.borderColor = '#ffb74d';
+                    timerEl.style.color = '#e65100';
+                }
+                if (seconds <= 60) { // 1 minute
+                    timerBox.style.background = 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)';
+                    timerBox.style.borderColor = '#ef9a9a';
+                    timerEl.style.color = '#c62828';
+                }
+            }, 1000);
+        }
+
+        /* ── Quantity validation ── */
         const errorContainer = document.getElementById('error-container');
         const quantityForms = document.querySelectorAll('form.d-flex.align-items-center');
 
-        // Fonction pour afficher une erreur
         function showError(message) {
             errorContainer.innerHTML = `
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -165,14 +238,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             `;
-            // Fait défiler la page vers le haut pour afficher l'erreur
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         quantityForms.forEach(form => {
             const quantityInput = form.querySelector('input[name="quantite"]');
 
-            // Écouteur pour l'événement 'submit'
             form.addEventListener('submit', function(e) {
                 const quantity = parseInt(quantityInput.value);
 
@@ -195,7 +266,6 @@
                 return true;
             });
 
-            // Écouteur pour la touche Entrée
             quantityInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -215,7 +285,6 @@
                 }
             });
 
-            // Écouteur pour le 'change' (correction visuelle uniquement)
             quantityInput.addEventListener('change', function() {
                 let quantity = parseInt(this.value);
                 if (isNaN(quantity) || quantity < 0) {
@@ -227,5 +296,3 @@
         });
     });
 </script>
-
-

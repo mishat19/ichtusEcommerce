@@ -46,6 +46,82 @@ function APIListe() {
                 'statuts_paiement' => ['accepte', 'refuse', 'annule'],
                 'statuts_commande' => ['en_attente', 'payee', 'refusee', 'annulee'],
             ],
+            [
+                'nom'         => 'Stock',
+                'url'         => $base . 'stock/',
+                'methode'     => 'POST',
+                'description' => 'Gestion du stock : consultation, réservation, libération, mise à jour, entrepôts.',
+                'params'      => [
+                    'token'  => 'obligatoire',
+                    'action' => 'obligatoire — action à effectuer',
+                ],
+                'actions'     => [
+                    [
+                        'action'      => 'list',
+                        'description' => 'Liste tous les stocks avec infos produit.',
+                        'params'      => [],
+                    ],
+                    [
+                        'action'      => 'getStock',
+                        'description' => 'Récupère le stock d\'un produit spécifique.',
+                        'params'      => ['id_produit' => 'obligatoire'],
+                    ],
+                    [
+                        'action'      => 'reserver',
+                        'description' => 'Réserve du stock pour un ajout au panier.',
+                        'params'      => ['id_produit' => 'obligatoire', 'quantite' => 'obligatoire'],
+                    ],
+                    [
+                        'action'      => 'liberer',
+                        'description' => 'Libère du stock réservé (expiration panier).',
+                        'params'      => ['id_produit' => 'obligatoire', 'quantite' => 'obligatoire'],
+                    ],
+                    [
+                        'action'      => 'updateStock',
+                        'description' => 'Met à jour le stock (entrée/sortie manuelle) avec mouvement.',
+                        'params'      => [
+                            'id_produit'     => 'obligatoire',
+                            'quantite'       => 'obligatoire',
+                            'type_mouvement' => 'optionnel — entree (défaut) ou sortie',
+                            'commentaire'    => 'optionnel',
+                            'id_stack'       => 'optionnel',
+                        ],
+                    ],
+                    [
+                        'action'      => 'addToStack',
+                        'description' => 'Ajoute plusieurs produits dans un stack (batch).',
+                        'params'      => [
+                            'id_stack' => 'obligatoire',
+                            'produits' => 'obligatoire — JSON array [{id_produit, quantite}, ...]',
+                        ],
+                    ],
+                    [
+                        'action'      => 'getEntrepots',
+                        'description' => 'Liste les entrepôts avec meubles, stacks et taux d\'occupation.',
+                        'params'      => [],
+                    ],
+                    [
+                        'action'      => 'getStacks',
+                        'description' => 'Liste tous les stacks avec infos meuble et entrepôt.',
+                        'params'      => [],
+                    ],
+                    [
+                        'action'      => 'getProduits',
+                        'description' => 'Liste les produits actifs (pour les dropdowns).',
+                        'params'      => [],
+                    ],
+                    [
+                        'action'      => 'getQrCode',
+                        'description' => 'Récupère le QR code d\'un produit.',
+                        'params'      => ['id_produit' => 'obligatoire'],
+                    ],
+                ],
+                'exemple'     => [
+                    'liste'    => 'POST ' . $base . 'stock/  →  token=xxx&action=list',
+                    'detail'   => 'POST ' . $base . 'stock/  →  token=xxx&action=getStock&id_produit=5',
+                    'reserver' => 'POST ' . $base . 'stock/  →  token=xxx&action=reserver&id_produit=5&quantite=2',
+                ],
+            ],
         ],
     ];
 

@@ -17,18 +17,35 @@
             $bestSellers = getBestSellers();
             foreach ($bestSellers as $produit) :
                 ?>
+                <?php $stockDispo = (int)($produit['stock_disponible'] ?? 0); ?>
                 <div class="col-md-4">
-                    <div class="card product-card h-100">
+                    <div class="card product-card h-100" style="position: relative; <?php echo $stockDispo <= 0 ? 'opacity: 0.75;' : ''; ?>">
+
+                        <?php if ($stockDispo <= 0): ?>
+                            <div style="position: absolute; top: 12px; right: 12px; z-index: 2;">
+                                <span class="badge" style="background: #dc3545; color: white; font-size: 0.75rem; padding: 0.5em 0.8em; border-radius: 8px;">
+                                    <i class="fas fa-times-circle me-1"></i> Rupture de stock
+                                </span>
+                            </div>
+                        <?php endif; ?>
+
                         <img src="/images/<?php e($produit['image']); ?>" class="card-img-top" alt="<?php e($produit['nom']); ?>">
                         <div class="card-body d-flex flex-column align-items-center text-center">
                             <h5 class="card-title"><?php e($produit['nom']); ?></h5>
                             <div class="mt-auto w-100">
                                 <p class="fw-bold mt-2 mb-0"><?php e(number_format($produit['prix_ttc'] / 100, 2, ',', ' ')); ?>€ / 100g</p>
-                                <form method="GET" action="/produit/<?php e($produit['identifiant']); ?>" class="mt-3">
-                                    <button type="submit" class="btn btn-primary w-100">
-                                        <i class="fas fa-eye me-2"></i> Voir le produit
+
+                                <?php if ($stockDispo <= 0): ?>
+                                    <button class="btn btn-secondary w-100 mt-3" disabled style="border-radius: 10px;">
+                                        <i class="fas fa-ban me-2"></i> En rupture de stock
                                     </button>
-                                </form>
+                                <?php else: ?>
+                                    <form method="GET" action="/produit/<?php e($produit['identifiant']); ?>" class="mt-3">
+                                        <button type="submit" class="btn btn-primary w-100" style="border-radius: 10px;">
+                                            <i class="fas fa-eye me-2"></i> Voir le produit
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

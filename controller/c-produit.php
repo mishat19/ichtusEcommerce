@@ -5,18 +5,52 @@ function produit() {
 
     /* ── Traitement POST ajout panier AVANT le rendu ── */
     if (isset($_POST['quantite'], $_POST['id_produit'])) {
-        ajouterProduitDansPanier((int)$_POST['id_produit'], (int)$_POST['quantite']);
+        $idProduit = (int)$_POST['id_produit'];
+        $quantite  = (int)$_POST['quantite'];
 
-        header('Location: /panier'); // Redirection vers la page panier
+        // Vérifier le stock disponible avant d'ajouter au panier
+        $stmtStock = $pdo->prepare("
+            SELECT COALESCE(quantite_disponible, 0) - COALESCE(quantite_reservee, 0) AS stock_reel
+            FROM stock WHERE id_produit = ?
+        ");
+        $stmtStock->execute([$idProduit]);
+        $stockRow = $stmtStock->fetch(PDO::FETCH_ASSOC);
+        $stockReel = $stockRow ? (int)$stockRow['stock_reel'] : 0;
+
+        if ($quantite > $stockReel) {
+            $_SESSION['erreur_stock'] = "Stock insuffisant. Seulement $stockReel unité(s) disponible(s).";
+            header('Location: ' . $_SERVER['REQUEST_URI']);
+            exit;
+        }
+
+        // Réserver le stock
+        $pdo->prepare("
+            UPDATE stock 
+            SET quantite_reservee = quantite_reservee + ?,
+                date_derniere_mise_a_jour = NOW()
+            WHERE id_produit = ?
+        ")->execute([$quantite, $idProduit]);
+
+        ajouterProduitDansPanier($idProduit, $quantite);
+
+        // Stocker le timestamp de la dernière réservation
+        $_SESSION['panier_reservation_time'] = time();
+
+        header('Location: /panier');
         exit;
     }
 
     if (isset($_GET['identifiant']) && $_GET['identifiant']) {
         $identifiant = $_GET['identifiant'];
         $stmt = $pdo->prepare("
-            SELECT p.*, t.taux, (p.prix_ht * (1 + (t.taux / 100))) AS prix_ttc
+            SELECT p.*, t.taux, (p.prix_ht * (1 + (t.taux / 100))) AS prix_ttc,
+                   COALESCE(s.quantite_disponible, 0) AS stock_total,
+                   COALESCE(s.quantite_reservee, 0) AS stock_reserve,
+                   COALESCE(s.quantite_disponible, 0) - COALESCE(s.quantite_reservee, 0) AS stock_disponible,
+                   COALESCE(s.seuil_alerte, 15) AS seuil_alerte
             FROM produit p
             INNER JOIN tva t ON p.id_tva = t.id
+            LEFT JOIN stock s ON s.id_produit = p.id
             WHERE p.identifiant = :identifiant
             AND p.statut = 'actif'
         ");
@@ -27,10 +61,17 @@ function produit() {
         unProduit();
     } else {
         global $lProduit;
-        $lProduit = $pdo->query("SELECT p.*, t.taux, (p.prix_ht * (1 + (t.taux / 100))) AS prix_ttc 
-            FROM produit p 
-            INNER JOIN tva t ON p.id_tva = t.id 
-            WHERE p.statut = 'actif'");
+        $stmt = $pdo->query("
+            SELECT p.*, t.taux, (p.prix_ht * (1 + (t.taux / 100))) AS prix_ttc,
+                   COALESCE(s.quantite_disponible, 0) AS stock_total,
+                   COALESCE(s.quantite_reservee, 0) AS stock_reserve,
+                   COALESCE(s.quantite_disponible, 0) - COALESCE(s.quantite_reservee, 0) AS stock_disponible
+            FROM produit p
+            INNER JOIN tva t ON p.id_tva = t.id
+            LEFT JOIN stock s ON s.id_produit = p.id
+            WHERE p.statut = 'actif'
+        ");
+        $lProduit = $stmt->fetchAll(PDO::FETCH_ASSOC);
         lstProduit();
     }
 }
@@ -38,11 +79,12 @@ function produit() {
 function getBestSellers() {
     global $pdo;
 
-    // Exemple : Récupérer 3 produits actifs avec le meilleur score ou les plus vendus
     $stmt = $pdo->query("
-        SELECT p.*, t.taux, (p.prix_ht * (1 + (t.taux / 100))) AS prix_ttc
+        SELECT p.*, t.taux, (p.prix_ht * (1 + (t.taux / 100))) AS prix_ttc,
+               COALESCE(s.quantite_disponible, 0) - COALESCE(s.quantite_reservee, 0) AS stock_disponible
         FROM produit p
         INNER JOIN tva t ON p.id_tva = t.id
+        LEFT JOIN stock s ON s.id_produit = p.id
         WHERE p.statut = 'actif'
         LIMIT 3
     ");
