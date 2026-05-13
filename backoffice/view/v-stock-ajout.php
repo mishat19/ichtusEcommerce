@@ -540,6 +540,7 @@ if (empty($_SESSION['csrf_token'])) {
 
             productLines.innerHTML = '';
             addLineAjout();
+            updateProductOptions();
 
             if (this.value === 'move') {
                 destinationContainer.style.display = 'block';
@@ -639,6 +640,7 @@ if (empty($_SESSION['csrf_token'])) {
 
             let selectedValues = [];
 
+            // récupère toutes les valeurs sélectionnées
             selects.forEach(s => {
                 if (s.value) selectedValues.push(s.value);
             });
@@ -651,7 +653,7 @@ if (empty($_SESSION['csrf_token'])) {
 
                     if (!option.value) return;
 
-                    // Désactive si déjà utilisé ailleurs
+                    // ❌ désactive si déjà choisi ailleurs
                     if (
                         selectedValues.includes(option.value) &&
                         option.value !== currentValue
@@ -664,57 +666,39 @@ if (empty($_SESSION['csrf_token'])) {
             });
         }
 
-
-
         // Ajouter une ligne de produit
         function addLineAjout() {
 
             const div = document.createElement('div');
-
-            div.className =
-                'product-line d-flex gap-2 align-items-center mb-2';
+            div.className = 'product-line d-flex gap-2 align-items-center mb-2';
 
             const action = stockAction.value;
-
-            const selectedStackId =
-                selectStackAjout.value;
+            const selectedStackId = selectStackAjout.value;
 
             let produitsDisponibles = produitsJSON;
 
             // =========================================
-            // Si suppression ou déplacement
-            // → ne montrer QUE les produits du stack
+            // Filtrage pour remove / move (stack only)
             // =========================================
+            if ((action === 'remove' || action === 'move') && selectedStackId) {
 
-            if (
-                (action === 'remove' || action === 'move')
-                && selectedStackId
-            ) {
-
-                const stack =
-                    stacksJSON.find(
-                        s => s.id == selectedStackId
-                    );
+                const stack = stacksJSON.find(s => s.id == selectedStackId);
 
                 if (stack && stack.produits) {
 
                     const idsProduitsStack =
-                        stack.produits.map(
-                            p => parseInt(p.id_produit)
-                        );
+                        stack.produits.map(p => parseInt(p.id_produit));
 
                     produitsDisponibles =
-                        produitsJSON.filter(
-                            p => idsProduitsStack.includes(parseInt(p.id))
+                        produitsJSON.filter(p =>
+                            idsProduitsStack.includes(parseInt(p.id))
                         );
                 }
             }
 
-            let options =
-                '<option value="">— Choisir un produit —</option>';
+            let options = '<option value="">— Choisir un produit —</option>';
 
             produitsDisponibles.forEach(p => {
-
                 options += `
             <option value="${p.id}">
                 ${p.nom} (${p.identifiant})
@@ -754,19 +738,38 @@ if (empty($_SESSION['csrf_token'])) {
 
             productLines.appendChild(div);
 
-            div.querySelector('.btn-remove-line')
-                .addEventListener('click', () => {
+            const select = div.querySelector('select');
+            const qty = div.querySelector('.produit-qte');
+            const removeBtn = div.querySelector('.btn-remove-line');
 
-                    div.remove();
+            // =========================================
+            // Events
+            // =========================================
 
-                    updateSummaryAjout();
-                });
+            select.addEventListener('change', () => {
+                updateSummaryAjout();
+                updateProductOptions(); // 🔥 évite doublons
+            });
 
-            div.querySelector('.produit-qte')
-                .addEventListener('input', updateSummaryAjout);
+            qty.addEventListener('input', updateSummaryAjout);
 
+            removeBtn.addEventListener('click', () => {
+                div.remove();
+                updateSummaryAjout();
+                updateProductOptions(); // 🔥 réactive options
+            });
+
+            // =========================================
+            // Ajout DOM
+            // =========================================
+
+            productLines.appendChild(div);
+
+            // 🔥 MAJ globale obligatoire
             updateSummaryAjout();
+            updateProductOptions();
         }
+
         btnAddLine.addEventListener('click', addLineAjout);
         addLineAjout(); // Ajoute une ligne par défaut
 
