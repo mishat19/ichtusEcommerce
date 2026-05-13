@@ -10,6 +10,14 @@
                 <div class="step"><div class="step-icon">4</div><div class="step-label">Confirmation</div></div>
             </div>
 
+            <?php if (isset($_SESSION['erreur'])): ?>
+                <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-4" role="alert" style="border-radius: 12px;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <div><?php echo htmlspecialchars($_SESSION['erreur']); unset($_SESSION['erreur']); ?></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+
             <h2 class="mb-4">Adresses</h2>
 
             <form method="POST" action="/paiement/">
@@ -22,22 +30,19 @@
                     </div>
                     <div class="card-body">
                         <?php if ($adresseFacturationSelected): ?>
-                            <div class="form-check mb-3 p-3 border rounded" data-id="<?php e($adresseFacturationSelected['id']); ?>">
-                                <input class="form-check-input"
-                                       type="radio"
-                                       name="id_adresse_facturation"
-                                       value="<?php e($adresseFacturationSelected['id']); ?>"
-                                        <?php e($adresseFacturationSelected['est_par_defaut'] ? 'checked' : ''); ?>>
-
-                                <label class="form-check-label w-100">
-                                    <strong><?php e($adresseFacturationSelected['prenom']); ?> <?php e($adresseFacturationSelected['nom']); ?></strong><br>
-                                    <?php e($adresseFacturationSelected['adresse']); ?><br>
-                                    <?php e($adresseFacturationSelected['code_postal']); ?> <?php e($adresseFacturationSelected['ville']); ?><br>
-                                    <?php e($adresseFacturationSelected['telephone']); ?>
-                                </label>
+                            <!-- Suppression du radio ici -->
+                            <div class="p-3 border rounded mb-3" data-id="<?php e($adresseFacturationSelected['id']); ?>">
+                                <strong><?php e($adresseFacturationSelected['prenom']); ?> <?php e($adresseFacturationSelected['nom']); ?></strong><br>
+                                <?php e($adresseFacturationSelected['adresse']); ?><br>
+                                <?php e($adresseFacturationSelected['code_postal']); ?> <?php e($adresseFacturationSelected['ville']); ?><br>
+                                <?php e($adresseFacturationSelected['telephone']); ?>
+                                <!-- Champ caché pour stocker l'ID de l'adresse sélectionnée -->
+                                <input type="hidden" name="id_adresse_facturation" value="<?php e($adresseFacturationSelected['id']); ?>">
                             </div>
                         <?php else: ?>
                             <p>Aucune adresse de facturation enregistrée.</p>
+                            <!-- Champ caché vide si aucune adresse -->
+                            <input type="hidden" name="id_adresse_facturation" value="">
                         <?php endif; ?>
 
                         <button type="button"
@@ -57,22 +62,19 @@
                     </div>
                     <div class="card-body">
                         <?php if ($adresseLivraisonSelected): ?>
-                            <div class="form-check mb-3 p-3 border rounded" data-id="<?php e($adresseLivraisonSelected['id']); ?>">
-                                <input class="form-check-input"
-                                       type="radio"
-                                       name="id_adresse_livraison"
-                                       value="<?php e($adresseLivraisonSelected['id']); ?>"
-                                        <?php e($adresseLivraisonSelected['est_par_defaut'] ? 'checked' : ''); ?>>
-
-                                <label class="form-check-label w-100">
-                                    <strong><?php e($adresseLivraisonSelected['prenom']); ?> <?php e($adresseLivraisonSelected['nom']); ?></strong><br>
-                                    <?php e($adresseLivraisonSelected['adresse']); ?><br>
-                                    <?php e($adresseLivraisonSelected['code_postal']); ?> <?php e($adresseLivraisonSelected['ville']); ?><br>
-                                    <?php e($adresseLivraisonSelected['telephone']); ?>
-                                </label>
+                            <!-- Suppression du radio ici -->
+                            <div class="p-3 border rounded mb-3" data-id="<?php e($adresseLivraisonSelected['id']); ?>">
+                                <strong><?php e($adresseLivraisonSelected['prenom']); ?> <?php e($adresseLivraisonSelected['nom']); ?></strong><br>
+                                <?php e($adresseLivraisonSelected['adresse']); ?><br>
+                                <?php e($adresseLivraisonSelected['code_postal']); ?> <?php e($adresseLivraisonSelected['ville']); ?><br>
+                                <?php e($adresseLivraisonSelected['telephone']); ?>
+                                <!-- Champ caché pour stocker l'ID de l'adresse sélectionnée -->
+                                <input type="hidden" name="id_adresse_livraison" value="<?php e($adresseLivraisonSelected['id']); ?>">
                             </div>
                         <?php else: ?>
                             <p>Aucune adresse de livraison enregistrée.</p>
+                            <!-- Champ caché vide si aucune adresse -->
+                            <input type="hidden" name="id_adresse_livraison" value="">
                         <?php endif; ?>
 
                         <button type="button"
@@ -302,69 +304,60 @@
         // 🟢 VALIDATION SELECTION
         // =========================
         document.getElementById('confirmSelectedAddress').addEventListener('click', () => {
-
             if (currentType === 'facturation') {
                 const selected = document.querySelector('input[name="selectedFacturationAddress"]:checked');
-
                 if (selected) {
                     const id = selected.value;
+                    // Met à jour le champ caché dans le formulaire principal
+                    document.querySelector('input[name="id_adresse_facturation"]').value = id;
 
+                    // Met à jour l'affichage
                     const addresses = <?php echo json_encode(array_merge($adressesFacturation, $adressesLivraison)); ?>;
                     const address = addresses.find(a => a.id == id);
-
                     if (address) {
-                        const container = document.querySelector('#facturationAdresses .card-body');
-
-                        container.querySelector('.form-check').innerHTML = `
-                    <input class="form-check-input"
-                           type="radio"
-                           name="id_adresse_facturation"
-                           value="${address.id}" ${true ? 'checked' : ''}
-                           checked>
-
-                    <label class="form-check-label w-100">
+                        const container = document.querySelector('#facturationAdresses .card-body div.p-3');
+                        if (container) {
+                            container.innerHTML = `
                         <strong>${address.prenom} ${address.nom}</strong><br>
                         ${address.adresse}<br>
                         ${address.code_postal} ${address.ville}<br>
                         ${address.telephone}
-                    </label>
-                `;
+                        <input type="hidden" name="id_adresse_facturation" value="${address.id}">
+                    `;
+                        }
                     }
                 }
             }
 
             if (currentType === 'livraison') {
                 const selected = document.querySelector('input[name="selectedLivraisonAddress"]:checked');
-
                 if (selected) {
                     const id = selected.value;
+                    // Met à jour le champ caché dans le formulaire principal
+                    document.querySelector('input[name="id_adresse_livraison"]').value = id;
 
+                    // Met à jour l'affichage
                     const addresses = <?php echo json_encode(array_merge($adressesFacturation, $adressesLivraison)); ?>;
                     const address = addresses.find(a => a.id == id);
-
                     if (address) {
-                        const container = document.querySelector('#livraisonAdresses .card-body');
-
-                        container.querySelector('.form-check').innerHTML = `
-                    <input class="form-check-input"
-                           type="radio"
-                           name="id_adresse_livraison"
-                           value="${address.id}" ${true ? 'checked' : ''}
-                           checked>
-
-                    <label class="form-check-label w-100">
+                        const container = document.querySelector('#livraisonAdresses .card-body div.p-3');
+                        if (container) {
+                            container.innerHTML = `
                         <strong>${address.prenom} ${address.nom}</strong><br>
                         ${address.adresse}<br>
                         ${address.code_postal} ${address.ville}<br>
                         ${address.telephone}
-                    </label>
-                `;
+                        <input type="hidden" name="id_adresse_livraison" value="${address.id}">
+                    `;
+                        }
                     }
                 }
             }
 
             bootstrap.Modal.getInstance(document.getElementById('addressModal')).hide();
-        });        // =========================
+        });
+
+        // =========================
         // 🟢 AJOUT ADRESSE
         // =========================
         document.getElementById('addNewFacturationAddress').addEventListener('click', () => {

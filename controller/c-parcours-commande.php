@@ -191,6 +191,27 @@ function commandeAdresses(): void
 // Étape 3 : Paiement
 function commandePaiement(): void
 {
+    global $pdo;
+
+    if (!isset($_SESSION['idClient'])) {
+        header('Location: /connexion');
+        exit;
+    }
+
+    $idClient = $_SESSION['idClient'];
+
+    // Vérifie que les adresses sont sélectionnées dans le POST
+    if (!isset($_POST['id_adresse_facturation']) || !isset($_POST['id_adresse_livraison'])) {
+        $_SESSION['erreur'] = "Veuillez sélectionner une adresse de facturation et une adresse de livraison.";
+        header('Location: /adresses');
+        exit;
+    }
+
+    // Stocke les adresses en session pour créer la commande
+    $_SESSION['adresse_facturation'] = (int)$_POST['id_adresse_facturation'];
+    $_SESSION['adresse_livraison'] = (int)$_POST['id_adresse_livraison'];
+
+    // Appelle la fonction de paiement
     paiement();
 }
 
@@ -227,12 +248,12 @@ function creerCommande() {
         // On met à jour le montant au cas où le panier aurait changé
         $pdo->prepare("UPDATE commande SET total_ttc = ?, date_commande = NOW() WHERE id = ?")
             ->execute([$totalFinal, $idCommande]);
-        
+
         // On vide et on re-remplit les produits pour être sûr qu'ils correspondent au panier actuel
         $pdo->prepare("DELETE FROM commande_produit WHERE id_commande = ?")->execute([$idCommande]);
     } else {
         $numeroFacture = 'FACT-' . date('Ymd') . '-' . strtoupper(uniqid());
-        
+
         $stmt = $pdo->prepare("
             INSERT INTO commande (
                 id_client, numero_facture, total_ttc, frais_livraison,
@@ -289,20 +310,6 @@ function getCommandeById($idCommande) {
     $stmt->execute([$idCommande]);
 
     return $stmt->fetch(PDO::FETCH_ASSOC);
-}
-
-function paiementAccepte($idCommande) {
-    global $pdo;
-
-    $idPanier = verifPanier();
-    $commande = getCommandeById($idCommande);
-
-    $pdo->prepare("DELETE FROM panier_produit WHERE id_panier = ?")
-        ->execute([$idPanier]);
-
-    nettoyerAdressesInutilisees($_SESSION['idClient']);
-
-    return $commande;
 }
 
 function paiementRefuse($idCommande) {
