@@ -229,39 +229,132 @@ function BOStockAjout() {
 
     // Traitement POST : Ajout batch
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajout_batch'])) {
+
         verify_csrf();
 
-        $idStack = (int)($_POST['id_stack'] ?? 0);
-        $produitsIds = $_POST['produit_id'] ?? [];
-        $quantites = $_POST['produit_qte'] ?? [];
+        $action =
+            $_POST['stock_action'] ?? 'add';
+
+        $idStack =
+            (int)($_POST['id_stack'] ?? 0);
+
+        $idStackDestination =
+            (int)($_POST['id_stack_destination'] ?? 0);
+
+        $produitsIds =
+            $_POST['produit_id'] ?? [];
+
+        $quantites =
+            $_POST['produit_qte'] ?? [];
 
         if ($idStack <= 0) {
-            $messageErreur = "Veuillez sélectionner un stack.";
-        } elseif (empty($produitsIds)) {
-            $messageErreur = "Veuillez ajouter au moins un produit.";
-        } else {
-            // Préparer les produits
+
+            $messageErreur =
+                "Veuillez sélectionner un stack.";
+        }
+
+        elseif (empty($produitsIds)) {
+
+            $messageErreur =
+                "Veuillez ajouter au moins un produit.";
+        }
+
+        else {
+
             $produits = [];
+
             for ($i = 0; $i < count($produitsIds); $i++) {
-                $pid = (int)($produitsIds[$i] ?? 0);
-                $qty = (int)($quantites[$i] ?? 0);
+
+                $pid =
+                    (int)($produitsIds[$i] ?? 0);
+
+                $qty =
+                    (int)($quantites[$i] ?? 0);
+
                 if ($pid > 0 && $qty > 0) {
-                    $produits[] = ['id_produit' => $pid, 'quantite' => $qty];
+
+                    $produits[] = [
+                        'id_produit' => $pid,
+                        'quantite' => $qty
+                    ];
                 }
             }
 
             if (empty($produits)) {
-                $messageErreur = "Aucune ligne valide à ajouter.";
-            } else {
-                $result = executeStockAction('addToStack', [
-                    'id_stack' => $idStack,
-                    'produits' => json_encode($produits)
-                ]);
 
-                if (isset($result['success'])) {
-                    $messageSucces = $result['message'];
-                } else {
-                    $messageErreur = $result['error'] ?? 'Erreur inconnue';
+                $messageErreur =
+                    "Aucune ligne valide.";
+
+            } else {
+
+                // ===================================
+                // AJOUT
+                // ===================================
+
+                if ($action === 'add') {
+
+                    $result = executeStockAction(
+                        'addToStack',
+                        [
+                            'id_stack' => $idStack,
+                            'produits' => json_encode($produits)
+                        ]
+                    );
+                }
+
+                // ===================================
+                // SUPPRESSION
+                // ===================================
+
+                elseif ($action === 'remove') {
+
+                    $result = executeStockAction(
+                        'removeFromStack',
+                        [
+                            'id_stack' => $idStack,
+                            'produits' => json_encode($produits)
+                        ]
+                    );
+                }
+
+                // ===================================
+                // DEPLACEMENT
+                // ===================================
+
+                elseif ($action === 'move') {
+
+                    if ($idStackDestination <= 0) {
+
+                        $messageErreur =
+                            "Veuillez sélectionner un stack destination.";
+
+                    } else {
+
+                        $result = executeStockAction(
+                            'moveStock',
+                            [
+                                'id_stack_source' => $idStack,
+                                'id_stack_destination' => $idStackDestination,
+                                'produits' => json_encode($produits)
+                            ]
+                        );
+                    }
+                }
+
+                if (
+                    empty($messageErreur) &&
+                    isset($result['success'])
+                ) {
+
+                    $messageSucces =
+                        $result['message'];
+
+                } elseif (
+                    empty($messageErreur)
+                ) {
+
+                    $messageErreur =
+                        $result['error'] ?? 'Erreur inconnue';
                 }
             }
         }
@@ -281,6 +374,23 @@ function BOStockAjout() {
 
     // Récupération des produits
     $resultProduits = executeStockAction('getProduits');
+
+    /**
+     * Récupère les produits d’un stack sélectionné
+     */
+    function getProduitsDuStackSelectionne($idStack) {
+
+        if ($idStack <= 0) {
+            return [
+                'success' => false,
+                'produits' => []
+            ];
+        }
+
+        return executeStockAction('getStackProduits', [
+            'id_stack' => $idStack
+        ]);
+    }
 
     if (isset($resultProduits['error'])) {
         $messageErreur .= ' ' . $resultProduits['error'];

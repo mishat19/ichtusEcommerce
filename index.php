@@ -105,13 +105,23 @@ switch ($page) {
 
             // /backoffice/stock
             if ($segments[1] === 'stock') {
-                BOStockAjout();
-                break;
-            }
 
-            // /backoffice/ajax-stock-produits
-            if ($segments[1] === 'ajax-stock-produits') {
-                getStackProduits();
+                // AJAX produits du stack
+                if (
+                    isset($_GET['action']) &&
+                    $_GET['action'] === 'getStackProduits'
+                ) {
+
+                    echo json_encode(
+                        getProduitsDuStackSelectionne(
+                            (int)($_GET['id_stack'] ?? 0)
+                        )
+                    );
+
+                    exit;
+                }
+
+                BOStockAjout();
                 break;
             }
 

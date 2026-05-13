@@ -42,7 +42,7 @@ if (empty($_SESSION['csrf_token'])) {
 <ul class="nav nav-tabs mb-4" id="stockTabs" role="tablist" style="border-bottom: none;">
     <li class="nav-item" role="presentation">
         <button class="nav-link active" id="ajout-tab" data-bs-toggle="tab" data-bs-target="#ajout" type="button" role="tab" style="border-radius: 10px 10px 0 0; border: 1px solid var(--bo-border);">
-            <i class="fas fa-plus-circle me-2"></i> Ajouter du stock
+            <i class="fas fa-boxes-stacked me-2"></i> Gérer le stock
         </button>
     </li>
     <li class="nav-item" role="presentation">
@@ -64,6 +64,21 @@ if (empty($_SESSION['csrf_token'])) {
         <form method="POST" id="formAjoutBatch">
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
             <input type="hidden" name="ajout_batch" value="1">
+
+            <div class="bo-card mb-4">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-sliders-h me-2" style="color: var(--bo-primary);"></i>
+                    Action
+                </h5>
+
+                <select id="stock-action" name="stock_action"
+                        class="form-select"
+                        style="border-radius: 10px; padding: 0.7rem;">
+                    <option value="add">➕ Ajouter du stock</option>
+                    <option value="remove">➖ Retirer du stock</option>
+                    <option value="move">🔁 Déplacer du stock</option>
+                </select>
+            </div>
 
             <div class="row g-4">
                 <!-- Sélection du stack -->
@@ -104,11 +119,69 @@ if (empty($_SESSION['csrf_token'])) {
                     </div>
                 </div>
 
+                <div class="col-lg-4" id="destination-stack-container" style="display:none;">
+                    <div class="bo-card" style="border-left: 4px solid #f59e0b;">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-arrow-right me-2" style="color: #f59e0b;"></i>
+                            Stack de destination
+                        </h5>
+
+                        <select name="id_stack_destination"
+                                id="select-stack-destination"
+                                class="form-select"
+                                style="border-radius: 10px; padding: 0.7rem;">
+
+                            <option value="">— Choisir un stack —</option>
+
+                            <?php
+                            $currentEntrepot = '';
+
+                            foreach ($stacksList as $s):
+
+                                if ($s['entrepot_nom'] !== $currentEntrepot):
+
+                                    if ($currentEntrepot !== '') echo '</optgroup>';
+
+                                    $currentEntrepot = $s['entrepot_nom'];
+
+                                    echo '<optgroup label="🏭 ' . htmlspecialchars($s['entrepot_nom']) . '">';
+                                endif;
+                                ?>
+
+                                <option value="<?php echo $s['id']; ?>"
+                                        data-capacite="<?php echo $s['capacite_max']; ?>"
+                                        data-utilise="<?php echo $s['capacite_utilisee']; ?>">
+                                    <?php echo htmlspecialchars($s['meuble_nom']); ?>
+                                    →
+                                    <?php echo htmlspecialchars($s['nom']); ?>
+                                </option>
+
+                            <?php endforeach; ?>
+
+                            <?php if ($currentEntrepot !== '') echo '</optgroup>'; ?>
+                        </select>
+                        <div id="stack-info-destination"
+                             style="display: none; background: #f8fafc; border-radius: 10px; padding: 1rem; border: 1px solid var(--bo-border); margin-top: 1rem;">
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="small text-muted">Capacité restante</span>
+                                <span class="fw-bold" id="stack-restant-destination" style="color: #f59e0b;">—</span>
+                            </div>
+
+                            <div class="progress" style="height: 8px; border-radius: 6px; background: #e2e8f0;">
+                                <div id="stack-progress-destination"
+                                     class="progress-bar"
+                                     style="border-radius: 6px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Ajout des produits -->
                 <div class="col-lg-8">
                     <div class="bo-card">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold mb-0">
+                            <h5 class="fw-bold mb-0" id="title-interaction-action">
                                 <i class="fas fa-cart-plus me-2" style="color: var(--bo-success);"></i> 2. Ajouter des produits
                             </h5>
                             <button type="button" id="btn-add-line" class="btn btn-sm" style="background: var(--bo-success); color: #fff; border-radius: 8px; font-weight: 600;">
@@ -335,6 +408,55 @@ if (empty($_SESSION['csrf_token'])) {
     let qrScanner = null;
     let currentScanProduct = null;
 
+    const titleProducts = document.querySelector("#ajout h5.fw-bold");
+    const btnAddLine = document.getElementById("btn-add-line");
+    const btnSubmit = document.getElementById("btn-submit");
+    const batchTitle = document.querySelector("#batch-summary .text-muted");
+    const titleAction = document.getElementById('title-interaction-action');
+
+    function updateUIByAction(action) {
+
+        if (action === 'add') {
+
+            titleAction.innerHTML =
+                `<i class="fas fa-cart me-1" style="color: var(--bo-success);"></i> 2. Ajouter des produits`;
+
+            btnAddLine.innerHTML =
+                `<i class="fas fa-plus me-1"></i> Ajouter une ligne`;
+
+            btnSubmit.innerHTML =
+                `<i class="fas fa-check me-2"></i> Valider l'ajout en stock`;
+        }
+
+        else if (action === 'remove') {
+            titleAction.innerHTML =
+                `<i class="fas fa-trash me-1" style="color: var(--bo-danger);"></i> 2. Supprimer des produits`;
+
+            titleProducts.innerHTML =
+                `<i class="fas fa-plus me-1"></i> 2. Supprimer des produits`;
+
+            btnAddLine.innerHTML =
+                `<i class="fas fa-plus me-1"></i> Ajouter une ligne de suppression`;
+
+            btnSubmit.innerHTML =
+                `<i class="fas fa-trash me-2"></i> Valider la suppression`;
+        }
+
+        else if (action === 'move') {
+            titleAction.innerHTML =
+                `<i class="fas fa-exchange-alt me-1" style="color: var(--bo-warning);"></i> 2. Déplacer des produits`;
+
+            titleProducts.innerHTML =
+                `2. Déplacer des produits`;
+
+            btnAddLine.innerHTML =
+                `<i class="fas fa-plus me-1"></i> Ajouter une ligne de déplacement`;
+
+            btnSubmit.innerHTML =
+                `<i class="fas fa-exchange-alt me-2"></i> Valider le déplacement`;
+        }
+    }
+
     function onScanSuccess(decodedText) {
         console.log("QR SCANNÉ :", decodedText);
 
@@ -356,10 +478,119 @@ if (empty($_SESSION['csrf_token'])) {
             .catch(err => console.error("Erreur scan:", err));
     }
 
+    function updateSubmitButton() {
+
+        const stockAction = document.getElementById('stock-action');
+        const btnSubmit = document.getElementById('btn-submit');
+
+        const action = stockAction.value;
+
+        if (action === 'add') {
+            btnSubmit.innerHTML =
+                '<i class="fas fa-plus me-2"></i> Valider l\'ajout';
+        }
+
+        else if (action === 'remove') {
+            btnSubmit.innerHTML =
+                '<i class="fas fa-minus me-2"></i> Valider la suppression';
+        }
+
+        else if (action === 'move') {
+            btnSubmit.innerHTML =
+                '<i class="fas fa-arrow-right me-2"></i> Valider le déplacement';
+        }
+    }
+
+    function updateBatchLabel(action) {
+
+        if (action === 'add') {
+            batchTitle.textContent = "Total produits à ajouter :";
+        }
+
+        else if (action === 'remove') {
+            batchTitle.textContent = "Total produits à supprimer :";
+        }
+
+        else if (action === 'move') {
+            batchTitle.textContent = "Total produits à déplacer :";
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // Données des produits et stacks (PHP → JS)
         const produitsJSON = <?php echo json_encode($produitsActifs); ?>;
         const stacksJSON = <?php echo json_encode($stacksList); ?>;
+
+        const stockAction = document.getElementById('stock-action');
+        const destinationContainer = document.getElementById('destination-stack-container');
+        const selectStackDestination = document.getElementById('select-stack-destination');
+
+        const stackInfoDestination = document.getElementById('stack-info-destination');
+
+        const stackRestantDestination = document.getElementById('stack-restant-destination');
+
+        const stackProgressDestination = document.getElementById('stack-progress-destination');
+
+        let stackCapaciteMaxDestination = 0;
+        let stackCapaciteUtiliseeDestination = 0;
+
+        stockAction.addEventListener('change', function () {
+            updateUIByAction(this.value);
+            updateBatchLabel(this.value);
+
+            productLines.innerHTML = '';
+            addLineAjout();
+
+            if (this.value === 'move') {
+                destinationContainer.style.display = 'block';
+            } else {
+                destinationContainer.style.display = 'none';
+            }
+
+            updateSubmitButton();
+        });
+
+        selectStackDestination.addEventListener('change', function () {
+
+            const selected = this.options[this.selectedIndex];
+
+            if (this.value) {
+
+                stackCapaciteMaxDestination =
+                    parseInt(selected.dataset.capacite) || 0;
+
+                stackCapaciteUtiliseeDestination =
+                    parseInt(selected.dataset.utilise) || 0;
+
+                const restant =
+                    stackCapaciteMaxDestination -
+                    stackCapaciteUtiliseeDestination;
+
+                const taux =
+                    stackCapaciteMaxDestination > 0
+                        ? (stackCapaciteUtiliseeDestination / stackCapaciteMaxDestination * 100)
+                        : 0;
+
+                stackRestantDestination.textContent =
+                    restant + ' places';
+
+                stackProgressDestination.style.width =
+                    taux + '%';
+
+                stackProgressDestination.style.background =
+                    taux >= 80
+                        ? '#ef4444'
+                        : (taux >= 50 ? '#f59e0b' : '#10b981');
+
+                stackInfoDestination.style.display = 'block';
+
+            } else {
+
+                stackInfoDestination.style.display = 'none';
+            }
+
+            updateSummaryAjout();
+        });
 
         // ====================== ONGLET AJOUT ======================
         const productLines = document.getElementById('product-lines');
@@ -393,62 +624,302 @@ if (empty($_SESSION['csrf_token'])) {
             } else {
                 stackInfoAjout.style.display = 'none';
             }
+
+            // Recharge les lignes produits selon le stack
+            productLines.innerHTML = '';
+            addLineAjout();
+
             updateSummaryAjout();
         });
 
+        function updateProductOptions() {
+
+            const selects =
+                document.querySelectorAll('#product-lines select');
+
+            let selectedValues = [];
+
+            selects.forEach(s => {
+                if (s.value) selectedValues.push(s.value);
+            });
+
+            selects.forEach(select => {
+
+                const currentValue = select.value;
+
+                Array.from(select.options).forEach(option => {
+
+                    if (!option.value) return;
+
+                    // Désactive si déjà utilisé ailleurs
+                    if (
+                        selectedValues.includes(option.value) &&
+                        option.value !== currentValue
+                    ) {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                });
+            });
+        }
+
+
+
         // Ajouter une ligne de produit
         function addLineAjout() {
-            const div = document.createElement('div');
-            div.className = 'product-line d-flex gap-2 align-items-center mb-2';
 
-            let options = '<option value="">— Choisir un produit —</option>';
-            produitsJSON.forEach(p => {
-                options += `<option value="${p.id}">${p.nom} (${p.identifiant})</option>`;
+            const div = document.createElement('div');
+
+            div.className =
+                'product-line d-flex gap-2 align-items-center mb-2';
+
+            const action = stockAction.value;
+
+            const selectedStackId =
+                selectStackAjout.value;
+
+            let produitsDisponibles = produitsJSON;
+
+            // =========================================
+            // Si suppression ou déplacement
+            // → ne montrer QUE les produits du stack
+            // =========================================
+
+            if (
+                (action === 'remove' || action === 'move')
+                && selectedStackId
+            ) {
+
+                const stack =
+                    stacksJSON.find(
+                        s => s.id == selectedStackId
+                    );
+
+                if (stack && stack.produits) {
+
+                    const idsProduitsStack =
+                        stack.produits.map(
+                            p => parseInt(p.id_produit)
+                        );
+
+                    produitsDisponibles =
+                        produitsJSON.filter(
+                            p => idsProduitsStack.includes(parseInt(p.id))
+                        );
+                }
+            }
+
+            let options =
+                '<option value="">— Choisir un produit —</option>';
+
+            produitsDisponibles.forEach(p => {
+
+                options += `
+            <option value="${p.id}">
+                ${p.nom} (${p.identifiant})
+            </option>
+        `;
             });
 
             div.innerHTML = `
-            <select name="produit_id[]" class="form-select" required style="border-radius: 10px; flex: 2;">
-                ${options}
-            </select>
-            <input type="number" name="produit_qte[]" class="form-control produit-qte" placeholder="Qté" min="1" value="1" required
-                   style="border-radius: 10px; flex: 0.5; text-align: center;">
-            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-line" style="border-radius: 8px; flex: 0 0 auto;">
-                <i class="fas fa-trash"></i>
-            </button>
-        `;
+        <select
+            name="produit_id[]"
+            class="form-select"
+            required
+            style="border-radius: 10px; flex: 2;"
+        >
+            ${options}
+        </select>
+
+        <input
+            type="number"
+            name="produit_qte[]"
+            class="form-control produit-qte"
+            placeholder="Qté"
+            min="1"
+            value="1"
+            required
+            style="border-radius: 10px; flex: 0.5; text-align: center;"
+        >
+
+        <button
+            type="button"
+            class="btn btn-sm btn-outline-danger btn-remove-line"
+            style="border-radius: 8px; flex: 0 0 auto;"
+        >
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
 
             productLines.appendChild(div);
-            div.querySelector('.btn-remove-line').addEventListener('click', () => { div.remove(); updateSummaryAjout(); });
-            div.querySelector('.produit-qte').addEventListener('input', updateSummaryAjout);
+
+            div.querySelector('.btn-remove-line')
+                .addEventListener('click', () => {
+
+                    div.remove();
+
+                    updateSummaryAjout();
+                });
+
+            div.querySelector('.produit-qte')
+                .addEventListener('input', updateSummaryAjout);
+
             updateSummaryAjout();
         }
-
         btnAddLine.addEventListener('click', addLineAjout);
         addLineAjout(); // Ajoute une ligne par défaut
 
         // Mettre à jour le résumé
         function updateSummaryAjout() {
-            const lines = document.querySelectorAll('#product-lines .product-line');
+
+            const action = stockAction.value;
+
+            const lines =
+                document.querySelectorAll('#product-lines .product-line');
+
             let total = 0;
+
             lines.forEach(line => {
-                const qte = parseInt(line.querySelector('.produit-qte').value) || 0;
+
+                const qte =
+                    parseInt(
+                        line.querySelector('.produit-qte').value
+                    ) || 0;
+
                 total += qte;
             });
 
             totalQuantityEl.textContent = total;
-            batchSummary.style.display = lines.length > 0 ? 'block' : 'none';
 
-            const restant = stackCapaciteMaxAjout - stackCapaciteUtiliseeAjout;
-            if (total > restant && selectStackAjout.value) {
-                capacityWarning.style.display = 'block';
-                capacityWarningText.textContent = `Capacité dépassée ! Vous essayez d'ajouter ${total} produit(s) mais il ne reste que ${restant} place(s).`;
-                btnSubmit.disabled = true;
-            } else if (total > 0 && selectStackAjout.value) {
-                capacityWarning.style.display = 'none';
-                btnSubmit.disabled = false;
-            } else {
-                capacityWarning.style.display = 'none';
-                btnSubmit.disabled = true;
+            batchSummary.style.display =
+                lines.length > 0 ? 'block' : 'none';
+
+            // ===============================
+            // AJOUT
+            // ===============================
+
+            if (action === 'add') {
+
+                const restant =
+                    stackCapaciteMaxAjout -
+                    stackCapaciteUtiliseeAjout;
+
+                if (total > restant && selectStackAjout.value) {
+
+                    capacityWarning.style.display = 'block';
+
+                    capacityWarningText.textContent =
+                        `Capacité dépassée ! Vous essayez d'ajouter ${total} produit(s) mais il ne reste que ${restant} place(s).`;
+
+                    btnSubmit.disabled = true;
+
+                } else if (total > 0 && selectStackAjout.value) {
+
+                    capacityWarning.style.display = 'none';
+
+                    btnSubmit.disabled = false;
+
+                } else {
+
+                    capacityWarning.style.display = 'none';
+
+                    btnSubmit.disabled = true;
+                }
+            }
+
+                // ===============================
+                // SUPPRESSION
+            // ===============================
+
+            else if (action === 'remove') {
+
+                const selectedStackId = selectStackAjout.value;
+                const lines = document.querySelectorAll('#product-lines .product-line');
+
+                if (!selectedStackId) {
+                    capacityWarning.style.display = 'none';
+                    btnSubmit.disabled = true;
+                    return;
+                }
+
+                const stack = stacksJSON.find(s => s.id == selectedStackId);
+
+                let errors = [];
+                let isValid = true;
+
+                lines.forEach(line => {
+
+                    const select = line.querySelector('select');
+                    const qte = parseInt(line.querySelector('.produit-qte').value) || 0;
+
+                    if (!select.value || qte <= 0) return;
+
+                    const produitStack =
+                        stack?.produits?.find(p => p.id_produit == select.value);
+
+                    const stockDispo = produitStack ? parseInt(produitStack.quantite) : 0;
+
+                    const nomProduit =
+                        select.options[select.selectedIndex]?.text || 'Produit inconnu';
+
+                    if (qte > stockDispo) {
+                        isValid = false;
+                        errors.push(
+                            `• ${nomProduit} : ${qte} demandés mais seulement ${stockDispo} disponibles`
+                        );
+                    }
+                });
+
+                if (errors.length > 0) {
+
+                    capacityWarning.style.display = 'block';
+
+                    capacityWarningText.innerHTML =
+                        `Problème de stock :<br>` + errors.join('<br>');
+
+                    btnSubmit.disabled = true;
+
+                } else {
+
+                    capacityWarning.style.display = 'none';
+                    btnSubmit.disabled = false;
+                }
+            }
+
+                // ===============================
+                // DEPLACEMENT
+            // ===============================
+
+            else if (action === 'move') {
+
+                const restantDestination =
+                    stackCapaciteMaxDestination -
+                    stackCapaciteUtiliseeDestination;
+
+                if (
+                    total > restantDestination &&
+                    selectStackDestination.value
+                ) {
+
+                    capacityWarning.style.display = 'block';
+
+                    capacityWarningText.textContent =
+                        `Le stack destination n'a pas assez de place (${restantDestination} restante(s)).`;
+
+                    btnSubmit.disabled = true;
+
+                } else {
+
+                    capacityWarning.style.display = 'none';
+
+                    btnSubmit.disabled =
+                        !(
+                            total > 0 &&
+                            selectStackAjout.value &&
+                            selectStackDestination.value
+                        );
+                }
             }
         }
 

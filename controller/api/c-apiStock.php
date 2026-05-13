@@ -469,89 +469,438 @@ function APIStock() {
         /* ══════════════════════════════════════
         *  SORTIE PRODUIT
         * ══════════════════════════════════════ */
-        case "sortie":
+        case 'removeFromStack':
 
-            $data = json_decode(file_get_contents("php://input"), true);
+            $idStack = (int)($_POST['id_stack'] ?? 0);
 
-            $id = $data["id_produit"];
-            $qte = (int)$data["quantite"];
+            $produits = json_decode($_POST['produits'] ?? '[]', true);
 
-            // stock actuel
-            $stmt = $pdo->prepare("SELECT stock FROM produit WHERE id = ?");
-            $stmt->execute([$id]);
-            $stock = $stmt->fetchColumn();
+            if ($idStack <= 0 || empty($produits)) {
 
-            if ($stock < $qte) {
-                echo json_encode(["error"=>"Stock insuffisant"]);
-                exit;
+                http_response_code(400);
+
+                echo json_encode([
+                    'error' => 'Données invalides'
+                ]);
+
+                return;
             }
 
-            $new = $stock - $qte;
+            try {
 
-            $pdo->prepare("UPDATE produit SET stock = ? WHERE id = ?")
-                ->execute([$new, $id]);
+                $pdo->beginTransaction();
 
-            $pdo->prepare("INSERT INTO mouvement_stock
-                (id_produit, type_mouvement, quantite, quantite_avant, quantite_apres)
-                VALUES (?, 'sortie', ?, ?, ?)")
-                ->execute([$id, $qte, $stock, $new]);
+                foreach ($produits as $p) {
 
-            echo json_encode(["ok"=>true]);
-            break;
+                    $idProduit = (int)$p['id_produit'];
 
-        case "move":
+                    $qte = (int)$p['quantite'];
 
-            $data = json_decode(file_get_contents("php://input"), true);
+                    /* STOCK ACTUEL DU STACK */
+                    $stmt = $pdo->prepare("
+                        SELECT quantite
+                        FROM stack_produit
+                        WHERE id_stack = ?
+                        AND id_produit = ?
+                    ");
 
-            $idProduit = $data["id_produit"];
-            $dest = $data["id_stack_destination"];
-            $qte = (int)$data["quantite"];
+                    $stmt->execute([
+                        $idStack,
+                        $idProduit
+                    ]);
 
-            // stack source
-            $stmt = $pdo->prepare("SELECT id_stack, quantite FROM stack_produit WHERE id_produit = ?");
-            $stmt->execute([$idProduit]);
-            $source = $stmt->fetch();
+                    $stockActuel = (int)$stmt->fetchColumn();
 
-            $srcStack = $source["id_stack"];
+                    /*
+                     * VALIDATION
+                     */
+                    if ($qte > $stockActuel) {
 
-            // produit destination
-            $stmt = $pdo->prepare("SELECT * FROM stack_produit WHERE id_stack = ? AND id_produit != ?");
-            $stmt->execute([$dest, $idProduit]);
-            $destProd = $stmt->fetch();
+                        http_response_code(409);
 
-            $pdo->beginTransaction();
+                        echo json_encode([
+                            'error' => "Capacité dépassée ! Vous essayez de supprimer {$qte} produit(s) mais il n'y en a que {$stockActuel}."
+                        ]);
 
-            // CAS 1 : destination vide
-            if (!$destProd) {
+                        return;
+                    }
 
-                $pdo->prepare("UPDATE stack_produit SET id_stack = ? WHERE id_produit = ?")
-                    ->execute([$dest, $idProduit]);
+                    /*
+                     * RETIRER DU STACK
+                     */
+                    $stmt = $pdo->prepare("
+                UPDATE stack_produit
+                SET quantite = quantite - ?
+                WHERE id_stack = ?
+                AND id_produit = ?
+            ");
 
-                $type = "deplacement";
+                    $stmt->execute([
+                        $qte,
+                        $idStack,
+                        $idProduit
+                    ]);
+
+                    $stmt = $pdo->prepare("
+                        UPDATE stack
+                        SET capacite_utilisee = GREATEST(0, capacite_utilisee - ?)
+                        WHERE id = ?
+                    ");
+
+                    $stmt->execute([
+                        $qte,
+                        $idStack
+                    ]);
+
+                    /*
+                     * RETIRER DU STOCK GLOBAL
+                     */
+                    $stmt = $pdo->prepare("
+                UPDATE stock
+                SET quantite_disponible = quantite_disponible - ?
+                WHERE id_produit = ?
+            ");
+
+                    $stmt->execute([
+                        $qte,
+                        $idProduit
+                    ]);
+
+                    /*
+                     * DELETE stack_produit SI VIDE
+                     */
+                    $stmt = $pdo->prepare("
+                DELETE FROM stack_produit
+                WHERE quantite <= 0
+                AND id_stack = ?
+                AND id_produit = ?
+            ");
+
+                    $stmt->execute([
+                        $idStack,
+                        $idProduit
+                    ]);
+
+                    /*
+                     * DELETE stock SI VIDE
+                     */
+                    $stmt = $pdo->prepare("
+                DELETE FROM stock
+                WHERE quantite_disponible <= 0
+                AND id_produit = ?
+            ");
+
+                    $stmt->execute([
+                        $idProduit
+                    ]);
+
+                    /*
+                     * MOUVEMENT
+                     */
+                    $stmt = $pdo->prepare("
+                INSERT INTO mouvement_stock
+                (
+                    id_produit,
+                    type_mouvement,
+                    quantite,
+                    quantite_avant,
+                    quantite_apres,
+                    id_stack,
+                    commentaire
+                )
+
+                VALUES
+                (
+                    ?, 'sortie', ?, 0, 0, ?, ?
+                )
+            ");
+
+                    $stmt->execute([
+                        $idProduit,
+                        $qte,
+                        $idStack,
+                        'Suppression depuis stack'
+                    ]);
+                }
+
+                $pdo->commit();
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Produit retiré du stack'
+                ]);
+
+            } catch (Exception $e) {
+
+                $pdo->rollBack();
+
+                http_response_code(500);
+
+                echo json_encode([
+                    'error' => $e->getMessage()
+                ]);
             }
 
-            // CAS 2 : swap
-            else {
-                // swap simple (échange stacks)
-                $pdo->prepare("UPDATE stack_produit SET id_stack = ? WHERE id_produit = ?")
-                    ->execute([$dest, $idProduit]);
+            return;
 
-                $pdo->prepare("UPDATE stack_produit SET id_stack = ? WHERE id_produit = ?")
-                    ->execute([$srcStack, $destProd["id_produit"]]);
+        case 'moveStock':
 
-                $type = "swap";
+            $source = (int)($_POST['id_stack_source'] ?? 0);
+
+            $destination = (int)($_POST['id_stack_destination'] ?? 0);
+
+            $produits = json_decode($_POST['produits'] ?? '[]', true);
+
+            if (
+                $source <= 0 ||
+                $destination <= 0 ||
+                $source === $destination ||
+                empty($produits)
+            ) {
+
+                http_response_code(400);
+
+                echo json_encode([
+                    'error' => 'Données invalides'
+                ]);
+
+                return;
             }
 
-            // log
-            $pdo->prepare("INSERT INTO mouvement_stock
-                (id_produit, type_mouvement, quantite, id_stack_source, id_stack_destination)
-                VALUES (?, ?, ?, ?, ?)")
-                ->execute([$idProduit, $type, $qte, $srcStack, $dest]);
+            try {
 
-            $pdo->commit();
+                $pdo->beginTransaction();
 
-            echo json_encode(["ok"=>true]);
-            break;
+                foreach ($produits as $p) {
+
+                    $idProduit = (int)($p['id_produit'] ?? 0);
+
+                    $qte = (int)($p['quantite'] ?? 0);
+
+                    if ($idProduit <= 0 || $qte <= 0) {
+                        continue;
+                    }
+
+                    /*
+                     * STOCK SOURCE AVANT
+                     */
+                    $stmt = $pdo->prepare("
+                SELECT quantite
+                FROM stack_produit
+                WHERE id_stack = ?
+                AND id_produit = ?
+            ");
+
+                    $stmt->execute([
+                        $source,
+                        $idProduit
+                    ]);
+
+                    $stockSourceAvant = (int)$stmt->fetchColumn();
+
+                    /*
+                     * Vérifie quantité disponible
+                     */
+                    if ($qte > $stockSourceAvant) {
+
+                        throw new Exception(
+                            "Quantité insuffisante dans le stack source"
+                        );
+                    }
+
+                    /*
+                     * Vérifie capacité destination
+                     */
+                    $stmt = $pdo->prepare("
+                SELECT capacite_max, capacite_utilisee
+                FROM stack
+                WHERE id = ?
+            ");
+
+                    $stmt->execute([$destination]);
+
+                    $stackDestination = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                    if (!$stackDestination) {
+
+                        throw new Exception(
+                            "Stack destination introuvable"
+                        );
+                    }
+
+                    $capaciteRestante =
+                        $stackDestination['capacite_max']
+                        - $stackDestination['capacite_utilisee'];
+
+                    if ($qte > $capaciteRestante) {
+
+                        throw new Exception(
+                            "Capacité insuffisante dans le stack destination"
+                        );
+                    }
+
+                    /*
+                     * STOCK DESTINATION AVANT
+                     */
+                    $stmt = $pdo->prepare("
+                SELECT quantite
+                FROM stack_produit
+                WHERE id_stack = ?
+                AND id_produit = ?
+            ");
+
+                    $stmt->execute([
+                        $destination,
+                        $idProduit
+                    ]);
+
+                    $stockDestinationAvant = (int)$stmt->fetchColumn();
+
+                    /*
+                     * RETIRE DU STACK SOURCE
+                     */
+                    $stmt = $pdo->prepare("
+                UPDATE stack_produit
+                SET quantite = quantite - ?
+                WHERE id_stack = ?
+                AND id_produit = ?
+            ");
+
+                    $stmt->execute([
+                        $qte,
+                        $source,
+                        $idProduit
+                    ]);
+
+                    /*
+                     * MAJ capacité source
+                     */
+                    $stmt = $pdo->prepare("
+                UPDATE stack
+                SET capacite_utilisee = GREATEST(0, capacite_utilisee - ?)
+                WHERE id = ?
+            ");
+
+                    $stmt->execute([
+                        $qte,
+                        $source
+                    ]);
+
+                    /*
+                     * AJOUTE AU STACK DESTINATION
+                     */
+                    $stmt = $pdo->prepare("
+                INSERT INTO stack_produit
+                (
+                    id_stack,
+                    id_produit,
+                    quantite
+                )
+
+                VALUES
+                (
+                    ?, ?, ?
+                )
+
+                ON DUPLICATE KEY UPDATE
+                quantite = quantite + VALUES(quantite)
+            ");
+
+                    $stmt->execute([
+                        $destination,
+                        $idProduit,
+                        $qte
+                    ]);
+
+                    /*
+                     * MAJ capacité destination
+                     */
+                    $stmt = $pdo->prepare("
+                UPDATE stack
+                SET capacite_utilisee = capacite_utilisee + ?
+                WHERE id = ?
+            ");
+
+                    $stmt->execute([
+                        $qte,
+                        $destination
+                    ]);
+
+                    /*
+                     * Nettoyage stack source si vide
+                     */
+                    $stmt = $pdo->prepare("
+                DELETE FROM stack_produit
+                WHERE quantite <= 0
+                AND id_stack = ?
+                AND id_produit = ?
+            ");
+
+                    $stmt->execute([
+                        $source,
+                        $idProduit
+                    ]);
+
+                    /*
+                     * Stocks après mouvement
+                     */
+                    $stockSourceApres = $stockSourceAvant - $qte;
+
+                    $stockDestinationApres =
+                        $stockDestinationAvant + $qte;
+
+                    /*
+                     * HISTORIQUE MOUVEMENT
+                     */
+                    $stmt = $pdo->prepare("
+                INSERT INTO mouvement_stock
+                (
+                    id_produit,
+                    type_mouvement,
+                    quantite,
+                    quantite_avant,
+                    quantite_apres,
+                    commentaire,
+                    id_stack_source,
+                    id_stack_destination
+                )
+
+                VALUES
+                (
+                    ?, 'deplacement', ?, ?, ?, ?, ?, ?
+                )
+            ");
+
+                    $stmt->execute([
+                        $idProduit,
+                        $qte,
+                        $stockSourceAvant,
+                        $stockSourceApres,
+                        'Déplacement de stock',
+                        $source,
+                        $destination
+                    ]);
+                }
+
+                $pdo->commit();
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Stock déplacé avec succès'
+                ]);
+
+            } catch (Exception $e) {
+
+                $pdo->rollBack();
+
+                http_response_code(500);
+
+                echo json_encode([
+                    'error' => $e->getMessage()
+                ]);
+            }
+
+            return;
         /* ══════════════════════════════════════
          *  MODIFIER UN ENTREPÔT
          * ══════════════════════════════════════ */
