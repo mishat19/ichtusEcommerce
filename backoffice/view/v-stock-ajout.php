@@ -50,6 +50,11 @@ if (empty($_SESSION['csrf_token'])) {
             <i class="fas fa-eye me-2"></i> Visualiser un stack
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="scanner-tab" data-bs-toggle="tab" data-bs-target="#scanner" type="button" role="tab" style="border-radius: 10px 10px 0 0; border: 1px solid var(--bo-border);">
+            <i class="fas fa-qrcode me-2"></i> Scanner
+        </button>
+    </li>
 </ul>
 
 <!-- Contenu des onglets -->
@@ -271,9 +276,86 @@ if (empty($_SESSION['csrf_token'])) {
             </div>
         </div>
     </div>
+
+    <!-- Onglet Scanner -->
+    <div class="tab-pane fade" id="scanner" role="tabpanel">
+
+        <div class="bo-card">
+            <h5 class="fw-bold mb-3">
+                <i class="fas fa-qrcode me-2" style="color: var(--bo-primary);"></i>
+                Scanner un produit
+            </h5>
+
+            <div class="row g-4">
+                <div class="col-lg-7">
+
+                    <div id="scan-result" class="p-3 border rounded" style="display:none;">
+                        <h5 id="scan-product-name">—</h5>
+                        <p class="text-muted small mb-3" id="scan-product-id">—</p>
+
+                        <input type="number" id="scan-qty" class="form-control mb-3" value="1" min="1">
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-success" onclick="scanEntree()">
+                                ➕ Entrée
+                            </button>
+
+                            <button class="btn btn-danger" onclick="scanSortie()">
+                                ➖ Sortie
+                            </button>
+
+                            <button class="btn btn-warning" onclick="scanMove()">
+                                🔁 Déplacer / Swap
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-3">
+                        Scanne un QR code produit pour afficher les actions.
+                    </div>
+                    <div class="text-center mb-3">
+                        <button id="btn-start-scan" class="btn btn-primary">
+                            <i class="fas fa-camera me-2"></i> Activer la caméra
+                        </button>
+
+                        <button id="btn-stop-scan" class="btn btn-danger ms-2" style="display:none;">
+                            <i class="fas fa-stop me-2"></i> Stop
+                        </button>
+                    </div>
+
+                    <div id="qr-reader" style="width: 100%; border-radius: 12px; overflow: hidden;"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script>
+    let qrScanner = null;
+    let currentScanProduct = null;
+
+    function onScanSuccess(decodedText) {
+        console.log("QR SCANNÉ :", decodedText);
+
+        fetch("/c-apiStock.php?action=parseQr&url=" + encodeURIComponent(decodedText))
+            .then(r => r.text())
+            .then(text => {
+                console.log("REPONSE RAW :", text);
+                return JSON.parse(text);
+            })
+            .then(data => {
+                console.log("DATA PARSE :", data);
+
+                currentScanProduct = data;
+
+                document.getElementById("scan-result").style.display = "block";
+                document.getElementById("scan-product-name").innerText = data.nom;
+                document.getElementById("scan-product-id").innerText = "ID: " + data.id;
+            })
+            .catch(err => console.error("Erreur scan:", err));
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // Données des produits et stacks (PHP → JS)
         const produitsJSON = <?php echo json_encode($produitsActifs); ?>;
@@ -503,6 +585,39 @@ if (empty($_SESSION['csrf_token'])) {
             });
 
             stackVisuProduits.innerHTML = html;
+        });
+
+        /*SCANNER*/
+        document.getElementById("btn-start-scan").addEventListener("click", async () => {
+            try {
+                if (!qrScanner) {
+                    qrScanner = new Html5Qrcode("qr-reader");
+                }
+
+                await qrScanner.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: 250 },
+                    onScanSuccess
+                );
+
+                document.getElementById("btn-start-scan").style.display = "none";
+                document.getElementById("btn-stop-scan").style.display = "inline-block";
+
+            } catch (err) {
+                console.error(err);
+                alert("Impossible d'accéder à la caméra");
+            }
+        });
+
+        document.getElementById("btn-stop-scan").addEventListener("click", async () => {
+            if (qrScanner) {
+                await qrScanner.stop();
+                await qrScanner.clear();
+                qrScanner = null;
+            }
+
+            document.getElementById("btn-start-scan").style.display = "inline-block";
+            document.getElementById("btn-stop-scan").style.display = "none";
         });
     });
 </script>

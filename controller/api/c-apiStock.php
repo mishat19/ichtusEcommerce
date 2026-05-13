@@ -395,7 +395,22 @@ function APIStock() {
             $qr['exists'] = true;
             echo json_encode($qr);
             return;
+        /* ══════════════════════════════════════
+         *  SCANNER QR CODE
+         * ══════════════════════════════════════ */
+        case "parseQr":
 
+            $url = $_GET["url"] ?? "";
+
+            // récupère dernier segment
+            $slug = basename(parse_url($url, PHP_URL_PATH));
+
+            $stmt = $pdo->prepare("SELECT id, nom FROM produit WHERE slug = ?");
+            $stmt->execute([$slug]);
+            $prod = $stmt->fetch();
+
+            echo json_encode($prod);
+            break;
         /* ══════════════════════════════════════
         *  CRÉER UN ENTREPÔT
         * ══════════════════════════════════════ */
@@ -415,9 +430,9 @@ function APIStock() {
 
             try {
                 $stmt = $pdo->prepare("
-            INSERT INTO entrepot (nom, adresse, ville, code_postal, pays, capacite_totale)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ");
+                    INSERT INTO entrepot (nom, adresse, ville, code_postal, pays, capacite_totale)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ");
                 $stmt->execute([$nom, $adresse, $ville, $codePostal, $pays, $capaciteTotale > 0 ? $capaciteTotale : null]);
                 echo json_encode(['success' => true, 'message' => 'Entrepôt créé avec succès', 'id' => $pdo->lastInsertId()]);
             } catch (Exception $e) {
@@ -425,7 +440,118 @@ function APIStock() {
                 echo json_encode(['error' => 'Erreur SQL: ' . $e->getMessage()]);
             }
             return;
+        /* ══════════════════════════════════════
+        *  ENTREE PRODUIT
+        * ══════════════════════════════════════ */
+        case "entree":
 
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $id = $data["id_produit"];
+            $qte = (int)$data["quantite"];
+
+            $pdo->beginTransaction();
+
+            // stock global
+            $pdo->prepare("UPDATE produit SET stock = stock + ? WHERE id = ?")
+                ->execute([$qte, $id]);
+
+            // mouvement
+                        $pdo->prepare("INSERT INTO mouvement_stock
+            (id_produit, type_mouvement, quantite, quantite_avant, quantite_apres)
+            VALUES (?, 'entree', ?, 0, ?)")
+                ->execute([$id, $qte, $qte]);
+
+            $pdo->commit();
+
+            echo json_encode(["ok"=>true]);
+            break;
+        /* ══════════════════════════════════════
+        *  SORTIE PRODUIT
+        * ══════════════════════════════════════ */
+        case "sortie":
+
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $id = $data["id_produit"];
+            $qte = (int)$data["quantite"];
+
+            // stock actuel
+            $stmt = $pdo->prepare("SELECT stock FROM produit WHERE id = ?");
+            $stmt->execute([$id]);
+            $stock = $stmt->fetchColumn();
+
+            if ($stock < $qte) {
+                echo json_encode(["error"=>"Stock insuffisant"]);
+                exit;
+            }
+
+            $new = $stock - $qte;
+
+            $pdo->prepare("UPDATE produit SET stock = ? WHERE id = ?")
+                ->execute([$new, $id]);
+
+            $pdo->prepare("INSERT INTO mouvement_stock
+                (id_produit, type_mouvement, quantite, quantite_avant, quantite_apres)
+                VALUES (?, 'sortie', ?, ?, ?)")
+                ->execute([$id, $qte, $stock, $new]);
+
+            echo json_encode(["ok"=>true]);
+            break;
+
+        case "move":
+
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $idProduit = $data["id_produit"];
+            $dest = $data["id_stack_destination"];
+            $qte = (int)$data["quantite"];
+
+            // stack source
+            $stmt = $pdo->prepare("SELECT id_stack, quantite FROM stack_produit WHERE id_produit = ?");
+            $stmt->execute([$idProduit]);
+            $source = $stmt->fetch();
+
+            $srcStack = $source["id_stack"];
+
+            // produit destination
+            $stmt = $pdo->prepare("SELECT * FROM stack_produit WHERE id_stack = ? AND id_produit != ?");
+            $stmt->execute([$dest, $idProduit]);
+            $destProd = $stmt->fetch();
+
+            $pdo->beginTransaction();
+
+            // CAS 1 : destination vide
+            if (!$destProd) {
+
+                $pdo->prepare("UPDATE stack_produit SET id_stack = ? WHERE id_produit = ?")
+                    ->execute([$dest, $idProduit]);
+
+                $type = "deplacement";
+            }
+
+            // CAS 2 : swap
+            else {
+                // swap simple (échange stacks)
+                $pdo->prepare("UPDATE stack_produit SET id_stack = ? WHERE id_produit = ?")
+                    ->execute([$dest, $idProduit]);
+
+                $pdo->prepare("UPDATE stack_produit SET id_stack = ? WHERE id_produit = ?")
+                    ->execute([$srcStack, $destProd["id_produit"]]);
+
+                $type = "swap";
+            }
+
+            // log
+            $pdo->prepare("INSERT INTO mouvement_stock
+                (id_produit, type_mouvement, quantite, id_stack_source, id_stack_destination)
+                VALUES (?, ?, ?, ?, ?)")
+                ->execute([$idProduit, $type, $qte, $srcStack, $dest]);
+
+            $pdo->commit();
+
+            echo json_encode(["ok"=>true]);
+            break;
         /* ══════════════════════════════════════
          *  MODIFIER UN ENTREPÔT
          * ══════════════════════════════════════ */
