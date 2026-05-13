@@ -16,6 +16,10 @@ function paiement(): void
     $commande = getCommandeById($idCommande);
     $_SESSION['commande'] = $commande;
 
+    $idPanier = verifPanier();
+    $lignesPanier = getLignesPanier($idPanier);
+    $_SESSION['panier_produits'] = $lignesPanier;
+
     $PBX_SITE = "3277512";
     $PBX_RANG = "001";
     $PBX_IDENTIFIANT = "38023694";
@@ -74,10 +78,14 @@ function retourPaiement(): void
         $etat = 'annule';
     }
 
-    // Attente IPN
-    sleep(1);
+    // Conserve la commande dans la session pour la page de confirmation
+    if (isset($_SESSION['commande'])) {
+        $_SESSION['commande_etat'] = $etat;
+    }
 
+    // Pas de sleep() pour éviter les problèmes de session
     header("Location: /confirmation/" . $etat);
+    exit;
 }
 
 function ipnPaiement(): void

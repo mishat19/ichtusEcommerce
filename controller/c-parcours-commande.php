@@ -315,11 +315,28 @@ function getCommandeById($idCommande) {
 function paiementRefuse($idCommande) {
     global $pdo;
 
-    // Supprimer produits commande
+    // 1. Récupère les produits de la commande pour libérer les réserves
+    $stmt = $pdo->prepare("SELECT id_produit, quantite FROM commande_produit WHERE id_commande = ?");
+    $stmt->execute([$idCommande]);
+    $produitsCommande = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($produitsCommande as $produit) {
+        $idProduit = $produit['id_produit'];
+        $quantite = $produit['quantite'];
+
+        // Libère les quantités réservées (mais ne touche pas à quantite_disponible)
+        $pdo->prepare("
+            UPDATE stock
+            SET quantite_reservee = quantite_reservee - ?
+            WHERE id_produit = ?
+        ")->execute([$quantite, $idProduit]);
+    }
+
+    // 2. Supprime les produits de la commande
     $pdo->prepare("DELETE FROM commande_produit WHERE id_commande = ?")
         ->execute([$idCommande]);
 
-    // Supprimer commande
+    // 3. Supprime la commande
     $pdo->prepare("DELETE FROM commande WHERE id = ?")
         ->execute([$idCommande]);
 }
@@ -331,14 +348,40 @@ function commandeConfirmation(): void
 
     $etat = $param ?? 'confirme';
 
-    // Si le paiement est confirmé, on vide le panier de l'utilisateur
+    // Si le paiement est confirmé, on vide le panier et on met à jour le stock
     if ($etat === 'confirme' || $etat === 'ok') {
         if (isset($_SESSION['idClient'])) {
             $idPanier = verifPanier();
+
+            // 📦 Mise à jour du stock : décrémenter les quantités réservées et disponibles
+            if (isset($_SESSION['panier_produits'])) {
+                foreach ($_SESSION['panier_produits'] as $ligne) {
+                    $idProduit = $ligne['id_produit'];
+                    $quantite = $ligne['quantite'];
+
+                    // 1. Décrémenter quantite_disponible et quantite_reservee
+                    $pdo->prepare("
+                        UPDATE stock
+                        SET
+                            quantite_disponible = quantite_disponible - ?,
+                            quantite_reservee = quantite_reservee - ?
+                        WHERE id_produit = ?
+                    ")->execute([$quantite, $quantite, $idProduit]);
+
+                    // 2. (Optionnel) Mettre à jour la date de dernière mise à jour
+                    $pdo->prepare("
+                        UPDATE stock
+                        SET date_derniere_mise_a_jour = NOW()
+                        WHERE id_produit = ?
+                    ")->execute([$idProduit]);
+                }
+            }
+
+            // Vider le panier
             $pdo->prepare("DELETE FROM panier_produit WHERE id_panier = ?")
                 ->execute([$idPanier]);
-            
-            // On peut aussi nettoyer les adresses ici
+
+            // Nettoyer les adresses inutilisées
             nettoyerAdressesInutilisees($_SESSION['idClient']);
         }
     }
@@ -348,7 +391,9 @@ function commandeConfirmation(): void
     require_once 'view/commande/v-commande-confirmation.php';
     require_once 'view/inc/inc.footer.php';
 
+    // Nettoyage des variables de session
     unset($_SESSION['commande']);
+    unset($_SESSION['panier_produits']);
 }
 
 // Nettoie les adresses inutilisées
