@@ -37,7 +37,7 @@ if (!function_exists('csrf_field')) {
             <i class="fas fa-plus me-2"></i>
             Nouvel entrepôt
         </button>
-        <a href="/backoffice/stock-ajout" class="btn" style="background: var(--bo-primary); color: #fff; border-radius: 10px; padding: 0.6rem 1.2rem; font-weight: 600;">
+        <a href="/backoffice/stock" class="btn" style="background: var(--bo-primary); color: #fff; border-radius: 10px; padding: 0.6rem 1.2rem; font-weight: 600;">
             <i class="fas fa-boxes-stacked me-2"></i> Ajouter du stock
         </a>
     </div>

@@ -7,21 +7,17 @@
 function APIStock() {
     global $pdo;
 
-    header('Content-Type: application/json');
+    $isDirectApiCall = isset($_GET['pageAPI']);
 
-    /* ───────── METHOD CHECK ───────── */
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        http_response_code(405);
-        echo json_encode(['error' => 'Method not allowed']);
-        return;
+    // Header JSON uniquement pour les vrais appels API
+    if ($isDirectApiCall) {
+        header('Content-Type: application/json');
     }
 
-    /* ───────── TOKEN CHECK ───────── */
-    $token = $_POST['token'] ?? null;
-
-    if ($token !== 'WDIhUThWMz9aN0Y0VDFwOUE2') {
-        http_response_code(401);
-        echo json_encode(['error' => 'Unauthorized']);
+    // Vérification méthode uniquement pour API HTTP
+    if ($isDirectApiCall && $_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['error' => 'Method not allowed']);
         return;
     }
 
@@ -340,7 +336,26 @@ function APIStock() {
                 JOIN entrepot e ON e.id = m.id_entrepot
                 ORDER BY e.nom, m.nom, s.nom
             ");
-            echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+
+            $stacks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($stacks as &$s) {
+
+                $stmtP = $pdo->prepare("
+                    SELECT sp.*, p.nom, p.identifiant, p.image, p.prix_ht
+                    FROM stack_produit sp
+                    JOIN produit p ON p.id = sp.id_produit
+                    WHERE sp.id_stack = ?
+                ");
+
+                $stmtP->execute([$s['id']]);
+
+                $s['produits'] = $stmtP->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            unset($s);
+
+            echo json_encode($stacks);
             return;
 
         /* ══════════════════════════════════════
@@ -381,9 +396,325 @@ function APIStock() {
             echo json_encode($qr);
             return;
 
+        /* ══════════════════════════════════════
+        *  CRÉER UN ENTREPÔT
+        * ══════════════════════════════════════ */
+        case 'createEntrepot':
+            $nom = trim($_POST['nom'] ?? '');
+            $adresse = trim($_POST['adresse'] ?? '');
+            $ville = trim($_POST['ville'] ?? '');
+            $codePostal = trim($_POST['code_postal'] ?? '');
+            $pays = trim($_POST['pays'] ?? 'France');
+            $capaciteTotale = (int)($_POST['capacite_totale'] ?? 0);
+
+            if (empty($nom) || empty($adresse) || empty($ville) || empty($codePostal)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Champs obligatoires manquants']);
+                return;
+            }
+
+            try {
+                $stmt = $pdo->prepare("
+            INSERT INTO entrepot (nom, adresse, ville, code_postal, pays, capacite_totale)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+                $stmt->execute([$nom, $adresse, $ville, $codePostal, $pays, $capaciteTotale > 0 ? $capaciteTotale : null]);
+                echo json_encode(['success' => true, 'message' => 'Entrepôt créé avec succès', 'id' => $pdo->lastInsertId()]);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur SQL: ' . $e->getMessage()]);
+            }
+            return;
+
+        /* ══════════════════════════════════════
+         *  MODIFIER UN ENTREPÔT
+         * ══════════════════════════════════════ */
+        case 'editEntrepot':
+            $id = (int)($_POST['id'] ?? 0);
+            $nom = trim($_POST['nom'] ?? '');
+            $adresse = trim($_POST['adresse'] ?? '');
+            $ville = trim($_POST['ville'] ?? '');
+            $codePostal = trim($_POST['code_postal'] ?? '');
+            $pays = trim($_POST['pays'] ?? 'France');
+            $capaciteTotale = (int)($_POST['capacite_totale'] ?? 0);
+
+            if (empty($nom) || empty($adresse) || empty($ville) || empty($codePostal) || $id <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Champs obligatoires manquants']);
+                return;
+            }
+
+            try {
+                $stmt = $pdo->prepare("
+            UPDATE entrepot
+            SET nom = ?, adresse = ?, ville = ?, code_postal = ?, pays = ?, capacite_totale = ?
+            WHERE id = ?
+        ");
+                $stmt->execute([$nom, $adresse, $ville, $codePostal, $pays, $capaciteTotale > 0 ? $capaciteTotale : null, $id]);
+                echo json_encode(['success' => true, 'message' => 'Entrepôt modifié avec succès']);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur SQL: ' . $e->getMessage()]);
+            }
+            return;
+
+        /* ══════════════════════════════════════
+         *  SUPPRIMER UN ENTREPÔT
+         * ══════════════════════════════════════ */
+        case 'deleteEntrepot':
+            $id = (int)($_POST['id'] ?? 0);
+            if ($id <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'ID invalide']);
+                return;
+            }
+
+            try {
+                $pdo->beginTransaction();
+
+                // Supprime les stacks associés
+                $stmtStacks = $pdo->prepare("DELETE s FROM stack s JOIN meuble m ON m.id = s.id_meuble WHERE m.id_entrepot = ?");
+                $stmtStacks->execute([$id]);
+
+                // Supprime les meubles
+                $stmtMeubles = $pdo->prepare("DELETE FROM meuble WHERE id_entrepot = ?");
+                $stmtMeubles->execute([$id]);
+
+                // Supprime l'entrepôt
+                $stmt = $pdo->prepare("DELETE FROM entrepot WHERE id = ?");
+                $stmt->execute([$id]);
+
+                $pdo->commit();
+                echo json_encode(['success' => true, 'message' => 'Entrepôt supprimé avec succès']);
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur SQL: ' . $e->getMessage()]);
+            }
+            return;
+
+        /* ══════════════════════════════════════
+         *  AJOUTER UN MEUBLE
+         * ══════════════════════════════════════ */
+        case 'addMeuble':
+            $idEntrepot = (int)($_POST['id_entrepot'] ?? 0);
+            $nom = trim($_POST['nom'] ?? '');
+            $capaciteMax = (int)($_POST['capacite_max'] ?? 10); // Valeur par défaut
+
+            if (empty($nom) || $idEntrepot <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Nom du meuble manquant ou entrepôt invalide']);
+                return;
+            }
+
+            // Vérifie la capacité de l'entrepôt
+            $capaciteMaxEntrepot = (int)($pdo->query("SELECT capacite_totale FROM entrepot WHERE id = $idEntrepot")->fetchColumn());
+            $nbMeublesActuels = (int)($pdo->query("SELECT COUNT(*) FROM meuble WHERE id_entrepot = $idEntrepot")->fetchColumn());
+
+            if ($capaciteMaxEntrepot > 0 && $nbMeublesActuels >= $capaciteMaxEntrepot) {
+                http_response_code(409);
+                echo json_encode(['error' => "Capacité maximale de l'entrepôt atteinte ($nbMeublesActuels/$capaciteMaxEntrepot)"]);
+                return;
+            }
+
+            try {
+                $stmt = $pdo->prepare("INSERT INTO meuble (id_entrepot, nom, capacite_max) VALUES (?, ?, ?)");
+                $stmt->execute([$idEntrepot, $nom, $capaciteMax]);
+                echo json_encode(['success' => true, 'message' => 'Meuble ajouté avec succès', 'id' => $pdo->lastInsertId()]);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur SQL: ' . $e->getMessage()]);
+            }
+            return;
+
+        /* ══════════════════════════════════════
+         *  MODIFIER UN MEUBLE
+         * ══════════════════════════════════════ */
+        case 'editMeuble':
+            $id = (int)($_POST['id'] ?? 0);
+            $nom = trim($_POST['nom'] ?? '');
+            $capaciteMax = (int)($_POST['capacite_max'] ?? 0);
+
+            if (empty($nom) || $id <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Nom du meuble manquant ou ID invalide']);
+                return;
+            }
+
+            try {
+                $stmt = $pdo->prepare("UPDATE meuble SET nom = ?, capacite_max = ? WHERE id = ?");
+                $stmt->execute([$nom, $capaciteMax, $id]);
+                echo json_encode(['success' => true, 'message' => 'Meuble modifié avec succès']);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur SQL: ' . $e->getMessage()]);
+            }
+            return;
+
+        /* ══════════════════════════════════════
+         *  SUPPRIMER UN MEUBLE
+         * ══════════════════════════════════════ */
+        case 'deleteMeuble':
+            $id = (int)($_POST['id'] ?? 0);
+            if ($id <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'ID invalide']);
+                return;
+            }
+
+            try {
+                $pdo->beginTransaction();
+
+                // Supprime les stacks associés
+                $stmtStacks = $pdo->prepare("DELETE FROM stack WHERE id_meuble = ?");
+                $stmtStacks->execute([$id]);
+
+                // Supprime le meuble
+                $stmt = $pdo->prepare("DELETE FROM meuble WHERE id = ?");
+                $stmt->execute([$id]);
+
+                $pdo->commit();
+                echo json_encode(['success' => true, 'message' => 'Meuble supprimé avec succès']);
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur SQL: ' . $e->getMessage()]);
+            }
+            return;
+
+        /* ══════════════════════════════════════
+         *  AJOUTER UN STACK
+         * ══════════════════════════════════════ */
+        case 'addStack':
+            $idMeuble = (int)($_POST['id_meuble'] ?? 0);
+            $nom = trim($_POST['nom'] ?? '');
+            $capaciteMax = (int)($_POST['capacite_max'] ?? 0);
+
+            if (empty($nom) || $idMeuble <= 0 || $capaciteMax <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Données manquantes ou invalides']);
+                return;
+            }
+
+            // Vérifie la capacité du meuble
+            $capaciteMaxMeuble = (int)($pdo->query("SELECT capacite_max FROM meuble WHERE id = $idMeuble")->fetchColumn());
+            $nbStacksActuels = (int)($pdo->query("SELECT COUNT(*) FROM stack WHERE id_meuble = $idMeuble")->fetchColumn());
+
+            if ($capaciteMaxMeuble > 0 && $nbStacksActuels >= $capaciteMaxMeuble) {
+                http_response_code(409);
+                echo json_encode(['error' => "Capacité maximale du meuble atteinte ($nbStacksActuels/$capaciteMaxMeuble)"]);
+                return;
+            }
+
+            try {
+                $stmt = $pdo->prepare("INSERT INTO stack (id_meuble, nom, capacite_max, capacite_utilisee) VALUES (?, ?, ?, 0)");
+                $stmt->execute([$idMeuble, $nom, $capaciteMax]);
+                echo json_encode(['success' => true, 'message' => 'Stack ajouté avec succès', 'id' => $pdo->lastInsertId()]);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur SQL: ' . $e->getMessage()]);
+            }
+            return;
+
+        /* ══════════════════════════════════════
+         *  MODIFIER UN STACK
+         * ══════════════════════════════════════ */
+        case 'editStack':
+            $id = (int)($_POST['id'] ?? 0);
+            $nom = trim($_POST['nom'] ?? '');
+            $capaciteMax = (int)($_POST['capacite_max'] ?? 0);
+
+            if (empty($nom) || $id <= 0 || $capaciteMax <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Données manquantes ou invalides']);
+                return;
+            }
+
+            try {
+                $stmt = $pdo->prepare("UPDATE stack SET nom = ?, capacite_max = ? WHERE id = ?");
+                $stmt->execute([$nom, $capaciteMax, $id]);
+                echo json_encode(['success' => true, 'message' => 'Stack modifié avec succès']);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur SQL: ' . $e->getMessage()]);
+            }
+            return;
+
+        /* ══════════════════════════════════════
+         *  SUPPRIMER UN STACK
+         * ══════════════════════════════════════ */
+        case 'deleteStack':
+            $id = (int)($_POST['id'] ?? 0);
+            if ($id <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'ID invalide']);
+                return;
+            }
+
+            try {
+                $pdo->beginTransaction();
+
+                // Supprime les produits associés
+                $stmtProduits = $pdo->prepare("DELETE FROM stack_produit WHERE id_stack = ?");
+                $stmtProduits->execute([$id]);
+
+                // Supprime le stack
+                $stmt = $pdo->prepare("DELETE FROM stack WHERE id = ?");
+                $stmt->execute([$id]);
+
+                $pdo->commit();
+                echo json_encode(['success' => true, 'message' => 'Stack supprimé avec succès']);
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur SQL: ' . $e->getMessage()]);
+            }
+            return;
+
+        /* ══════════════════════════════════════
+         *  RÉCUPÉRER LES PRODUITS D'UN STACK (pour la visualisation)
+         * ══════════════════════════════════════ */
+        case 'getStackProduits':
+            $idStack = (int)($_POST['id_stack'] ?? 0);
+            if ($idStack <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'ID de stack invalide']);
+                return;
+            }
+
+            try {
+                // Récupère les produits du stack
+                $stmt = $pdo->prepare("
+            SELECT sp.quantite, p.id, p.nom, p.identifiant, p.image, p.prix_ht
+            FROM stack_produit sp
+            JOIN produit p ON p.id = sp.id_produit
+            WHERE sp.id_stack = ?
+            ORDER BY p.nom ASC
+        ");
+                $stmt->execute([$idStack]);
+                $produits = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                // Calcule la quantité totale
+                $totalQuantite = array_reduce($produits, function($sum, $p) {
+                    return $sum + $p['quantite'];
+                }, 0);
+
+                echo json_encode([
+                    'success' => true,
+                    'produits' => $produits,
+                    'total_quantite' => $totalQuantite
+                ]);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur SQL: ' . $e->getMessage()]);
+            }
+            return;
+
         default:
             http_response_code(400);
             echo json_encode(['error' => 'Action inconnue: ' . $action]);
             return;
     }
+
+
 }

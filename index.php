@@ -103,9 +103,15 @@ switch ($page) {
                 break;
             }
 
-            // /backoffice/stock-ajout
-            if ($segments[1] === 'stock-ajout') {
+            // /backoffice/stock
+            if ($segments[1] === 'stock') {
                 BOStockAjout();
+                break;
+            }
+
+            // /backoffice/ajax-stock-produits
+            if ($segments[1] === 'ajax-stock-produits') {
+                getStackProduits();
                 break;
             }
 

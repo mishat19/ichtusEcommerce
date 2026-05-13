@@ -21,7 +21,7 @@
         <i class="fas fa-warehouse me-2"></i> Entrepôts
     </a>
 
-    <a href="/backoffice/stock-ajout">
+    <a href="/backoffice/stock">
         <i class="fas fa-boxes-stacked me-2"></i> Ajout Stock
     </a>
 
