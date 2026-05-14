@@ -408,7 +408,6 @@ if (empty($_SESSION['csrf_token'])) {
     let qrScanner = null;
     let currentScanProduct = null;
 
-    const titleProducts = document.querySelector("#ajout h5.fw-bold");
     const btnAddLine = document.getElementById("btn-add-line");
     const btnSubmit = document.getElementById("btn-submit");
     const batchTitle = document.querySelector("#batch-summary .text-muted");
@@ -432,9 +431,6 @@ if (empty($_SESSION['csrf_token'])) {
             titleAction.innerHTML =
                 `<i class="fas fa-trash me-1" style="color: var(--bo-danger);"></i> 2. Supprimer des produits`;
 
-            titleProducts.innerHTML =
-                `<i class="fas fa-plus me-1"></i> 2. Supprimer des produits`;
-
             btnAddLine.innerHTML =
                 `<i class="fas fa-plus me-1"></i> Ajouter une ligne de suppression`;
 
@@ -445,9 +441,6 @@ if (empty($_SESSION['csrf_token'])) {
         else if (action === 'move') {
             titleAction.innerHTML =
                 `<i class="fas fa-exchange-alt me-1" style="color: var(--bo-warning);"></i> 2. Déplacer des produits`;
-
-            titleProducts.innerHTML =
-                `2. Déplacer des produits`;
 
             btnAddLine.innerHTML =
                 `<i class="fas fa-plus me-1"></i> Ajouter une ligne de déplacement`;
@@ -801,14 +794,43 @@ if (empty($_SESSION['csrf_token'])) {
             // ===============================
             // AJOUT
             // ===============================
-
             if (action === 'add') {
 
-                const restant =
-                    stackCapaciteMaxAjout -
-                    stackCapaciteUtiliseeAjout;
+                const selectedStack = selectStackAjout.value;
 
-                if (total > restant && selectStackAjout.value) {
+                const lines = document.querySelectorAll('#product-lines .product-line');
+
+                let total = 0;
+                let hasSelectedProduct = false;
+
+                lines.forEach(line => {
+                    const select = line.querySelector('select');
+                    const qte = parseInt(line.querySelector('.produit-qte').value) || 0;
+
+                    if (select.value) {
+                        hasSelectedProduct = true;
+                        total += qte;
+                    }
+                });
+
+                // ❌ Aucun stack ou aucun produit sélectionné → on reset proprement
+                if (!selectedStack || !hasSelectedProduct) {
+                    capacityWarning.style.display = 'none';
+                    btnSubmit.disabled = true;
+                    return;
+                }
+
+                const restant =
+                    stackCapaciteMaxAjout - stackCapaciteUtiliseeAjout;
+
+                // sécurité anti NaN
+                if (isNaN(restant) || restant < 0) {
+                    capacityWarning.style.display = 'none';
+                    btnSubmit.disabled = true;
+                    return;
+                }
+
+                if (total > restant) {
 
                     capacityWarning.style.display = 'block';
 
@@ -817,17 +839,10 @@ if (empty($_SESSION['csrf_token'])) {
 
                     btnSubmit.disabled = true;
 
-                } else if (total > 0 && selectStackAjout.value) {
-
-                    capacityWarning.style.display = 'none';
-
-                    btnSubmit.disabled = false;
-
                 } else {
 
                     capacityWarning.style.display = 'none';
-
-                    btnSubmit.disabled = true;
+                    btnSubmit.disabled = !(total > 0);
                 }
             }
 
