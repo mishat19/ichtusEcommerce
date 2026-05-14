@@ -119,6 +119,7 @@ if (empty($_SESSION['csrf_token'])) {
                     </div>
                 </div>
 
+                <!-- Sélection du stack de destination -->
                 <div class="col-lg-4" id="destination-stack-container" style="display:none;">
                     <div class="bo-card" style="border-left: 4px solid #f59e0b;">
                         <h5 class="fw-bold mb-3">
@@ -622,7 +623,7 @@ if (empty($_SESSION['csrf_token'])) {
             // Recharge les lignes produits selon le stack
             productLines.innerHTML = '';
             addLineAjout();
-
+            updateDestinationOptions();
             updateSummaryAjout();
         });
 
@@ -656,6 +657,25 @@ if (empty($_SESSION['csrf_token'])) {
                         option.disabled = false;
                     }
                 });
+            });
+        }
+
+        function updateDestinationOptions() {
+
+            const source = selectStackAjout.value;
+            const options = selectStackDestination.querySelectorAll('option');
+
+            options.forEach(opt => {
+
+                if (!opt.value) return;
+
+                if (opt.value === source) {
+                    opt.disabled = true;
+                    opt.style.opacity = "0.4";
+                } else {
+                    opt.disabled = false;
+                    opt.style.opacity = "1";
+                }
             });
         }
 
@@ -911,33 +931,86 @@ if (empty($_SESSION['csrf_token'])) {
 
             else if (action === 'move') {
 
-                const restantDestination =
-                    stackCapaciteMaxDestination -
-                    stackCapaciteUtiliseeDestination;
+                const sourceStackId = selectStackAjout.value;
+                const destinationStackId = selectStackDestination.value;
 
-                if (
-                    total > restantDestination &&
-                    selectStackDestination.value
-                ) {
+                if (!sourceStackId || !destinationStackId) {
+                    capacityWarning.style.display = 'none';
+                    btnSubmit.disabled = true;
+                    return;
+                }
 
+                // ❌ sécurité même stack (tu l'as déjà mais on renforce)
+                if (sourceStackId === destinationStackId) {
                     capacityWarning.style.display = 'block';
+                    capacityWarningText.textContent =
+                        `Impossible de déplacer vers le même stack.`;
 
+                    btnSubmit.disabled = true;
+                    return;
+                }
+
+                const sourceStack = stacksJSON.find(s => s.id == sourceStackId);
+
+                const lines = document.querySelectorAll('#product-lines .product-line');
+
+                let errors = [];
+                let total = 0;
+
+                lines.forEach(line => {
+
+                    const select = line.querySelector('select');
+                    const qte = parseInt(line.querySelector('.produit-qte').value) || 0;
+
+                    if (!select.value || qte <= 0) return;
+
+                    total += qte;
+
+                    const produitStack = sourceStack?.produits?.find(
+                        p => p.id_produit == select.value
+                    );
+
+                    const stockDispo = produitStack
+                        ? parseInt(produitStack.quantite)
+                        : 0;
+
+                    const nomProduit =
+                        select.options[select.selectedIndex]?.text || 'Produit inconnu';
+
+                    // ❌ VERIF STOCK SOURCE
+                    if (qte > stockDispo) {
+                        errors.push(
+                            `• ${nomProduit} : ${qte} demandés mais seulement ${stockDispo} disponibles`
+                        );
+                    }
+                });
+
+                // ❌ erreur stock source
+                if (errors.length > 0) {
+                    capacityWarning.style.display = 'block';
+                    capacityWarningText.innerHTML =
+                        `Stock insuffisant dans le stack source :<br>` + errors.join('<br>');
+
+                    btnSubmit.disabled = true;
+                    return;
+                }
+
+                // ❌ capacité destination
+                const restantDestination =
+                    stackCapaciteMaxDestination - stackCapaciteUtiliseeDestination;
+
+                if (total > restantDestination) {
+                    capacityWarning.style.display = 'block';
                     capacityWarningText.textContent =
                         `Le stack destination n'a pas assez de place (${restantDestination} restante(s)).`;
 
                     btnSubmit.disabled = true;
-
-                } else {
-
-                    capacityWarning.style.display = 'none';
-
-                    btnSubmit.disabled =
-                        !(
-                            total > 0 &&
-                            selectStackAjout.value &&
-                            selectStackDestination.value
-                        );
+                    return;
                 }
+
+                // ✅ tout OK
+                capacityWarning.style.display = 'none';
+                btnSubmit.disabled = (total <= 0);
             }
         }
 
