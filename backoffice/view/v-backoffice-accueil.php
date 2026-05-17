@@ -14,120 +14,6 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // --- CA Chart (Line) ---
-    const caCtx = document.getElementById('caChart').getContext('2d');
-    const chartData = <?php echo json_encode($bo_stats['charts']); ?>;
-    let currentCAChart;
-
-    function updateCAChart(period) {
-        const data = chartData[period];
-        const labels = data.map(item => {
-            if (period === 'jour') {
-                return new Date(item.label).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
-            }
-            return item.label;
-        });
-        const values = data.map(item => item.total / 100);
-
-        if (currentCAChart) currentCAChart.destroy();
-
-        currentCAChart = new Chart(caCtx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Chiffre d\'Affaires (€)',
-                    data: values,
-                    borderColor: '#4f46e5',
-                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#4f46e5',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: '#1e293b',
-                        callbacks: {
-                            label: (context) => context.parsed.y.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
-                        }
-                    }
-                },
-                scales: {
-                    y: { 
-                        beginAtZero: true, 
-                        ticks: { callback: (value) => value.toLocaleString('fr-FR') + ' €' } 
-                    }
-                }
-            }
-        });
-    }
-
-    // --- Status Chart (Doughnut) ---
-    const statusCtx = document.getElementById('statusChart').getContext('2d');
-    new Chart(statusCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Payées', 'En attente', 'Annulées'],
-            datasets: [{
-                data: [
-                    <?php echo $bo_stats['commandes_payees']; ?>,
-                    <?php echo $bo_stats['commandes_attente']; ?>,
-                    <?php echo $bo_stats['commandes_annulees']; ?>
-                ],
-                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
-                hoverOffset: 4,
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { usePointStyle: true, font: { size: 11 } }
-                }
-            },
-            cutout: '70%'
-        }
-    });
-
-    // Toggle logic for CA Chart
-    document.querySelectorAll('.chart-toggle').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.chart-toggle').forEach(b => {
-                b.classList.remove('active', 'btn-white', 'shadow-sm');
-                b.classList.add('btn-transparent');
-            });
-            this.classList.add('active', 'btn-white', 'shadow-sm');
-            this.classList.remove('btn-transparent');
-            updateCAChart(this.dataset.period);
-        });
-    });
-
-    // Initial load
-    updateCAChart('jour');
-});
-</script>
-
-
-
-
-
-
 <div class="bo-content">
 
     <!-- STATS -->
@@ -334,6 +220,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             ['url' => $base . 'liste/', 'desc' => 'Structure et schéma de la base de données.', 'icon' => 'bi-hdd-network', 'method' => 'GET'],
                             ['url' => $base . 'commandes/', 'desc' => 'Récupération du flux de commandes temps réel.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'POST'],
                             ['url' => $base . 'paiements/', 'desc' => 'Vérification des transactions bancaires.', 'icon' => 'bi-shield-lock', 'method' => 'POST'],
+                            ['url' => $base . 'dashboard/', 'desc' => 'Affichage des statistiques de ventes et des derniers paiements/commandes.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'GET'],
+                            ['url' => $base . 'stock/', 'desc' => 'Récupération des stockages et gestion des stocks.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'GET'],
                     ];
                     ?>
 
@@ -361,3 +249,112 @@ document.addEventListener('DOMContentLoaded', function() {
 
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- CA Chart (Line) ---
+    const caCtx = document.getElementById('caChart').getContext('2d');
+    const chartData = <?php echo json_encode($bo_stats['charts']); ?>;
+    let currentCAChart;
+
+    function updateCAChart(period) {
+        const data = chartData[period];
+        const labels = data.map(item => {
+            if (period === 'jour') {
+                return new Date(item.label).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+            }
+            return item.label;
+        });
+        const values = data.map(item => item.total / 100);
+
+        if (currentCAChart) currentCAChart.destroy();
+
+        currentCAChart = new Chart(caCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Chiffre d\'Affaires (€)',
+                    data: values,
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#4f46e5',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: '#1e293b',
+                        callbacks: {
+                            label: (context) => context.parsed.y.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { callback: (value) => value.toLocaleString('fr-FR') + ' €' } 
+                    }
+                }
+            }
+        });
+    }
+
+    // --- Status Chart (Doughnut) ---
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Payées', 'En attente', 'Annulées'],
+            datasets: [{
+                data: [
+                    <?php echo $bo_stats['commandes_payees']; ?>,
+                    <?php echo $bo_stats['commandes_attente']; ?>,
+                    <?php echo $bo_stats['commandes_annulees']; ?>
+                ],
+                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                hoverOffset: 4,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { usePointStyle: true, font: { size: 11 } }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // Toggle logic for CA Chart
+    document.querySelectorAll('.chart-toggle').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.chart-toggle').forEach(b => {
+                b.classList.remove('active', 'btn-white', 'shadow-sm');
+                b.classList.add('btn-transparent');
+            });
+            this.classList.add('active', 'btn-white', 'shadow-sm');
+            this.classList.remove('btn-transparent');
+            updateCAChart(this.dataset.period);
+        });
+    });
+
+    // Initial load
+    updateCAChart('jour');
+});
+</script>

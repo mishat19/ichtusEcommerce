@@ -24,7 +24,9 @@ function runFullDiagnostic() {
         'Accueil' => '/',
         'API Produits' => '/api/produits',
         'API Commande' => '/api/commande',
-        'API Paiement' => '/api/paiement'
+        'API Paiement' => '/api/paiement',
+        'API Dashboard' => '/api/dashboard',
+        'API Stock' => '/api/stock'
     ];
 
     foreach ($routes_to_test as $name => $path) {
@@ -57,7 +59,7 @@ function runFullDiagnostic() {
     }
 
     // 2. Intégrité des Tables
-    $required_tables = ['produit', 'commande', 'commande_produit', 'paiement', 'client', 'adresse', 'tva'];
+    $required_tables = ['produit', 'commande', 'commande_produit', 'paiement', 'client', 'adresse', 'tva', 'stock', 'mouvement_stock', 'entrepot', 'meuble', 'stack', 'stack_produit', 'qr_code', 'panier', 'panier_produit'];
     try {
         $existing_tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
         $missing = array_diff($required_tables, $existing_tables);
@@ -86,16 +88,38 @@ function runFullDiagnostic() {
         'category' => 'Sécurité'
     ];
 
-    // 5. Dossier Images
-    $img_dir = 'images/';
-    if (is_dir($img_dir)) {
+    // 5. Dossiers et Permissions
+    $directories = ['images/', 'logs/'];
+    foreach ($directories as $dir) {
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
         $results['tests'][] = [
-            'name' => 'Droits d\'écriture (images/)',
-            'status' => is_writable($img_dir) ? 'success' : 'danger',
-            'message' => is_writable($img_dir) ? 'Dossier accessible.' : 'Dossier non accessible en écriture !',
+            'name' => 'Droits d\'écriture (' . $dir . ')',
+            'status' => is_writable($dir) ? 'success' : 'danger',
+            'message' => is_writable($dir) ? 'Dossier accessible en écriture.' : 'Dossier non accessible en écriture !',
             'category' => 'Système'
         ];
     }
+
+    // 6. Configuration PHP (Performances et Uploads)
+    $upload_max = ini_get('upload_max_filesize');
+    $post_max = ini_get('post_max_size');
+    $results['tests'][] = [
+        'name' => 'Limites d\'Upload PHP',
+        'status' => (intval($upload_max) >= 2 && intval($post_max) >= 2) ? 'success' : 'warning',
+        'message' => "upload_max_filesize: $upload_max, post_max_size: $post_max",
+        'category' => 'Environnement'
+    ];
+
+    // 7. Sécurité (HTTPS)
+    $is_https = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+    $results['tests'][] = [
+        'name' => 'Connexion Sécurisée (HTTPS)',
+        'status' => $is_https ? 'success' : 'warning',
+        'message' => $is_https ? 'Le site est servi via HTTPS.' : 'Le site n\'est pas en HTTPS. Fortement recommandé en production.',
+        'category' => 'Sécurité'
+    ];
 
     // ───────── 2. STATISTIQUES ─────────
     try {
@@ -108,11 +132,15 @@ function runFullDiagnostic() {
         
         $results['stats']['panier_moyen'] = $results['stats']['commandes_total'] > 0 ? $results['stats']['ca_total'] / $results['stats']['commandes_total'] : 0;
 
-        $files = glob($img_dir . "*");
+        $files = glob('images/' . "*");
         $results['stats']['nb_images'] = count($files);
         $total_size = 0;
         foreach ($files as $file) { $total_size += filesize($file); }
         $results['stats']['size_images'] = round($total_size / (1024 * 1024), 2);
+
+        // Stats supplémentaires (QR Codes, Paniers)
+        $results['stats']['qr_codes_total'] = $pdo->query("SELECT COUNT(*) FROM qr_code")->fetchColumn();
+        $results['stats']['paniers_actifs'] = $pdo->query("SELECT COUNT(*) FROM panier")->fetchColumn();
     } catch (Exception $e) {}
 
     // ───────── 3. ALERTES ─────────
@@ -122,6 +150,20 @@ function runFullDiagnostic() {
         
         $unpaid = $pdo->query("SELECT id FROM commande WHERE statut = 'payee' AND id NOT IN (SELECT DISTINCT id_commande FROM paiement WHERE statut = 'accepte')")->fetchAll();
         if (count($unpaid) > 0) $results['alerts'][] = ['level' => 'danger', 'message' => count($unpaid) . ' commande(s) payée(s) sans transaction.'];
+
+        $negative_stock = $pdo->query("SELECT id_produit FROM stock WHERE quantite_disponible < 0")->fetchAll();
+        if (count($negative_stock) > 0) $results['alerts'][] = ['level' => 'danger', 'message' => count($negative_stock) . ' produit(s) en stock négatif.'];
+
+        $alert_stock = $pdo->query("SELECT id_produit FROM stock WHERE quantite_disponible <= seuil_alerte")->fetchAll();
+        if (count($alert_stock) > 0) $results['alerts'][] = ['level' => 'warning', 'message' => count($alert_stock) . ' produit(s) sous le seuil d\'alerte.'];
+
+        // Alerte Produits orphelins (sans TVA)
+        $no_tva = $pdo->query("SELECT id FROM produit WHERE id_tva IS NULL")->fetchAll();
+        if (count($no_tva) > 0) $results['alerts'][] = ['level' => 'danger', 'message' => count($no_tva) . ' produit(s) sans taux de TVA associé.'];
+
+        // Alerte Paniers abandonnés (plus de 24h)
+        $abandoned_carts = $pdo->query("SELECT id FROM panier WHERE date_creation < DATE_SUB(NOW(), INTERVAL 1 DAY)")->fetchAll();
+        if (count($abandoned_carts) > 0) $results['alerts'][] = ['level' => 'warning', 'message' => count($abandoned_carts) . ' panier(s) potentiellement abandonné(s) (plus de 24h).'];
     } catch (Exception $e) {}
 
     return $results;
