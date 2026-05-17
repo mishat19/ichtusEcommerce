@@ -167,7 +167,8 @@ function BOEntrepots() {
 
     // Récupération des entrepôts et leurs données
     $result = executeStockAction('getEntrepots');
-    if (isset($result[0])) {
+
+    if (!empty($result) && is_array($result)){
         $entrepots = $result;
     } else {
         $entrepots = [];
@@ -374,6 +375,16 @@ function BOStockAjout() {
 
     // Récupération des produits
     $resultProduits = executeStockAction('getProduits');
+
+    // Récupération de l'historique
+    $resultHistorique = executeStockAction('getHistoriqueStock');
+
+    if (isset($resultHistorique['error'])) {
+        $mouvementsStock = [];
+        $messageErreur .= ' ' . $resultHistorique['error'];
+    } else {
+        $mouvementsStock = $resultHistorique["data"] ?? [];
+    }
 
     /**
      * Récupère les produits d’un stack sélectionné

@@ -67,6 +67,10 @@
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
 
+        .sidebar-section {
+            margin-bottom: 1.4rem;
+        }
+
         .sidebar h4 {
             font-weight: 700;
             letter-spacing: -0.025em;

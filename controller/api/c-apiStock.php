@@ -8,6 +8,7 @@ function APIStock() {
     global $pdo;
 
     $isDirectApiCall = isset($_GET['pageAPI']);
+    $idClient = $_SESSION['idClient'];
 
     // Header JSON uniquement pour les vrais appels API
     if ($isDirectApiCall) {
@@ -175,9 +176,9 @@ function APIStock() {
 
             // Enregistrer le mouvement
             $pdo->prepare("
-                INSERT INTO mouvement_stock (id_produit, type_mouvement, quantite, quantite_avant, quantite_apres, id_stack, commentaire)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ")->execute([$idProduit, $typeMouvement, $quantite, $quantiteAvant, $quantiteApres, $idStack, $commentaire]);
+                INSERT INTO mouvement_stock (id_produit, type_mouvement, quantite, quantite_avant, quantite_apres, id_stack, commentaire, id_stack_source, id_utilisateur)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ")->execute([$idProduit, $typeMouvement, $quantite, $quantiteAvant, $quantiteApres, $idStack, $commentaire, $idStack, $idClient]);
 
             echo json_encode(['success' => true, 'quantite_avant' => $quantiteAvant, 'quantite_apres' => $quantiteApres]);
             return;
@@ -264,9 +265,9 @@ function APIStock() {
 
                     // Mouvement stock
                     $pdo->prepare("
-                        INSERT INTO mouvement_stock (id_produit, type_mouvement, quantite, quantite_avant, quantite_apres, id_stack, commentaire)
-                        VALUES (?, 'entree', ?, ?, ?, ?, 'Ajout batch via backoffice')
-                    ")->execute([$idProduit, $qte, $qteAvant, $qteApres, $idStack]);
+                        INSERT INTO mouvement_stock (id_produit, type_mouvement, quantite, quantite_avant, quantite_apres, id_stack_source, commentaire, id_utilisateur)
+                        VALUES (?, 'entree', ?, ?, ?, ?, 'Ajout batch via backoffice', ?)
+                    ")->execute([$idProduit, $qte, $qteAvant, $qteApres, $idStack, $idClient]);
                 }
 
                 // Mettre à jour capacité utilisée du stack
@@ -441,32 +442,6 @@ function APIStock() {
             }
             return;
         /* ══════════════════════════════════════
-        *  ENTREE PRODUIT
-        * ══════════════════════════════════════ */
-        case "entree":
-
-            $data = json_decode(file_get_contents("php://input"), true);
-
-            $id = $data["id_produit"];
-            $qte = (int)$data["quantite"];
-
-            $pdo->beginTransaction();
-
-            // stock global
-            $pdo->prepare("UPDATE produit SET stock = stock + ? WHERE id = ?")
-                ->execute([$qte, $id]);
-
-            // mouvement
-                        $pdo->prepare("INSERT INTO mouvement_stock
-            (id_produit, type_mouvement, quantite, quantite_avant, quantite_apres)
-            VALUES (?, 'entree', ?, 0, ?)")
-                ->execute([$id, $qte, $qte]);
-
-            $pdo->commit();
-
-            echo json_encode(["ok"=>true]);
-            break;
-        /* ══════════════════════════════════════
         *  SORTIE PRODUIT
         * ══════════════════════════════════════ */
         case 'removeFromStack':
@@ -529,11 +504,11 @@ function APIStock() {
                      * RETIRER DU STACK
                      */
                     $stmt = $pdo->prepare("
-                UPDATE stack_produit
-                SET quantite = quantite - ?
-                WHERE id_stack = ?
-                AND id_produit = ?
-            ");
+                        UPDATE stack_produit
+                        SET quantite = quantite - ?
+                        WHERE id_stack = ?
+                        AND id_produit = ?
+                    ");
 
                     $stmt->execute([
                         $qte,
@@ -556,10 +531,10 @@ function APIStock() {
                      * RETIRER DU STOCK GLOBAL
                      */
                     $stmt = $pdo->prepare("
-                UPDATE stock
-                SET quantite_disponible = quantite_disponible - ?
-                WHERE id_produit = ?
-            ");
+                        UPDATE stock
+                        SET quantite_disponible = quantite_disponible - ?
+                        WHERE id_produit = ?
+                    ");
 
                     $stmt->execute([
                         $qte,
@@ -570,11 +545,11 @@ function APIStock() {
                      * DELETE stack_produit SI VIDE
                      */
                     $stmt = $pdo->prepare("
-                DELETE FROM stack_produit
-                WHERE quantite <= 0
-                AND id_stack = ?
-                AND id_produit = ?
-            ");
+                        DELETE FROM stack_produit
+                        WHERE quantite <= 0
+                        AND id_stack = ?
+                        AND id_produit = ?
+                    ");
 
                     $stmt->execute([
                         $idStack,
@@ -585,10 +560,10 @@ function APIStock() {
                      * DELETE stock SI VIDE
                      */
                     $stmt = $pdo->prepare("
-                DELETE FROM stock
-                WHERE quantite_disponible <= 0
-                AND id_produit = ?
-            ");
+                        DELETE FROM stock
+                        WHERE quantite_disponible <= 0
+                        AND id_produit = ?
+                    ");
 
                     $stmt->execute([
                         $idProduit
@@ -597,29 +572,37 @@ function APIStock() {
                     /*
                      * MOUVEMENT
                      */
-                    $stmt = $pdo->prepare("
-                INSERT INTO mouvement_stock
-                (
-                    id_produit,
-                    type_mouvement,
-                    quantite,
-                    quantite_avant,
-                    quantite_apres,
-                    id_stack,
-                    commentaire
-                )
+                    $quantiteAvant = $stockActuel + $qte;
+                    $quantiteApres = $stockActuel;
 
-                VALUES
-                (
-                    ?, 'sortie', ?, 0, 0, ?, ?
-                )
-            ");
+                    $stmt = $pdo->prepare("
+                        INSERT INTO mouvement_stock
+                        (
+                            id_produit,
+                            type_mouvement,
+                            quantite,
+                            quantite_avant,
+                            quantite_apres,
+                            id_stack,
+                            commentaire,
+                            id_stack_source,
+                            id_utilisateur
+                        )
+                        VALUES
+                        (
+                            ?, 'sortie', ?, ?, ?, ?, ?, ?, ?
+                        )
+                    ");
 
                     $stmt->execute([
                         $idProduit,
                         $qte,
+                        $quantiteAvant,
+                        $quantiteApres,
                         $idStack,
-                        'Suppression depuis stack'
+                        'Suppression depuis stack',
+                        $idStack,
+                        $idClient
                     ]);
                 }
 
@@ -862,12 +845,13 @@ function APIStock() {
                     quantite_apres,
                     commentaire,
                     id_stack_source,
-                    id_stack_destination
+                    id_stack_destination,
+                    id_utilisateur
                 )
 
                 VALUES
                 (
-                    ?, 'deplacement', ?, ?, ?, ?, ?, ?
+                    ?, 'deplacement', ?, ?, ?, ?, ?, ?, ?
                 )
             ");
 
@@ -878,7 +862,8 @@ function APIStock() {
                         $stockSourceApres,
                         'Déplacement de stock',
                         $source,
-                        $destination
+                        $destination,
+                        $idClient
                     ]);
                 }
 
@@ -1160,12 +1145,12 @@ function APIStock() {
             try {
                 // Récupère les produits du stack
                 $stmt = $pdo->prepare("
-            SELECT sp.quantite, p.id, p.nom, p.identifiant, p.image, p.prix_ht
-            FROM stack_produit sp
-            JOIN produit p ON p.id = sp.id_produit
-            WHERE sp.id_stack = ?
-            ORDER BY p.nom ASC
-        ");
+                    SELECT sp.quantite, p.id, p.nom, p.identifiant, p.image, p.prix_ht
+                    FROM stack_produit sp
+                    JOIN produit p ON p.id = sp.id_produit
+                    WHERE sp.id_stack = ?
+                    ORDER BY p.nom ASC
+                ");
                 $stmt->execute([$idStack]);
                 $produits = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -1183,6 +1168,86 @@ function APIStock() {
                 http_response_code(500);
                 echo json_encode(['error' => 'Erreur SQL: ' . $e->getMessage()]);
             }
+            return;
+
+        /* ══════════════════════════════════════
+        *  HISTORIQUE DES MOUVEMENTS STOCK
+        * ══════════════════════════════════════ */
+        case 'getHistoriqueStock':
+
+            $limit = (int)($_POST['limit'] ?? 200);
+            $offset = (int)($_POST['offset'] ?? 0);
+
+            $idProduit = !empty($_POST['id_produit']) ? (int)$_POST['id_produit'] : null;
+            $type = $_POST['type_mouvement'] ?? null;
+
+            $sql = "
+                SELECT 
+                    ms.id,
+                    ms.id_produit,
+                    ms.type_mouvement,
+                    ms.quantite,
+                    ms.quantite_avant,
+                    ms.quantite_apres,
+                    ms.commentaire,
+                    ms.date_mouvement,
+            
+                    p.nom AS produit_nom,
+                    p.identifiant,
+            
+                    s.nom AS stack_nom,
+                    so.nom AS stack_source_nom,
+                    sd.nom AS stack_destination_nom,
+            
+                    CONCAT(c.prenom, ' ', c.nom) AS utilisateur_nom
+            
+                FROM mouvement_stock ms
+            
+                LEFT JOIN produit p
+                    ON p.id = ms.id_produit
+            
+                LEFT JOIN stack s
+                    ON s.id = ms.id_stack
+            
+                LEFT JOIN stack so
+                    ON so.id = ms.id_stack_source
+            
+                LEFT JOIN stack sd
+                    ON sd.id = ms.id_stack_destination
+            
+                LEFT JOIN client c
+                    ON c.id = ms.id_utilisateur
+            ";
+
+            $params = [];
+
+            if ($idProduit) {
+                $sql .= " AND ms.id_produit = ? ";
+                $params[] = $idProduit;
+            }
+
+            if ($type) {
+                $sql .= " AND ms.type_mouvement = ? ";
+                $params[] = $type;
+            }
+
+            if (!empty($conditions)) {
+                $sql .= " WHERE " . implode(' AND ', $conditions);
+            }
+
+
+            $sql .= " ORDER BY ms.date_mouvement DESC LIMIT $limit OFFSET $offset";
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+
+            $historique = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode([
+                'success' => true,
+                'data' => $historique
+            ]);
+
             return;
 
         default:

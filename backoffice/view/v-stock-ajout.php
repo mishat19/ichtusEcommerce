@@ -55,6 +55,11 @@ if (empty($_SESSION['csrf_token'])) {
             <i class="fas fa-qrcode me-2"></i> Scanner
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-historique" data-bs-toggle="tab" data-bs-target="#historique" type="button" role="tab" style="border-radius: 10px 10px 0 0; border: 1px solid var(--bo-border);">
+            <i class="fas fa-history me-2"></i> Historique
+        </button>
+    </li>
 </ul>
 
 <!-- Contenu des onglets -->
@@ -178,7 +183,7 @@ if (empty($_SESSION['csrf_token'])) {
                     </div>
                 </div>
 
-                <!-- Ajout des produits -->
+                <!-- Ajout/Suppression/Changement de stack des produits -->
                 <div class="col-lg-8">
                     <div class="bo-card">
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -402,6 +407,107 @@ if (empty($_SESSION['csrf_token'])) {
             </div>
         </div>
 
+    </div>
+
+    <!-- Onglet Historique -->
+    <div class="tab-pane fade" id="historique">
+
+        <div class="bo-card mt-3">
+            <h5 class="fw-bold mb-3">
+                <i class="fas fa-clock-rotate-left me-2" style="color:#6366f1;"></i>
+                Historique des mouvements de stock
+            </h5>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Produit</th>
+                        <th>Quantité</th>
+                        <th>Avant</th>
+                        <th>Après</th>
+                        <th>Source</th>
+                        <th>Destination</th>
+                        <th>Commentaire</th>
+                        <th>Utilisateur</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="historique-table">
+                    <?php if (!empty($mouvementsStock)): ?>
+
+                        <?php foreach ($mouvementsStock as $m): ?>
+
+                            <tr>
+                                <td class="text-muted small">
+                                    <?= date('d/m/Y H:i', strtotime($m['date_mouvement'])) ?>
+                                </td>
+
+                                <td>
+                                    <?php
+                                    $color = match($m['type_mouvement']) {
+                                        'entree' => 'success',
+                                        'sortie' => 'danger',
+                                        'retour' => 'info',
+                                        'ajustement' => 'secondary',
+                                        'deplacement' => 'warning',
+                                        'swap' => 'dark',
+                                        default => 'secondary'
+                                    };
+                                    ?>
+
+                                    <span class="badge bg-<?= $color ?>">
+                                        <?= htmlspecialchars($m['type_mouvement']) ?>
+                                    </span>
+                                </td>
+
+                                <td class="fw-semibold">
+                                    <?= htmlspecialchars($m['produit_nom'] ?? 'Produit #' . $m['id_produit']) ?>
+                                </td>
+
+                                <td class="fw-bold">
+                                    <?= (int)$m['quantite'] ?>
+                                </td>
+
+                                <td><?= (int)$m['quantite_avant'] ?></td>
+                                <td><?= (int)$m['quantite_apres'] ?></td>
+
+                                <td>
+                                    <?= $m['stack_source_nom'] ?? '-' ?>
+                                </td>
+
+                                <td>
+                                    <?= $m['stack_destination_nom'] ?? '-' ?>
+                                </td>
+
+                                <td class="text-muted small">
+                                    <?= htmlspecialchars($m['commentaire'] ?? '-') ?>
+                                </td>
+
+                                <td>
+                                    <?= $m['utilisateur_nom'] ?? 'Système' ?>
+                                </td>
+                            </tr>
+
+                        <?php endforeach; ?>
+
+                    <?php else: ?>
+
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">
+                                Aucun mouvement enregistré
+                            </td>
+                        </tr>
+
+                    <?php endif; ?>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -720,36 +826,34 @@ if (empty($_SESSION['csrf_token'])) {
             });
 
             div.innerHTML = `
-        <select
-            name="produit_id[]"
-            class="form-select"
-            required
-            style="border-radius: 10px; flex: 2;"
-        >
-            ${options}
-        </select>
+                <select
+                    name="produit_id[]"
+                    class="form-select"
+                    required
+                    style="border-radius: 10px; flex: 2;"
+                >
+                    ${options}
+                </select>
 
-        <input
-            type="number"
-            name="produit_qte[]"
-            class="form-control produit-qte"
-            placeholder="Qté"
-            min="1"
-            value="1"
-            required
-            style="border-radius: 10px; flex: 0.5; text-align: center;"
-        >
+                <input
+                    type="number"
+                    name="produit_qte[]"
+                    class="form-control produit-qte"
+                    placeholder="Qté"
+                    min="1"
+                    value="1"
+                    required
+                    style="border-radius: 10px; flex: 0.5; text-align: center;"
+                >
 
-        <button
-            type="button"
-            class="btn btn-sm btn-outline-danger btn-remove-line"
-            style="border-radius: 8px; flex: 0 0 auto;"
-        >
-            <i class="fas fa-trash"></i>
-        </button>
-    `;
-
-            productLines.appendChild(div);
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger btn-remove-line"
+                    style="border-radius: 8px; flex: 0 0 auto;"
+                >
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
 
             const select = div.querySelector('select');
             const qty = div.querySelector('.produit-qte');
@@ -761,7 +865,7 @@ if (empty($_SESSION['csrf_token'])) {
 
             select.addEventListener('change', () => {
                 updateSummaryAjout();
-                updateProductOptions(); // 🔥 évite doublons
+                updateProductOptions(); // évite doublons
             });
 
             qty.addEventListener('input', updateSummaryAjout);
@@ -769,7 +873,7 @@ if (empty($_SESSION['csrf_token'])) {
             removeBtn.addEventListener('click', () => {
                 div.remove();
                 updateSummaryAjout();
-                updateProductOptions(); // 🔥 réactive options
+                updateProductOptions(); // réactive options
             });
 
             // =========================================
@@ -778,7 +882,7 @@ if (empty($_SESSION['csrf_token'])) {
 
             productLines.appendChild(div);
 
-            // 🔥 MAJ globale obligatoire
+            // MAJ globale
             updateSummaryAjout();
             updateProductOptions();
         }
@@ -1093,7 +1197,7 @@ if (empty($_SESSION['csrf_token'])) {
             stackVisuStatsProduits.textContent = produitsDuStack.length;
             stackVisuStatsQuantite.textContent = totalQuantite;
 
-            // Affiche les produits (style v-produits.php)
+            // Affiche les produits
             let html = '';
             produitsDuStack.forEach(p => {
                 // Trouve les infos complètes du produit dans produitsJSON
@@ -1149,7 +1253,7 @@ if (empty($_SESSION['csrf_token'])) {
             stackVisuProduits.innerHTML = html;
         });
 
-        /*SCANNER*/
+        // ====================== ONGLET SCANNER ======================
         document.getElementById("btn-start-scan").addEventListener("click", async () => {
             try {
                 if (!qrScanner) {
