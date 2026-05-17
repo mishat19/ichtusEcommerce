@@ -35,23 +35,23 @@
 
                     <div class="bo-info-row">
                         <span class="label">Email :</span>
-                        <span class="value"><strong><?php echo htmlspecialchars($bo_commande['fact_email']); ?></strong></span>
+                        <span class="value"><strong><?php echo htmlspecialchars($bo_commande['fact_email'] ?? ''); ?></strong></span>
                     </div>
 
                     <div class="bo-info-row">
                         <span class="label">Téléphone :</span>
-                        <span class="value"><strong><?php echo htmlspecialchars($bo_commande['fact_tel']); ?></strong></span>
+                        <span class="value"><strong><?php echo htmlspecialchars($bo_commande['fact_tel'] ?? ''); ?></strong></span>
                     </div>
 
                     <div class="bo-info-row">
                         <span class="label">Adresse :</span>
-                        <span class="value"><strong><?php echo htmlspecialchars($bo_commande['fact_adresse']); ?></strong></span>
+                        <span class="value"><strong><?php echo htmlspecialchars($bo_commande['fact_adresse'] ?? ''); ?></strong></span>
                     </div>
 
                     <?php if (!empty($bo_commande['fact_complement'])): ?>
                         <div class="bo-info-row">
                             <span class="label">Complément :</span>
-                            <span class="value"><strong><?php echo htmlspecialchars($bo_commande['fact_complement']); ?></strong></span>
+                            <span class="value"><strong><?php echo htmlspecialchars($bo_commande['fact_complement'] ?? ''); ?></strong></span>
                         </div>
                     <?php endif; ?>
 
@@ -77,23 +77,23 @@
 
                     <div class="bo-info-row">
                         <span class="label">Email :</span>
-                        <span class="value"><strong><?php echo htmlspecialchars($bo_commande['liv_email']); ?></strong></span>
+                        <span class="value"><strong><?php echo htmlspecialchars($bo_commande['liv_email'] ?? ''); ?></strong></span>
                     </div>
 
                     <div class="bo-info-row">
                         <span class="label">Téléphone :</span>
-                        <span class="value"><strong><?php echo htmlspecialchars($bo_commande['liv_tel']); ?></strong></span>
+                        <span class="value"><strong><?php echo htmlspecialchars($bo_commande['liv_tel'] ?? ''); ?></strong></span>
                     </div>
 
                     <div class="bo-info-row">
                         <span class="label">Adresse :</span>
-                        <span class="value"><strong><?php echo htmlspecialchars($bo_commande['liv_adresse']); ?></strong></span>
+                        <span class="value"><strong><?php echo htmlspecialchars($bo_commande['liv_adresse'] ?? ''); ?></strong></span>
                     </div>
 
                     <?php if (!empty($bo_commande['liv_complement'])): ?>
                         <div class="bo-info-row">
                             <span class="label">Complément :</span>
-                            <span class="value"><strong><?php echo htmlspecialchars($bo_commande['liv_complement']); ?></strong></span>
+                            <span class="value"><strong><?php echo htmlspecialchars($bo_commande['liv_complement'] ?? ''); ?></strong></span>
                         </div>
                     <?php endif; ?>
 
@@ -141,11 +141,11 @@
                                 <td style="font-weight:600;"><?php echo htmlspecialchars($p['nom']); ?></td>
                                 <td style="font-size:.72rem;"><?php echo htmlspecialchars($p['identifiant']); ?></td>
                                 <td style="font-size:1.1rem;"><?php echo $p['quantite']; ?></td>
-                                <td><?php echo number_format($p['prix_ht'], 2, ',', ' '); ?>€</td>
+                                <td><?php echo number_format($p['prix_ht'] / 100, 2, ',', ' '); ?>€</td>
                                 <td><?php echo $p['taux_tva']; ?>%</td>
-                                <td><?php echo number_format($p['prix_ttc'], 2, ',', ' '); ?>€</td>
+                                <td><?php echo number_format($p['prix_ttc'] / 100, 2, ',', ' '); ?>€</td>
                                 <td style="font-weight:700;">
-                                    <?php echo number_format($p['prix_ttc'] * $p['quantite'], 2, ',', ' '); ?>€
+                                    <?php echo number_format(($p['prix_ttc'] / 100) * $p['quantite'], 2, ',', ' '); ?>€
                                 </td>
                             </tr>
                         <?php endforeach; ?>
