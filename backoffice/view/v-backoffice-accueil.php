@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </thead>
 
                         <tbody>
-                        <?php foreach ($dernieres_commandes as $c): ?>
+                        <?php foreach (($dernieres_commandes ?? []) as $c): ?>
                             <tr>
                                 <td class="fw-bold">#<?php echo $c['id']; ?></td>
 
@@ -285,8 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
 
                 <div class="list-group list-group-flush mt-2">
-                    <?php foreach ($derniers_paiements as $p): ?>
-                        <div class="list-group-item px-0 border-0 mb-3">
+                    <?php foreach (($derniers_paiements ?? []) as $p): ?>                        <div class="list-group-item px-0 border-0 mb-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">

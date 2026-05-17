@@ -128,9 +128,9 @@
                             <tr>
                                 <td>
                                     <?php if ($p['image']) : ?>
-                                        <img src="/<?php echo htmlspecialchars($p['image']); ?>"
-                                             alt="" style="height:50px; width:40px; object-fit:contain;
-                                         border-radius:2px; padding:2px;" />
+                                        <img src="/images/<?php echo htmlspecialchars($p['image']); ?>"
+                                             alt="" class="rounded border"
+                                             style="width:40px; height:40px; object-fit:cover;" />
                                     <?php else : ?>
                                         <div style="width:40px; height:50px; border-radius:2px;
                                                 display:flex; align-items:center; justify-content:center;">

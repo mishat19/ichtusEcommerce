@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Inclure les fonctions de l'API (pour utiliser les requêtes SQL)
+// Inclure les fonctions de l'API
 require_once 'controller/api/c-apiStock.php';
 
 // Fonction pour vérifier le token CSRF

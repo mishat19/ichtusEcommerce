@@ -5,7 +5,7 @@ function APIListe() {
     $base = 'https://b2-gp97.kevinpecro.info/api/';
 
     $notice = [
-        'api'       => 'VOLTEX API',
+        'api'       => 'Les Délices Fruitées API',
         'version'   => '1.0',
         'auth'      => 'Toutes les requêtes nécessitent un POST avec le champ token',
         'endpoints' => [
