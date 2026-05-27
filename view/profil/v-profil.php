@@ -7,24 +7,23 @@
                     <!-- Photo de profil + Infos -->
                     <div class="col-md-8">
                         <div class="d-flex align-items-center">
-                            <!-- Photo de profil arrondie (par défaut) -->
                             <img
-                                    src="https://via.placeholder.com/150"
+                                    src="/images/logo.png"
                                     alt="Photo de profil"
                                     class="rounded-circle me-4"
                                     style="width: 120px; height: 120px; object-fit: cover; border: 3px solid var(--accent-color);"
                             >
                             <!-- Infos utilisateur -->
                             <div>
-                                <h2 class="mb-1">
-                                    <?php e($client['prenom'] ?? 'Prénom'); ?>
-                                    <?php e($client['nom'] ?? 'Nom'); ?>
-                                </h2>
-                                <p class="text-muted mb-2">
-                                    Âge non renseigné
-                                </p>
-                                <div class="d-flex align-items-center">
-                                    <span class="fi fi-fr fis me-2"></span>
+                                <div class="d-flex align-items-center mb-2">
+                                    <h2 class="mb-0">
+                                        <?php e($client['prenom'] ?? 'Prénom'); ?>
+                                        <?php e($client['nom'] ?? 'Nom'); ?>
+                                    </h2>
+                                </div>
+                                <p class="text-muted mb-2">19 ans</p>
+                                <div class="d-flex align-items-center gap-1">
+                                    <span class="fi fi-fr"></span>
                                     <span>France</span>
                                 </div>
                             </div>
@@ -37,9 +36,6 @@
                             <p class="fs-3 fw-bold mb-0">
                                 0,00 €
                             </p>
-                            <a href="/wallet" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-wallet me-1"></i> Recharger
-                            </a>
                         </div>
                     </div>
                 </div>
