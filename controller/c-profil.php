@@ -1,5 +1,6 @@
 <?php
-function profil() {
+function profil(): void
+{
     global $pdo;
 
     if (!isset($_SESSION['idClient'])) {
@@ -162,7 +163,8 @@ function profil() {
 }
 
 // Récupère les adresses d'un client par type
-function getAdressesByType($idClient, $type) {
+function getAdressesByType($idClient, $type): array
+{
     global $pdo;
     $stmt = $pdo->prepare("
         SELECT * FROM adresse
@@ -171,23 +173,4 @@ function getAdressesByType($idClient, $type) {
     ");
     $stmt->execute([$idClient, $type]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-// Récupère une adresse par ID
-function getAdresseById($id) {
-    global $pdo;
-    $stmt = $pdo->prepare("SELECT * FROM adresse WHERE id = ?");
-    $stmt->execute([$id]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
-
-function getAdressesJson() {
-    global $pdo;
-
-    $stmt = $pdo->prepare("SELECT * FROM adresse WHERE id_client = ?");
-    $stmt->execute([$_SESSION['idClient']]);
-
-    header('Content-Type: application/json');
-    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
-    exit;
 }
