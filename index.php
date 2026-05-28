@@ -11,6 +11,9 @@ error_reporting(E_ALL);
 require_once 'controller/c-accueil.php';
 require_once 'controller/c-produit.php';
 require_once 'controller/c-panier.php';
+require_once 'controller/c-about.php';
+require_once 'controller/c-faq.php';
+require_once 'controller/c-contact.php';
 require_once 'controller/c-profil.php';
 require_once 'controller/c-auth.php';
 require_once 'controller/c-commandes.php';
@@ -20,12 +23,14 @@ require_once 'controller/api/c-apiLIste.php';
 require_once 'controller/api/c-apiCommande.php';
 require_once 'controller/api/c-apiPaiement.php';
 require_once 'controller/api/c-apiStock.php';
+require_once 'controller/api/c-apiMessages.php';
 require_once 'backoffice/controller/c-bo-dashboard.php';
 require_once 'backoffice/controller/c-bo-commande.php';
 require_once 'backoffice/controller/c-bo-paiement.php';
 require_once 'backoffice/controller/c-bo-produit.php';
 require_once 'backoffice/controller/c-bo-tests.php';
 require_once 'backoffice/controller/c-bo-stock.php';
+require_once 'backoffice/controller/c-bo-messages.php';
 
 
 /* ───────── ROUTEUR ───────── */
@@ -53,6 +58,7 @@ if (isset($_GET['pageAPI'])) {
         case 'commande': APICommande(); break;
         case 'paiement': APIPaiement(); break;
         case 'stock':    APIStock();    break;
+        case 'messages': APIMessages(); break;
         default:         APIListe();    break;
     }
     exit;
@@ -88,6 +94,11 @@ switch ($page) {
             if ($segments[1] === 'produits' || $segments[1] === 'produit') {
                 if (isset($segments[2])) $_GET['id'] = $segments[2];
                 boProduits();
+                break;
+            }
+
+            if ($segments[1] === 'messages') {
+                messages();
                 break;
             }
 
@@ -131,7 +142,7 @@ switch ($page) {
             exit;
         }
 
-        // /bo → dashboard
+        // dashboard
         BODashboard();
         break;
     /* ───────── PRODUIT ───────── */
@@ -213,7 +224,18 @@ switch ($page) {
         }
         commandeConfirmation();
         break;
-
+    /* ───────── ABOUT ───────── */
+    case 'about':
+        about();
+        break;
+    /* ───────── CONTACTS ───────── */
+    case 'contact':
+        contact();
+        break;
+    /* ───────── FAQ ───────── */
+    case 'faq':
+        faq();
+        break;
     /* ───────── AUTH ───────── */
     case 'connexion':
         connexion();

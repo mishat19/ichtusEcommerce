@@ -1,4 +1,5 @@
-<div class="sidebar">
+<div class="sidebar sidebar-scroll">
+    <div class="sidebar-content">
     <h4 class="mb-4">Backoffice</h4>
 
     <!-- ===================== -->
@@ -47,6 +48,21 @@
     </div>
 
     <!-- ===================== -->
+    <!-- Messages -->
+    <!-- ===================== -->
+    <div class="sidebar-section">
+        <div class="sidebar-title">Messages</div>
+        <a href="/backoffice/messages/" class="d-flex align-items-center">
+            <i class="fas fa-envelope me-2"></i> Messages
+            <!-- Badge pour les messages non lus -->
+            <span id="unread-messages-badge" class="badge bg-danger ms-auto"
+                  style="border-radius: 10px; font-size: 0.75rem; padding: 0.25em 0.5em;">
+            0
+        </span>
+        </a>
+    </div>
+
+    <!-- ===================== -->
     <!-- OUTILS -->
     <!-- ===================== -->
     <div class="sidebar-section">
@@ -63,5 +79,48 @@
         <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
     </a>
 </div>
+</div>
+
+<script>
+    // Récupérer le nombre de messages non lus
+    function fetchUnreadMessagesCount() {
+        fetch('/index.php?pageAPI=messages&action=getUnreadCount', {  // <-- /index.php au lieu de /backoffice
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'token=WDIhUThWMz9aN0Y0VDFwOUE2'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur réseau: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.count !== undefined) {
+                    const badge = document.getElementById('unread-messages-badge');
+                    if (badge) {
+                        badge.textContent = data.count;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+            });
+    }
+
+    // Attends que le DOM soit prêt
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchUnreadMessagesCount();
+            setInterval(fetchUnreadMessagesCount, 30000);
+        });
+    } else {
+        fetchUnreadMessagesCount();
+        setInterval(fetchUnreadMessagesCount, 30000);
+    }
+</script>
 
 <div class="main-content">
+

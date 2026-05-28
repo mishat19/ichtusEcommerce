@@ -58,6 +58,9 @@
         .sidebar {
             width: 260px;
             height: 100vh;
+            top: 0;
+            left: 0;
+            bottom: 0;
             position: fixed;
             background: var(--bo-sidebar-bg);
             color: white;
@@ -65,6 +68,31 @@
             z-index: 1000;
             transition: all 0.3s ease;
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .sidebar-content {
+            height: 100%;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 8px;           /* Largeur de la scrollbar */
+        }
+
+        .sidebar-content::-webkit-scrollbar-track {
+            background: #f1f1f1;   /* Couleur de la piste */
+            border-radius: 10px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: #c1c1c1;   /* Couleur de la poignée */
+            border-radius: 10px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;   /* Couleur au survol */
         }
 
         .sidebar-section {
@@ -333,6 +361,21 @@
         }
         .product-line:focus-within {
             border-color: var(--bo-primary);
+        }
+
+        @media (max-width: 968px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+                transition: width 0.3s ease;
+            }
+            .sidebar.active {
+                width: 250px;
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
         }
     </style>
 </head>

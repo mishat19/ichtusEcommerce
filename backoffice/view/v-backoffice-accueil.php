@@ -222,6 +222,7 @@
                             ['url' => $base . 'paiements/', 'desc' => 'Vérification des transactions bancaires.', 'icon' => 'bi-shield-lock', 'method' => 'POST'],
                             ['url' => $base . 'dashboard/', 'desc' => 'Affichage des statistiques de ventes et des derniers paiements/commandes.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'GET'],
                             ['url' => $base . 'stock/', 'desc' => 'Récupération des stockages et gestion des stocks.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'GET'],
+                            ['url' => $base . 'messages/', 'desc' => 'Récupération des messages et gestion des messages.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'GET']
                     ];
                     ?>
 

@@ -13,9 +13,9 @@
                     Artisans depuis 1985, nous créons des pâtes de fruits d'exception pour vos moments gourmands avec passion et savoir-faire.
                 </p>
                 <div class="d-flex justify-content-center justify-content-md-start gap-3">
-                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f fa-lg"></i></a>
-                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram fa-lg"></i></a>
-                    <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest fa-lg"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=100077341367729" aria-label="Facebook"><i class="fab fa-facebook-f fa-lg"></i></a>
+                    <a href="https://www.instagram.com/mishatdev/" aria-label="Instagram"><i class="fab fa-instagram fa-lg"></i></a>
+                    <a href="https://fr.pinterest.com/mathus19/" aria-label="Pinterest"><i class="fab fa-pinterest fa-lg"></i></a>
                 </div>
             </div>
             
@@ -43,8 +43,8 @@
             <div class="col-lg-3 col-md-6">
                 <h5 class="mb-3">Contact</h5>
                 <address class="opacity-75 mb-0">
-                    <p class="mb-2"><i class="fas fa-location-dot me-2"></i> 123 Rue des Gourmets<br>75000 Paris, France</p>
-                    <p class="mb-2"><i class="fas fa-phone me-2"></i> +33 1 23 45 67 89</p>
+                    <p class="mb-2"><i class="fas fa-location-dot me-2"></i> 1 Rue du Général de Gaulle<br>80000 Amiens, France</p>
+                    <p class="mb-2"><i class="fas fa-phone me-2"></i> +33 3 23 45 67 89</p>
                     <p class="mb-0"><i class="fas fa-envelope me-2"></i> contact@lesdelicesfruites.fr</p>
                 </address>
             </div>
