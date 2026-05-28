@@ -10,7 +10,7 @@
                 <div class="col-md-6 col-lg-4">
                     <form method="GET" action="/backoffice/messages/" onsubmit="event.preventDefault();">
                         <label class="form-label fw-semibold text-secondary">Filtrer par statut</label>
-                        <select name="filter" id="filter-select" class="form-select">
+                        <label for="filter-select"></label><select name="filter" id="filter-select" class="form-select">
                             <option value="all" <?= ($filter ?? 'all') === 'all' ? 'selected' : '' ?>>
                                 Tous les messages
                             </option>
@@ -36,7 +36,7 @@
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="fas fa-search text-muted"></i>
                             </span>
-                            <input type="text" id="search-messages" class="form-control border-start-0 ps-0" placeholder="Rechercher par nom, email, sujet, contenu du message...">
+                            <label for="search-messages"></label><input type="text" id="search-messages" class="form-control border-start-0 ps-0" placeholder="Rechercher par nom, email, sujet, contenu du message...">
                         </div>
                     </div>
                 </div>
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const noMessagesRow = document.getElementById('no-messages-row');
     const filterSelect = document.getElementById('filter-select');
 
-    // 🔎 Fonction de filtrage combiné (statut + recherche)
+    // Fonction de filtrage combiné (statut + recherche)
     function applyFilters() {
         const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
         const selectedStatus = filterSelect ? filterSelect.value : 'all';
@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Appliquer les filtres initiaux au chargement
     applyFilters();
 
-    // ✉️ Interception des formulaires de changement de statut (AJAX)
+    // Interception des formulaires de changement de statut (AJAX)
     const statusForms = document.querySelectorAll('.status-form');
     statusForms.forEach(form => {
         form.addEventListener('submit', function(e) {

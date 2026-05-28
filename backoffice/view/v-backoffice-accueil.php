@@ -220,9 +220,9 @@
                             ['url' => $base . 'liste/', 'desc' => 'Structure et schéma de la base de données.', 'icon' => 'bi-hdd-network', 'method' => 'GET'],
                             ['url' => $base . 'commandes/', 'desc' => 'Récupération du flux de commandes temps réel.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'POST'],
                             ['url' => $base . 'paiements/', 'desc' => 'Vérification des transactions bancaires.', 'icon' => 'bi-shield-lock', 'method' => 'POST'],
-                            ['url' => $base . 'dashboard/', 'desc' => 'Affichage des statistiques de ventes et des derniers paiements/commandes.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'GET'],
-                            ['url' => $base . 'stock/', 'desc' => 'Récupération des stockages et gestion des stocks.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'GET'],
-                            ['url' => $base . 'messages/', 'desc' => 'Récupération des messages et gestion des messages.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'GET']
+                            ['url' => $base . 'dashboard/', 'desc' => 'Affichage des statistiques de ventes et des derniers paiements/commandes.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'POST'],
+                            ['url' => $base . 'stock/', 'desc' => 'Récupération des stockages et gestion des stocks.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'POST'],
+                            ['url' => $base . 'messages/', 'desc' => 'Récupération des messages et gestion des messages.', 'icon' => 'bi-cloud-arrow-down', 'method' => 'POST']
                     ];
                     ?>
 

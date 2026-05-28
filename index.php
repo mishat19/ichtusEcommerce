@@ -165,28 +165,6 @@ switch ($page) {
             exit;
         }
 
-        if (isset($segments[1])) {
-
-            // /profil/ajouter-adresse
-            if ($segments[1] === 'ajouter-adresse') {
-                ajouterAdresse();
-                break;
-            }
-
-            // /profil/modifier-adresse
-            if ($segments[1] === 'modifier-adresse') {
-                modifierAdresse();
-                break;
-            }
-
-            // /profil/adresse/12
-            if ($segments[1] === 'adresse' && isset($segments[2])) {
-                $_GET['id'] = $segments[2];
-                getAdresseJson();
-                break;
-            }
-        }
-
         profil();
         break;
 

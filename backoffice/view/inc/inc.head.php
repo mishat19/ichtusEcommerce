@@ -49,7 +49,7 @@
         body {
             background-color: var(--bo-bg);
             color: var(--bo-text-main);
-            font-family: var(--font-main);
+            font-family: var(--font-main), serif;
             font-size: 0.9375rem;
             -webkit-font-smoothing: antialiased;
         }
