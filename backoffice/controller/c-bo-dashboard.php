@@ -26,7 +26,7 @@ function BODashboard() {
         'evo_commandes' => $evo
     ];
 
-    // variables vues (IMPORTANT)
+    // variables vues
     $dernieres_commandes = is_array($data['dernieres_commandes'] ?? null)
         ? $data['dernieres_commandes']
         : [];

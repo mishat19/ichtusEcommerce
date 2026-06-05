@@ -6,7 +6,7 @@
         <div class="row g-4 text-center text-md-start">
             <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
                 <div class="d-flex align-items-center mb-3 justify-content-center justify-content-md-start">
-                    <img src="/images/logo.png" alt="Les Délices Fruités" height="1024" class="me-2">
+                    <img src="/images/logo.png" alt="Les Délices Fruités" height="45" class="me-2">
                     <h5 class="mb-0 fw-bold">Les Délices Fruités</h5>
                 </div>
                 <p class="opacity-75 mb-4">

@@ -77,10 +77,6 @@
                         </button>
                     </form>
                 </div>
-
-                <p class="text-muted small mt-2">
-                    <i class="fas fa-box me-1"></i> <?php e($stockDispo); ?> en stock
-                </p>
             <?php endif; ?>
         </div>
     </div>

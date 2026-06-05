@@ -1,6 +1,7 @@
 <?php
 
-function messages() {
+function messages(): void
+{
 
     if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'ADMIN') {
         header('Location: /connexion');

@@ -36,14 +36,13 @@
             Votre panier est vide.
         </div>
     <?php else: ?>
-        <!-- Layout en deux colonnes pour PC -->
         <div class="row g-4">
             <!-- Conteneur pour les messages d'erreur -->
             <div id="error-container" class="mt-10"></div>
             <!-- Colonne de gauche : Liste des produits -->
             <div class="col-lg-8">
-                <div class="table-responsive bg-white rounded-3 shadow-sm p-4">
-                    <table class="table table-borderless align-middle">
+                <div class="bg-white rounded-3 shadow-sm p-3 p-md-4">
+                    <table class="table table-borderless align-middle panier-table mb-0">
                         <thead class="border-bottom">
                         <tr>
                             <th>Produit</th>
@@ -56,19 +55,19 @@
                         <tbody>
                         <?php foreach ($lignes_panier as $ligne): ?>
                             <tr>
-                                <td>
+                                <td class="panier-produit">
                                     <div class="d-flex align-items-center">
-                                        <img src="/images/<?php e($ligne['image']); ?>" alt="<?php e($ligne['nom']); ?>" class="img-thumbnail me-3" style="width: 80px;">
+                                        <img src="/images/<?php e($ligne['image']); ?>" alt="<?php e($ligne['nom']); ?>" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;">
                                         <div>
                                             <h6 class="mb-0"><?php e($ligne['nom']); ?></h6>
                                             <small class="text-muted">Réf: <?php e($ligne['identifiant']); ?></small>
                                         </div>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Prix unitaire (TTC)">
                                     <?php e(number_format(($ligne['prix_ht'] / 100) * (1 + $ligne['taux_tva'] / 100), 2, ',', ' ')); ?>€
                                 </td>
-                                <td>
+                                <td data-label="Quantité">
                                     <form method="POST" class="d-flex align-items-center">
                                         <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
                                         <input type="hidden" name="id_ligne" value="<?php e($ligne['id_ligne']); ?>">
@@ -85,15 +84,15 @@
                                         </div>
                                     </form>
                                 </td>
-                                <td>
-                                    <?php e(number_format(($ligne['prix_ht'] / 100) * (1 + $ligne['taux_tva'] / 100) * $ligne['quantite'], 2, ',', ' ')); ?>€
+                                <td data-label="Total (TTC)">
+                                    <span class="fw-semibold"><?php e(number_format(($ligne['prix_ht'] / 100) * (1 + $ligne['taux_tva'] / 100) * $ligne['quantite'], 2, ',', ' ')); ?>€</span>
                                 </td>
-                                <td>
+                                <td class="panier-actions">
                                     <form method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer ce produit ?');">
                                         <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
                                         <input type="hidden" name="id_ligne" value="<?php e($ligne['id_ligne']); ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger p-2">
-                                            <i class="fas fa-trash-alt"></i>
+                                            <i class="fas fa-trash-alt me-1"></i> <span class="d-inline d-lg-none">Supprimer</span><span class="d-none d-lg-inline"></span>
                                         </button>
                                     </form>
                                 </td>
@@ -296,3 +295,4 @@
         });
     });
 </script>
+

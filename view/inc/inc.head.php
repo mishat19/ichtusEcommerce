@@ -337,5 +337,65 @@
         .filter-white {
             filter: brightness(0) invert(1);
         }
+
+        /* ── Tableau panier / récap responsive ── */
+        @media (max-width: 991.98px) {
+            .panier-table thead {
+                display: none;
+            }
+            .panier-table tbody tr {
+                display: block;
+                background: #fff;
+                border: 1px solid #e9ecef;
+                border-radius: 12px;
+                margin-bottom: 1rem;
+                padding: 1rem;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            }
+            .panier-table tbody td {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.5rem 0 !important;
+                border: none !important;
+            }
+            .panier-table tbody td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #495057;
+                margin-right: 1rem;
+                white-space: nowrap;
+                font-size: 0.875rem;
+            }
+            .panier-table tbody td.panier-produit {
+                flex-direction: column;
+                align-items: flex-start;
+                border-bottom: 1px solid #f0f0f0 !important;
+                padding-bottom: 0.75rem !important;
+                margin-bottom: 0.25rem;
+            }
+            .panier-table tbody td.panier-produit::before {
+                display: none;
+            }
+            .panier-table tbody td.panier-actions {
+                justify-content: flex-end;
+                padding-top: 0.75rem !important;
+                border-top: 1px solid #f0f0f0 !important;
+            }
+            .panier-table tbody td.panier-actions::before {
+                display: none;
+            }
+            .panier-table tfoot tr {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.4rem 0;
+            }
+            .panier-table tfoot th[colspan] {
+                text-align: left !important;
+            }
+            .panier-table tfoot td {
+                text-align: right !important;
+            }
+        }
     </style>
 </head>

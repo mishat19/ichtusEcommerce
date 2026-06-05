@@ -79,7 +79,7 @@
                             <div class="accordion-body p-3">
                                 Passer commande est très simple :
                                 <ol>
-                                    <li>Parcourez notre <a href="/produits">catalogue de produits</a> et ajoutez vos pâtes de fruits préférées à votre panier.</li>
+                                    <li>Parcourez notre <a href="/produit">catalogue de produits</a> et ajoutez vos pâtes de fruits préférées à votre panier.</li>
                                     <li>Validez votre panier et remplissez vos informations de livraison.</li>
                                     <li>Choisissez votre mode de paiement sécurisé.</li>
                                     <li>Confirmez votre commande et attendez de recevoir vos délicieuses pâtes de fruits !</li>
@@ -116,7 +116,7 @@
                         </h2>
                         <div id="faq7" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                             <div class="accordion-body p-3">
-                                Oui ! Nous proposons une gamme de <a href="/produits?categorie=coffrets">coffrets cadeaux</a> pour toutes les occasions : anniversaires, fêtes, cadeaux d'entreprise, etc. Nos coffrets sont élégamment emballés et peuvent être personnalisés avec un mot de votre choix.
+                                Oui ! Nous proposons une gamme de coffrets cadeaux pour toutes les occasions : anniversaires, fêtes, cadeaux d'entreprise, etc. Nos coffrets sont élégamment emballés et peuvent être personnalisés avec un mot de votre choix.
                             </div>
                         </div>
                     </div>
@@ -167,7 +167,7 @@
                             <div class="accordion-body p-3">
                                 Oui ! Nous organisons régulièrement des <strong>ateliers de fabrication de pâtes de fruits</strong> dans notre laboratoire à Amiens. C'est l'occasion de découvrir les secrets de notre savoir-faire artisanal et de repartir avec vos propres créations.
                                 <br><br>
-                                Nous proposons également des <strong>dégustations</strong> lors d'événements locaux (marchés, foires, etc.). Pour connaître les prochaines dates, suivez-nous sur nos <a href="#">réseaux sociaux</a> ou inscrivez-vous à notre newsletter.
+                                Nous proposons également des <strong>dégustations</strong> lors d'événements locaux (marchés, foires, etc.). Pour connaître les prochaines dates, suivez-nous sur nos <a href="/contact">réseaux sociaux</a> ou inscrivez-vous à notre newsletter.
                             </div>
                         </div>
                     </div>
@@ -176,7 +176,7 @@
         </div>
     </section>
 
-    <!-- Section CTA (Call to Action) -->
+    <!-- Section CTA -->
     <section class="text-center mt-5">
         <div class="card bg-light p-4 rounded-4">
             <h3 class="mb-3">Vous n'avez pas trouvé la réponse à votre question ?</h3>

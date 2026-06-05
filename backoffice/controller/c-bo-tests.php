@@ -2,7 +2,8 @@
 
 require_once 'model/model.diagnostic.php';
 
-function BOTests() {
+function BOTests(): void
+{
     // Exécution du diagnostic en direct
     $current_results = runFullDiagnostic();
 

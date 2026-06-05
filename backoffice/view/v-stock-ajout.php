@@ -356,9 +356,10 @@ if (empty($_SESSION['csrf_token'])) {
         </div>
     </div>
 
-    <!-- Onglet Scanner -->
+    <!-- ==================== ONGLET SCANNER ==================== -->
     <div class="tab-pane fade" id="scanner" role="tabpanel">
 
+        <!-- Carte principale du scanner -->
         <div class="bo-card">
             <h5 class="fw-bold mb-3">
                 <i class="fas fa-qrcode me-2" style="color: var(--bo-primary);"></i>
@@ -368,45 +369,111 @@ if (empty($_SESSION['csrf_token'])) {
             <div class="row g-4">
                 <div class="col-lg-7">
 
-                    <div id="scan-result" class="p-3 border rounded" style="display:none;">
-                        <h5 id="scan-product-name">—</h5>
+                    <!-- Résultat du scan (caché par défaut) -->
+                    <div id="scan-result" class="p-3 border rounded mb-3" style="display:none; background: #f8fafc; border-color: var(--bo-border) !important;">
+                        <h5 id="scan-product-name" class="mb-2">—</h5>
                         <p class="text-muted small mb-3" id="scan-product-id">—</p>
 
-                        <input type="number" id="scan-qty" class="form-control mb-3" value="1" min="1">
+                        <!-- Quantité -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Quantité</label>
+                            <input type="number" id="scan-qty" class="form-control" value="1" min="1">
+                        </div>
 
+                        <!-- Boutons d'action -->
                         <div class="d-flex gap-2 flex-wrap">
                             <button class="btn btn-success" onclick="scanEntree()">
-                                ➕ Entrée
+                                <i class="fas fa-plus me-1"></i> Entrée
                             </button>
-
                             <button class="btn btn-danger" onclick="scanSortie()">
-                                ➖ Sortie
+                                <i class="fas fa-minus me-1"></i> Sortie
                             </button>
-
                             <button class="btn btn-warning" onclick="scanMove()">
-                                🔁 Déplacer / Swap
+                                <i class="fas fa-exchange-alt me-1"></i> Déplacer
                             </button>
                         </div>
                     </div>
 
-                    <div class="alert alert-info mt-3">
+                    <!-- Instructions -->
+                    <div class="alert alert-info mt-3 mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
                         Scanne un QR code produit pour afficher les actions.
                     </div>
+
+                    <!-- Boutons caméra -->
                     <div class="text-center mb-3">
                         <button id="btn-start-scan" class="btn btn-primary">
                             <i class="fas fa-camera me-2"></i> Activer la caméra
                         </button>
-
                         <button id="btn-stop-scan" class="btn btn-danger ms-2" style="display:none;">
                             <i class="fas fa-stop me-2"></i> Stop
                         </button>
                     </div>
 
-                    <div id="qr-reader" style="width: 100%; border-radius: 12px; overflow: hidden;"></div>
+                    <!-- Zone de scan (CACHÉE PAR DÉFAUT + CARRÉE) -->
+                    <div id="qr-reader" style="width: 100%; background: #000; border-radius: 12px; overflow: hidden; display: none;"></div>
                 </div>
             </div>
         </div>
 
+        <!-- ==================== MODALE BOOTSTRAP ==================== -->
+        <div class="modal fade" id="stockModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <!-- Header -->
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <span id="modal-action">Action</span> :
+                            <span id="modal-product" class="fw-bold">Produit</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="modal-body">
+                        <form id="stockForm" method="POST">
+                            <!-- Champs cachés -->
+                            <input type="hidden" id="modal-action-type" name="action">
+                            <input type="hidden" name="produit_id" value="">
+
+                            <!-- Quantité -->
+                            <div class="mb-3">
+                                <label class="form-label">Quantité</label>
+                                <input type="number" id="modal-quantity" name="quantite" class="form-control" min="1" value="1" required>
+                            </div>
+
+                            <!-- Sélection du stack -->
+                            <div class="mb-3">
+                                <label class="form-label">Stack de destination</label>
+                                <select name="id_stack" class="form-select" required>
+                                    <option value="">— Choisir un stack —</option>
+                                    <?php foreach ($stacksList as $stack): ?>
+                                        <option value="<?php echo $stack['id']; ?>">
+                                            <?php echo htmlspecialchars(
+                                                    $stack['entrepot_nom'] . ' → ' .
+                                                    $stack['meuble_nom'] . ' → ' .
+                                                    $stack['nom']
+                                            ); ?>
+                                            (<?php echo $stack['capacite_utilisee']; ?>/<?php echo $stack['capacite_max']; ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i> Annuler
+                        </button>
+                        <button type="submit" form="stockForm" class="btn btn-primary">
+                            <i class="fas fa-check me-1"></i> Confirmer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Onglet Historique -->
@@ -512,10 +579,7 @@ if (empty($_SESSION['csrf_token'])) {
 </div>
 
 <script>
-    let qrScanner = null;
-    let currentScanProduct = null;
-
-    const btnAddLine = document.getElementById("btn-add-line");
+   const btnAddLine = document.getElementById("btn-add-line");
     const btnSubmit = document.getElementById("btn-submit");
     const batchTitle = document.querySelector("#batch-summary .text-muted");
     const titleAction = document.getElementById('title-interaction-action');
@@ -555,27 +619,6 @@ if (empty($_SESSION['csrf_token'])) {
             btnSubmit.innerHTML =
                 `<i class="fas fa-exchange-alt me-2"></i> Valider le déplacement`;
         }
-    }
-
-    function onScanSuccess(decodedText) {
-        console.log("QR SCANNÉ :", decodedText);
-
-        fetch("/c-apiStock.php?action=parseQr&url=" + encodeURIComponent(decodedText))
-            .then(r => r.text())
-            .then(text => {
-                console.log("REPONSE RAW :", text);
-                return JSON.parse(text);
-            })
-            .then(data => {
-                console.log("DATA PARSE :", data);
-
-                currentScanProduct = data;
-
-                document.getElementById("scan-result").style.display = "block";
-                document.getElementById("scan-product-name").innerText = data.nom;
-                document.getElementById("scan-product-id").innerText = "ID: " + data.id;
-            })
-            .catch(err => console.error("Erreur scan:", err));
     }
 
     function updateSubmitButton() {
@@ -1254,12 +1297,98 @@ if (empty($_SESSION['csrf_token'])) {
         });
 
         // ====================== ONGLET SCANNER ======================
+        let qrScanner = null;
+
+// Fonction appelée après un scan réussi
+        async function onScanSuccess(decodedText) {
+            // 1. Arrêter le scanner et cacher la zone
+            if (qrScanner) {
+                await qrScanner.stop();
+                await qrScanner.clear();
+                qrScanner = null;
+            }
+            document.getElementById("qr-reader").style.display = "none"; // 👈 Cache la zone
+            document.getElementById("btn-start-scan").style.display = "inline-block";
+            document.getElementById("btn-stop-scan").style.display = "none";
+
+            console.log("decodedURL", decodedText);
+
+            const response = await fetch(`/controller/api/c-apiStock.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    action: 'parseQr',
+                    url: decodedText
+                })
+            });
+
+            console.log("STATUS:", response.status);
+            console.log("OK:", response.ok);
+            console.log("HEADERS:", [...response.headers.entries()]);
+
+// 🔥 IMPORTANT : lire le body en texte AVANT JSON
+            const rawText = await response.text();
+            console.log("RAW RESPONSE:", rawText);
+
+            let product;
+            try {
+                product = JSON.parse(rawText);
+            } catch (e) {
+                console.error("JSON PARSE ERROR:", e);
+                throw new Error("Réponse API invalide (pas du JSON)");
+            }
+
+            console.log("product", product);
+        }
+
+// Fonctions pour les boutons (Entrée/Sortie/Déplacer)
+        function scanEntree() {
+            const productId = document.getElementById("scan-product-id").textContent;
+            if (!productId || productId === "—") return alert("Scannez un produit d'abord !");
+            document.getElementById("modal-action").textContent = "➕ Entrée de stock";
+            document.getElementById("modal-product").textContent = productId;
+            document.getElementById("modal-quantity").value = document.getElementById("scan-qty").value;
+            new bootstrap.Modal(document.getElementById("stockModal")).show();
+        }
+
+        function scanSortie() {
+            const productId = document.getElementById("scan-product-id").textContent;
+            if (!productId || productId === "—") return alert("Scannez un produit d'abord !");
+            document.getElementById("modal-action").textContent = "➖ Sortie de stock";
+            document.getElementById("modal-product").textContent = productId;
+            document.getElementById("modal-quantity").value = document.getElementById("scan-qty").value;
+            new bootstrap.Modal(document.getElementById("stockModal")).show();
+        }
+
+        function scanMove() {
+            const productId = document.getElementById("scan-product-id").textContent;
+            if (!productId || productId === "—") return alert("Scannez un produit d'abord !");
+            document.getElementById("modal-action").textContent = "🔁 Déplacement de stock";
+            document.getElementById("modal-product").textContent = productId;
+            document.getElementById("modal-quantity").value = document.getElementById("scan-qty").value;
+            new bootstrap.Modal(document.getElementById("stockModal")).show();
+        }
+
+// Gestion du scanner
         document.getElementById("btn-start-scan").addEventListener("click", async () => {
             try {
+                // 1. Charger la librairie si nécessaire
+                if (typeof Html5Qrcode === 'undefined') {
+                    await new Promise(resolve => {
+                        const script = document.createElement('script');
+                        script.src = 'https://unpkg.com/html5-qrcode';
+                        script.onload = resolve;
+                        document.head.appendChild(script);
+                    });
+                }
+
+                // 2. Initialiser le scanner
                 if (!qrScanner) {
                     qrScanner = new Html5Qrcode("qr-reader");
                 }
 
+                // 3. Démarrer le scanner et AFFICHER la zone
+                document.getElementById("qr-reader").style.display = "block"; // 👈 Affiche la zone
                 await qrScanner.start(
                     { facingMode: "environment" },
                     { fps: 10, qrbox: 250 },
@@ -1270,8 +1399,7 @@ if (empty($_SESSION['csrf_token'])) {
                 document.getElementById("btn-stop-scan").style.display = "inline-block";
 
             } catch (err) {
-                console.error(err);
-                alert("Impossible d'accéder à la caméra");
+                alert(err.name === "NotAllowedError" ? "Autorisez la caméra dans la popup du navigateur !" : "Erreur : " + err.message);
             }
         });
 
@@ -1281,7 +1409,7 @@ if (empty($_SESSION['csrf_token'])) {
                 await qrScanner.clear();
                 qrScanner = null;
             }
-
+            document.getElementById("qr-reader").style.display = "none"; // 👈 Cache la zone
             document.getElementById("btn-start-scan").style.display = "inline-block";
             document.getElementById("btn-stop-scan").style.display = "none";
         });

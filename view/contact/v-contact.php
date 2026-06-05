@@ -7,23 +7,23 @@
 
     <!-- Section Informations de contact -->
     <section class="mb-5">
-        <div class="row text-center">
+        <div class="d-flex row text-center">
             <div class="col-md-4 mb-4">
-                <div class="p-4 bg-light rounded-4">
+                <div class="p-4 bg-light rounded-4 h-100">
                     <i class="fas fa-map-marker-alt fa-2x mb-3" style="color: var(--accent-color);"></i>
                     <h5>Adresse</h5>
                     <p class="mb-0">1 Rue du Général de Gaulle<br>80000 Amiens, France</p>
                 </div>
             </div>
             <div class="col-md-4 mb-4">
-                <div class="p-4 bg-light rounded-4">
+                <div class="p-4 bg-light rounded-4 h-100">
                     <i class="fas fa-envelope fa-2x mb-3" style="color: var(--accent-color);"></i>
                     <h5>Email</h5>
                     <p class="mb-0">contact@patesdefruits.fr</p>
                 </div>
             </div>
             <div class="col-md-4 mb-4">
-                <div class="p-4 bg-light rounded-4">
+                <div class="p-4 bg-light rounded-4 h-100">
                     <i class="fas fa-phone fa-2x mb-3" style="color: var(--accent-color);"></i>
                     <h5>Téléphone</h5>
                     <p class="mb-0">+33 3 23 45 67 89</p>

@@ -1,41 +1,43 @@
 <div class="container py-5">
     <!-- Section À Propos -->
+    <!-- Section À Propos -->
     <section class="mb-5">
         <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
             <div class="card-body p-4 p-md-5">
-                <div class="row align-items-center">
-                    <!-- Photo de profil + Infos -->
-                    <div class="col-md-8">
-                        <div class="d-flex align-items-center">
-                            <!-- Photo de profil -->
-                            <img
+                <div class="row">
+                    <!-- Photo de profil (centrée en mobile, alignée à gauche en desktop) -->
+                    <div class="col-12 col-md-3 d-flex justify-content-center justify-content-md-start mb-3 mb-md-0">
+                        <img
                                 src="/images/logo.png"
                                 alt="Photo de profil de Mathis Brongniart"
-                                class="rounded-circle me-4"
+                                class="rounded-circle"
                                 style="width: 120px; height: 120px; object-fit: cover; border: 3px solid var(--accent-color);"
-                            >
-                            <!-- Infos -->
-                            <div>
-                                <h2 class="mb-1">Mathis Brongniart</h2>
-                                <p class="text-muted mb-2">
-                                    Étudiant en BUT Informatique & Auto-Entrepreneur
-                                </p>
-                                <div class="d-flex align-items-center gap-1 mb-2">
-                                    <span class="fi fi-fr"></span>
-                                    <span>France</span>
-                                </div>
-                                <p class="mb-0">
-                                    Passionné par les pâtes de fruits artisanales, je combine mes études et mon projet pour vous offrir des produits gourmands et de qualité.
-                                </p>
+                        >
+                    </div>
+
+                    <!-- Infos (en dessous de l'image en mobile, à droite en desktop) -->
+                    <div class="col-12 col-md-5">
+                        <div>
+                            <h2 class="mb-1">Mathis Brongniart</h2>
+                            <p class="text-muted mb-2">
+                                Étudiant en BUT Informatique & Auto-Entrepreneur
+                            </p>
+                            <div class="d-flex align-items-center gap-1 mb-2">
+                                <span class="fi fi-fr"></span>
+                                <span>France</span>
                             </div>
+                            <p class="mb-0">
+                                Passionné par les pâtes de fruits artisanales, je combine mes études et mon projet pour vous offrir des produits gourmands et de qualité.
+                            </p>
                         </div>
                     </div>
-                    <!-- Lien vers le site ou les produits -->
-                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+
+                    <!-- Lien vers les produits (en dessous en mobile, à droite en desktop) -->
+                    <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
                         <div class="bg-light p-3 rounded-3">
                             <h5 class="mb-1">Pâtes de Fruits Artisanales</h5>
                             <p class="mb-2">Découvrez mes créations</p>
-                            <a href="/produits" class="btn btn-sm btn-outline-primary">
+                            <a href="/produit" class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-shopping-bag me-1"></i> Voir les produits
                             </a>
                         </div>

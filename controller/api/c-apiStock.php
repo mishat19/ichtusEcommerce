@@ -4,7 +4,8 @@
  * API Stock — Gestion du stock, entrepôts, meubles, stacks
  * Authentification par token POST (identique aux autres API)
  */
-function APIStock() {
+function APIStock(): void
+{
     global $pdo;
 
     $isDirectApiCall = isset($_GET['pageAPI']);
@@ -24,6 +25,10 @@ function APIStock() {
 
     /* ───────── ACTION ROUTING ───────── */
     $action = $_POST['action'] ?? 'list';
+
+    error_log("ACTION RECEIVED: " . ($_POST['action'] ?? 'NULL'));
+    error_log("POST DATA: " . json_encode($_POST));
+    error_log("GET DATA: " . json_encode($_GET));
 
     switch ($action) {
 
@@ -400,18 +405,38 @@ function APIStock() {
          *  SCANNER QR CODE
          * ══════════════════════════════════════ */
         case "parseQr":
+            echo json_encode([
+                "debug" => "API HIT",
+                "post" => $_POST,
+                "get" => $_GET
+            ]);
+            exit;
+            header('Content-Type: application/json; charset=utf-8');
 
-            $url = $_GET["url"] ?? "";
+            $url = $_POST["url"] ?? $_GET["url"] ?? "";
+            error_log("URL reçue: " . $url);
 
-            // récupère dernier segment
-            $slug = basename(parse_url($url, PHP_URL_PATH));
+            $identifiant = basename(parse_url($url, PHP_URL_PATH));
+            error_log("IDENTIFIANT: " . $identifiant);
 
-            $stmt = $pdo->prepare("SELECT id, nom FROM produit WHERE slug = ?");
-            $stmt->execute([$slug]);
+            if (!$identifiant) {
+                echo json_encode([
+                    'error' => 'URL invalide'
+                ]);
+                exit;
+            }
+
+            $stmt = $pdo->prepare("SELECT id, nom FROM produit WHERE identifiant = ?");
+            $stmt->execute([$identifiant]);
             $prod = $stmt->fetch();
 
-            echo json_encode($prod);
-            break;
+            error_log("RESULT DB: " . json_encode($prod));
+
+            echo json_encode($prod ?: [
+                'error' => 'Produit introuvable'
+            ]);
+
+            exit;
         /* ══════════════════════════════════════
         *  CRÉER UN ENTREPÔT
         * ══════════════════════════════════════ */
@@ -494,7 +519,7 @@ function APIStock() {
                         http_response_code(409);
 
                         echo json_encode([
-                            'error' => "Capacité dépassée ! Vous essayez de supprimer {$qte} produit(s) mais il n'y en a que {$stockActuel}."
+                            'error' => "Capacité dépassée ! Vous essayez de supprimer $qte produit(s) mais il n'y en a que $stockActuel."
                         ]);
 
                         return;
@@ -737,8 +762,6 @@ function APIStock() {
                         $idProduit
                     ]);
 
-                    $stockDestinationAvant = (int)$stmt->fetchColumn();
-
                     /*
                      * RETIRE DU STACK SOURCE
                      */
@@ -828,9 +851,6 @@ function APIStock() {
                      * Stocks après mouvement
                      */
                     $stockSourceApres = $stockSourceAvant - $qte;
-
-                    $stockDestinationApres =
-                        $stockDestinationAvant + $qte;
 
                     /*
                      * HISTORIQUE MOUVEMENT
@@ -1253,7 +1273,6 @@ function APIStock() {
         default:
             http_response_code(400);
             echo json_encode(['error' => 'Action inconnue: ' . $action]);
-            return;
     }
 
 

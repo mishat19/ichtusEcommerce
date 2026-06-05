@@ -1,6 +1,7 @@
 <?php
 
-function boProduits() {
+function boProduits(): void
+{
     global $pdo;
 
     global $messageSucces, $messageErreur;

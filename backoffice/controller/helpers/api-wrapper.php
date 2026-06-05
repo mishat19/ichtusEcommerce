@@ -4,7 +4,8 @@ require_once 'controller/api/c-apiCommande.php';
 require_once 'controller/api/c-apiPaiement.php';
 require_once 'controller/api/c-apiDashboard.php';
 
-function executeDashboardAction($data = []) {
+function executeDashboardAction($data = []): array
+{
 
     $oldPost = $_POST;
     $oldGet = $_GET;
@@ -22,7 +23,6 @@ function executeDashboardAction($data = []) {
 
     $decoded = json_decode($output, true);
 
-    // 🔥 DEBUG SAFE (très important)
     if (!is_array($decoded)) {
         error_log("Dashboard API JSON ERROR: " . $output);
         return [

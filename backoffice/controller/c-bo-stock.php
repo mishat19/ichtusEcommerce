@@ -5,6 +5,8 @@
  */
 
 // Démarre la session si ce n'est pas déjà fait
+use Random\RandomException;
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -14,7 +16,8 @@ require_once 'controller/api/c-apiStock.php';
 
 // Fonction pour vérifier le token CSRF
 if (!function_exists('verify_csrf')) {
-    function verify_csrf() {
+    function verify_csrf(): void
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
                 die("Erreur : Token CSRF invalide.");
@@ -26,9 +29,14 @@ if (!function_exists('verify_csrf')) {
 
 // Fonction pour générer un champ CSRF
 if (!function_exists('csrf_field')) {
-    function csrf_field() {
+    function csrf_field(): void
+    {
         if (empty($_SESSION['csrf_token'])) {
-            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            try {
+                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            } catch (RandomException) {
+                error_log("Erreur : Token CSRF invalide.");
+            }
         }
         echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($_SESSION['csrf_token']) . '">';
     }
@@ -43,12 +51,10 @@ if (!function_exists('csrf_field')) {
  * @param array $data Données à passer à l'action
  * @return array Résultat de l'action (ex: ['success' => true, 'message' => '...'])
  */
-function executeStockAction($action, $data = []) {
-    global $pdo;
-
+function executeStockAction(string $action, array $data = []): array
+{
     // Sauvegarde
     $oldPost = $_POST;
-    $oldGet = $_GET;
 
     // Faux POST API
     $_POST = array_merge($data, [
@@ -63,7 +69,6 @@ function executeStockAction($action, $data = []) {
 
     // Restauration
     $_POST = $oldPost;
-    $_GET = $oldGet;
 
     return json_decode($output, true);
 }
@@ -71,8 +76,9 @@ function executeStockAction($action, $data = []) {
 // =====================================================
 // FONCTION PRINCIPALE POUR GÉRER LES ENTREPÔTS
 // =====================================================
-function BOEntrepots() {
-    global $pdo, $messageSucces, $messageErreur;
+function BOEntrepots(): void
+{
+    global $messageSucces, $messageErreur;
     $messageSucces = '';
     $messageErreur = '';
 
@@ -168,11 +174,11 @@ function BOEntrepots() {
     // Récupération des entrepôts et leurs données
     $result = executeStockAction('getEntrepots');
 
-    if (!empty($result) && is_array($result)){
+    if (!empty($result)){
         $entrepots = $result;
     } else {
         $entrepots = [];
-        $messageErreur = $result['error'] ?? 'Erreur lors de la récupération des entrepôts';
+        $messageErreur = 'Erreur lors de la récupération des entrepôts';
     }
 
     // Ajoute les produits pour chaque stack
@@ -223,8 +229,9 @@ function BOEntrepots() {
 // =====================================================
 // FONCTION POUR GÉRER L'AJOUT DE STOCK
 // =====================================================
-function BOStockAjout() {
-    global $pdo, $messageSucces, $messageErreur;
+function BOStockAjout(): void
+{
+    global $messageSucces, $messageErreur;
     $messageSucces = '';
     $messageErreur = '';
 
@@ -370,7 +377,7 @@ function BOStockAjout() {
         $messageErreur = $resultStacks['error'];
         $stacksList = [];
     } else {
-        $stacksList = $resultStacks ?? [];
+        $stacksList = $resultStacks;
     }
 
     // Récupération des produits
@@ -389,7 +396,8 @@ function BOStockAjout() {
     /**
      * Récupère les produits d’un stack sélectionné
      */
-    function getProduitsDuStackSelectionne($idStack) {
+    function getProduitsDuStackSelectionne($idStack): array
+    {
 
         if ($idStack <= 0) {
             return [
@@ -407,7 +415,7 @@ function BOStockAjout() {
         $messageErreur .= ' ' . $resultProduits['error'];
         $produitsActifs = [];
     } else {
-        $produitsActifs = $resultProduits ?? [];
+        $produitsActifs = $resultProduits;
     }
 
     require_once 'backoffice/view/inc/inc.head.php';
@@ -415,4 +423,3 @@ function BOStockAjout() {
     require_once 'backoffice/view/v-stock-ajout.php';
     require_once 'backoffice/view/inc/inc.footer.php';
 }
-?>

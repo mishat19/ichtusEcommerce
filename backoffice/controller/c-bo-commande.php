@@ -3,7 +3,8 @@
 require_once 'controller/api/c-apiCommande.php';
 require_once 'backoffice/controller/helpers/api-wrapper.php';
 
-function BOCommande() {
+function BOCommande(): void
+{
 
     $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 

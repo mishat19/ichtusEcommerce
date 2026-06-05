@@ -24,9 +24,7 @@
                     <li class="nav-item">
                         <a class="nav-link <?php e(str_starts_with($currentPage, '/contact') ? 'active' : ''); ?>" href="/contact">Contact</a>                    </li>
                 </ul>
-                <form class="d-flex mb-3 mb-lg-0 me-lg-3">
-                    <input class="form-control search-bar" type="search" placeholder="Rechercher...">
-                </form>
+
                 <div class="d-flex align-items-center">
                     <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'ADMIN') : ?>
                         <a href="/backoffice" class="btn btn-outline-dark me-2" title="Backoffice">
