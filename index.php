@@ -31,6 +31,8 @@ require_once 'backoffice/controller/c-bo-produit.php';
 require_once 'backoffice/controller/c-bo-tests.php';
 require_once 'backoffice/controller/c-bo-stock.php';
 require_once 'backoffice/controller/c-bo-messages.php';
+require_once 'backoffice/controller/c-bo-apitester.php';
+
 
 
 /* ───────── ROUTEUR ───────── */
@@ -107,6 +109,13 @@ switch ($page) {
                 BOTests();
                 break;
             }
+
+            // /backoffice/api-tester
+            if ($segments[1] === 'api-tester') {
+                BOApiTester();
+                break;
+            }
+
 
             // /backoffice/entrepots
             if ($segments[1] === 'entrepots') {

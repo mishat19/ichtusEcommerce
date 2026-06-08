@@ -71,6 +71,10 @@
         <a href="/backoffice/tests">
             <i class="fas fa-vial me-2"></i> Tests & Stats
         </a>
+
+        <a href="/backoffice/api-tester">
+            <i class="fas fa-terminal me-2"></i> Testeur d'API
+        </a>
     </div>
 
     <hr>
@@ -110,14 +114,29 @@
             });
     }
 
+    // Surligner l'élément actif dans la barre latérale
+    function highlightActiveMenu() {
+        const currentPath = window.location.pathname.replace(/\/$/, '');
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            const href = link.getAttribute('href');
+            if (!href) return;
+            const cleanHref = href.replace(/\/$/, '');
+            if (currentPath === cleanHref || (currentPath.startsWith(cleanHref) && cleanHref !== '/backoffice')) {
+                link.classList.add('active');
+            }
+        });
+    }
+
     // Attends que le DOM soit prêt
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
             fetchUnreadMessagesCount();
+            highlightActiveMenu();
             setInterval(fetchUnreadMessagesCount, 30000);
         });
     } else {
         fetchUnreadMessagesCount();
+        highlightActiveMenu();
         setInterval(fetchUnreadMessagesCount, 30000);
     }
 </script>
