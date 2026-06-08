@@ -1,7 +1,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold mb-0">Testeur d'API Interactif</h2>
-        <p class="text-muted">Simulateur de requêtes en direct et guide de configuration pour Postman</p>
+        <h2 class="fw-bold mb-0">Configurateur de requêtes Postman</h2>
+        <p class="text-muted">Générateur automatique de requêtes et de corps de requêtes (Body) pour vos tests</p>
     </div>
     <div>
         <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
@@ -23,7 +23,7 @@
     <div class="col-lg-5">
         <div class="bo-card h-100">
             <h5 class="bo-card-title mb-4">
-                <i class="fas fa-sliders-h text-primary"></i> Configurer la Requête
+                <i class="fas fa-sliders-h text-primary"></i> Choisir le Scénario
             </h5>
 
             <!-- Étape 1 : Choisir la ressource (Endpoint) -->
@@ -51,175 +51,102 @@
             <!-- Étape 3 : Paramètres du Body (POST) -->
             <div class="mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <label class="form-label fw-bold text-secondary small text-uppercase mb-0">3. Paramètres du Corps (POST Body)</label>
+                    <label class="form-label fw-bold text-secondary small text-uppercase mb-0">3. Modifier les valeurs</label>
                     <button type="button" class="btn btn-sm btn-outline-secondary py-1" onclick="addParamRow()">
                         <i class="fas fa-plus me-1"></i> Paramètre
                     </button>
                 </div>
-                <div class="text-muted small mb-3">Envoyé sous format <code>application/x-www-form-urlencoded</code>.</div>
+                <p class="text-muted small mb-3">Modifiez les valeurs ci-dessous pour mettre à jour automatiquement le guide de configuration Postman à droite.</p>
                 
                 <div id="params-container" class="d-flex flex-column gap-2">
                     <!-- Rempli dynamiquement en JS -->
                 </div>
             </div>
-
-            <div class="d-grid mt-4">
-                <button type="button" id="send-btn" class="btn btn-primary btn-lg fw-bold py-3 shadow-sm" onclick="sendRequest()">
-                    <i class="fas fa-paper-plane me-2"></i> Envoyer la requête
-                </button>
-            </div>
         </div>
     </div>
 
-    <!-- Colonne Droite : Visualisation des résultats et guide Postman -->
+    <!-- Colonne Droite : Guide de configuration Postman -->
     <div class="col-lg-7">
-        <div class="bo-card h-100 d-flex flex-column">
-            <!-- Navigation des onglets -->
-            <ul class="nav nav-tabs border-bottom mb-4" id="apiTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active fw-bold text-uppercase small py-3" id="response-tab" data-bs-toggle="tab" data-bs-target="#response-content" type="button" role="tab" aria-controls="response-content" aria-selected="true">
-                        <i class="fas fa-terminal me-2"></i> Console de Réponse
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link fw-bold text-uppercase small py-3" id="postman-tab" data-bs-toggle="tab" data-bs-target="#postman-content" type="button" role="tab" aria-controls="postman-content" aria-selected="false">
-                        <i class="fab fa-square-space me-2"></i> Configurer Postman
-                    </button>
-                </li>
-            </ul>
+        <div class="bo-card h-100">
+            <h5 class="bo-card-title mb-4">
+                <i class="fab fa-square-space text-primary"></i> Guide de Configuration Postman
+            </h5>
+            
+            <p class="text-muted small mb-4">Suivez ces instructions pour configurer et tester avec succès votre requête dans Postman.</p>
 
-            <div class="tab-content flex-grow-1 d-flex flex-column" id="apiTabContent">
-                <!-- CONTENU : CONSOLE DE REPONSE -->
-                <div class="tab-pane fade show active flex-grow-1 d-flex flex-column" id="response-content" role="tabpanel" aria-labelledby="response-tab">
-                    
-                    <!-- Métriques de réponse -->
-                    <div class="row g-3 mb-3">
-                        <div class="col-sm-4">
-                            <div class="p-3 bg-light rounded shadow-sm border border-light">
-                                <span class="text-muted small d-block">Statut HTTP</span>
-                                <span id="res-status" class="fw-bold fs-5 text-secondary">-</span>
-                            </div>
+            <!-- Étape 1 : Method & URL -->
+            <div class="card border border-light shadow-sm mb-3">
+                <div class="card-header bg-light fw-bold py-2 text-secondary small">
+                    <span class="badge bg-secondary me-2">Étape 1</span> Méthode & URL de la requête
+                </div>
+                <div class="card-body">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-auto">
+                            <span class="badge bg-success py-2 px-3 fw-bold fs-6">POST</span>
                         </div>
-                        <div class="col-sm-4">
-                            <div class="p-3 bg-light rounded shadow-sm border border-light">
-                                <span class="text-muted small d-block">Temps de Réponse</span>
-                                <span id="res-time" class="fw-bold fs-5 text-secondary">-</span>
-                            </div>
+                        <div class="col">
+                            <input type="text" id="postman-url" class="form-control text-monospace bg-light" readonly value="">
                         </div>
-                        <div class="col-sm-4">
-                            <div class="p-3 bg-light rounded shadow-sm border border-light">
-                                <span class="text-muted small d-block">Méthode & URL</span>
-                                <span class="fw-bold text-success fs-6 d-block text-truncate">POST <span id="res-endpoint-name" class="text-dark">/index.php</span></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Requête envoyée (Debug) -->
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-secondary small text-uppercase">Corps envoyé :</label>
-                        <div id="request-payload" class="bg-light p-2 rounded text-monospace small text-muted border border-light text-break" style="font-family: monospace;">
-                            (Aucune requête envoyée)
-                        </div>
-                    </div>
-
-                    <!-- Code JSON de réponse -->
-                    <div class="flex-grow-1 d-flex flex-column position-relative">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label fw-bold text-secondary small text-uppercase mb-0">Réponse brute (JSON) :</label>
-                            <button class="btn btn-sm btn-outline-secondary py-0" onclick="copyResponse()">
-                                <i class="far fa-copy me-1"></i> Copier
+                        <div class="col-auto">
+                            <button class="btn btn-outline-secondary" onclick="copyToClipboard('postman-url')" title="Copier l'URL">
+                                <i class="far fa-copy"></i>
                             </button>
-                        </div>
-                        <div class="flex-grow-1 position-relative" style="min-height: 250px;">
-                            <pre class="bg-dark text-light p-3 rounded h-100 overflow-auto m-0 shadow-sm border border-secondary" style="font-family: 'Consolas', 'Courier New', monospace; font-size: 0.85rem; max-height: 400px;"><code id="response-code" class="text-success">// Les résultats s'afficheront ici après envoi.</code></pre>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- CONTENU : GUIDE POSTMAN -->
-                <div class="tab-pane fade" id="postman-content" role="tabpanel" aria-labelledby="postman-tab">
+            <!-- Étape 2 : Headers -->
+            <div class="card border border-light shadow-sm mb-3">
+                <div class="card-header bg-light fw-bold py-2 text-secondary small">
+                    <span class="badge bg-secondary me-2">Étape 2</span> En-têtes (Headers)
+                </div>
+                <div class="card-body py-2">
+                    <table class="table table-sm table-borderless mb-0">
+                        <thead>
+                            <tr class="text-muted small border-bottom">
+                                <th>Clé (Key)</th>
+                                <th>Valeur (Value)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>Content-Type</code></td>
+                                <td><code>application/x-www-form-urlencoded</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Étape 3 : Body -->
+            <div class="card border border-light shadow-sm mb-3">
+                <div class="card-header bg-light fw-bold py-2 text-secondary small">
+                    <span class="badge bg-secondary me-2">Étape 3</span> Corps de la requête (Body)
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-2">Dans l'onglet <strong>Body</strong> de Postman, cochez l'option <strong>x-www-form-urlencoded</strong> et insérez les clés suivantes :</p>
                     
-                    <!-- Section Titre -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold"><i class="fas fa-graduation-cap text-primary me-2"></i>Guide étape par étape pour Postman</h6>
-                        <p class="text-muted small">Voici les paramètres exacts à renseigner dans Postman pour reproduire le scénario sélectionné à gauche.</p>
-                    </div>
+                    <table class="table table-striped table-bordered table-sm mb-0">
+                        <thead class="table-light text-secondary small">
+                            <tr>
+                                <th>Clé (Key)</th>
+                                <th>Valeur (Value)</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="postman-body-table">
+                            <!-- Rempli dynamiquement en JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                    <!-- Étape 1 : Method & URL -->
-                    <div class="card border border-light shadow-sm mb-3">
-                        <div class="card-header bg-light fw-bold py-2">
-                            <span class="badge bg-secondary me-2">Étape 1</span> Méthode & URL
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-2 align-items-center">
-                                <div class="col-auto">
-                                    <span class="badge bg-success py-2 px-3 fw-bold fs-6">POST</span>
-                                </div>
-                                <div class="col">
-                                    <input type="text" id="postman-url" class="form-control" readonly value="">
-                                </div>
-                                <div class="col-auto">
-                                    <button class="btn btn-outline-secondary" onclick="copyToClipboard('postman-url')">
-                                        <i class="far fa-copy"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Étape 2 : Headers -->
-                    <div class="card border border-light shadow-sm mb-3">
-                        <div class="card-header bg-light fw-bold py-2">
-                            <span class="badge bg-secondary me-2">Étape 2</span> En-têtes (Headers)
-                        </div>
-                        <div class="card-body py-2">
-                            <table class="table table-sm table-borderless mb-0">
-                                <thead>
-                                    <tr class="text-muted small border-bottom">
-                                        <th>Clé (Key)</th>
-                                        <th>Valeur (Value)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><code>Content-Type</code></td>
-                                        <td><code>application/x-www-form-urlencoded</code></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Étape 3 : Body -->
-                    <div class="card border border-light shadow-sm mb-3">
-                        <div class="card-header bg-light fw-bold py-2">
-                            <span class="badge bg-secondary me-2">Étape 3</span> Corps de la requête (Body)
-                        </div>
-                        <div class="card-body">
-                            <p class="small text-muted mb-2">Dans l'onglet <strong>Body</strong> de Postman, cochez l'option <strong>x-www-form-urlencoded</strong> et insérez les clés suivantes :</p>
-                            
-                            <table class="table table-striped table-bordered table-sm">
-                                <thead class="table-light text-secondary small">
-                                    <tr>
-                                        <th>Clé (Key)</th>
-                                        <th>Valeur (Value)</th>
-                                        <th>Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="postman-body-table">
-                                    <!-- Rempli dynamiquement en JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Astuce de connexion -->
-                    <div class="alert alert-warning border-0 small mb-0 d-flex gap-3" role="alert" style="background: rgba(245, 158, 11, 0.08); color: #78350f;">
-                        <i class="fas fa-exclamation-circle text-warning fs-5"></i>
-                        <div>
-                            <strong>Astuce :</strong> Contrairement au backoffice qui utilise une session cookie après connexion, l'API utilise uniquement le <code>token</code>. Inutile d'importer des cookies ou des en-têtes d'autorisation complexes dans Postman, le paramètre token dans le Body suffit pour s'authentifier !
-                        </div>
-                    </div>
+            <!-- Astuce de connexion -->
+            <div class="alert alert-warning border-0 small mb-0 d-flex gap-3" role="alert" style="background: rgba(245, 158, 11, 0.08); color: #78350f;">
+                <i class="fas fa-exclamation-circle text-warning fs-5"></i>
+                <div>
+                    <strong>Astuce d'authentification :</strong> Contrairement au backoffice qui s'appuie sur une session cookie du navigateur, l'API authentifie vos appels uniquement via la clé <code>token</code> dans le Body. Inutile de configurer des cookies ou d'autres autorisations complexes dans Postman, le paramètre token suffit !
                 </div>
             </div>
         </div>
@@ -412,10 +339,6 @@
 
     // Chargement de la page
     document.addEventListener("DOMContentLoaded", () => {
-        // Définir la base de l'URL Postman
-        const postmanUrlInput = document.getElementById("postman-url");
-        const currentOrigin = window.location.origin;
-        
         // Initialise l'onglet et scénario
         onEndpointChange();
     });
@@ -540,107 +463,6 @@
         });
     }
 
-    // Envoyer la requête fetch
-    function sendRequest() {
-        const sendBtn = document.getElementById("send-btn");
-        const responseCode = document.getElementById("response-code");
-        const resStatus = document.getElementById("res-status");
-        const resTime = document.getElementById("res-time");
-        const reqPayload = document.getElementById("request-payload");
-        const endpointKey = document.getElementById("api-endpoint").value;
-
-        // Désactiver le bouton pendant le chargement
-        sendBtn.disabled = true;
-        sendBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Envoi en cours...`;
-
-        // Construire les paramètres du body
-        const params = new URLSearchParams();
-        const rows = document.querySelectorAll(".param-row");
-        rows.forEach(row => {
-            const keyInput = row.querySelector(".param-key");
-            const valInput = row.querySelector(".param-value");
-            if (keyInput) {
-                const key = keyInput.value.trim();
-                const val = valInput ? valInput.value : "";
-                if (key) {
-                    params.append(key, val);
-                }
-            }
-        });
-
-        // Debug de la charge utile envoyée
-        reqPayload.textContent = params.toString() || "(Aucun paramètre)";
-        document.getElementById("res-endpoint-name").textContent = `?pageAPI=${endpointKey}`;
-
-        // Configurer l'URL locale relative
-        const targetUrl = `./index.php?pageAPI=${endpointKey}`;
-
-        // Mesurer le temps
-        const startTime = performance.now();
-
-        fetch(targetUrl, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: params
-        })
-        .then(response => {
-            const endTime = performance.now();
-            const duration = Math.round(endTime - startTime);
-            resTime.textContent = `${duration} ms`;
-
-            // Statut HTTP
-            resStatus.textContent = `${response.status} ${response.statusText}`;
-            resStatus.className = "fw-bold fs-5 " + (response.ok ? "text-success" : "text-danger");
-
-            return response.text().then(text => ({
-                ok: response.ok,
-                text: text
-            }));
-        })
-        .then(result => {
-            try {
-                // Tenter de parser en JSON
-                const json = JSON.parse(result.text);
-                responseCode.textContent = JSON.stringify(json, null, 4);
-                responseCode.className = result.ok ? "text-success" : "text-warning";
-            } catch (e) {
-                // Si ce n'est pas du JSON, afficher brut
-                responseCode.textContent = result.text || "(Réponse vide)";
-                responseCode.className = "text-danger";
-            }
-        })
-        .catch(error => {
-            const endTime = performance.now();
-            resTime.textContent = `${Math.round(endTime - startTime)} ms`;
-            resStatus.textContent = "Erreur de connexion";
-            resStatus.className = "fw-bold fs-5 text-danger";
-            
-            responseCode.textContent = `Erreur réseau ou CORS:\n${error.message}`;
-            responseCode.className = "text-danger";
-        })
-        .finally(() => {
-            // Rétablir le bouton
-            sendBtn.disabled = false;
-            sendBtn.innerHTML = `<i class="fas fa-paper-plane me-2"></i> Envoyer la requête`;
-            
-            // Revenir sur l'onglet console de réponse si on était ailleurs
-            const responseTabEl = document.getElementById("response-tab");
-            const tab = bootstrap.Tab.getOrCreateInstance(responseTabEl);
-            tab.show();
-        });
-    }
-
-    // Copier la réponse dans le presse-papiers
-    function copyResponse() {
-        const codeElement = document.getElementById("response-code");
-        const text = codeElement.textContent;
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Réponse copiée dans le presse-papiers !");
-        });
-    }
-
     // Copier n'importe quelle chaîne par ID d'élément
     function copyToClipboard(elementId) {
         const input = document.getElementById(elementId);
@@ -648,7 +470,15 @@
             input.select();
             input.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(input.value).then(() => {
-                alert("URL copiée !");
+                // Utilisation d'un feedback visuel discret plutôt qu'un alert bloquant
+                const btn = input.closest('.row').querySelector('button');
+                const origHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check text-success"></i>';
+                btn.classList.add('btn-outline-success');
+                setTimeout(() => {
+                    btn.innerHTML = origHtml;
+                    btn.classList.remove('btn-outline-success');
+                }, 1500);
             });
         }
     }
